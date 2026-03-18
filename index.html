@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IC Office Challenge</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #dc2626;
+      --accent-2: #ef4444;
+      --ok: #16a34a;
+      --warn: #f59e0b;
+      --border: #374151;
+      --shadow: 0 10px 35px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1220, #111827 40%, #0f172a);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      backdrop-filter: blur(8px);
+    }
+
+    h1, h2, h3 { margin: 0 0 10px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+    p { line-height: 1.5; color: var(--text); }
+    .muted { color: var(--muted); }
+
+    .hero {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .badge {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fecaca;
+      border: 1px solid rgba(239,68,68,.35);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 720px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="file"] {
+      width: 100%;
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 14px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.15);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #1f2937;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 700;
+    }
+
+    .progress {
+      width: 100%;
+      height: 10px;
+      background: #0b1220;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width .25s ease;
+    }
+
+    .question-text {
+      font-size: 22px;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .answer {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform .12s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .answer:hover { transform: translateY(-1px); border-color: #6b7280; }
+    .answer input { margin-top: 4px; transform: scale(1.15); }
+    .answer.selected {
+      border-color: var(--accent-2);
+      background: rgba(239,68,68,.10);
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hidden { display: none !important; }
+    .center { text-align: center; }
+    .score {
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1;
+      margin: 10px 0 16px;
+    }
+
+    .result-list {
+      text-align: left;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .small { font-size: 13px; color: var(--muted); }
+    .admin-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    code.inline { background:#0b1220; border:1px solid var(--border); padding:2px 8px; border-radius:8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="screen-intro" class="card">
+      <div class="hero">
+        <h1>IC Office Challenge</h1>
+        <p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek, omezený čas a jedna praktická úloha. Rozhoduje přesnost. Při shodě bodů rozhoduje rychlejší čas.</p>
+        <div class="badge-row">
+          <div class="badge">15 otázek</div>
+          <div class="badge">15 minut</div>
+          <div class="badge">1 pokus na registraci</div>
+          <div class="badge">výsledky se po odeslání nezobrazují</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:18px;">
+        <div>
+          <label for="name">Jméno a příjmení</label>
+          <input id="name" type="text" placeholder="Např. Jan Novák" maxlength="80" />
+        </div>
+        <div>
+          <label for="phone">Telefon</label>
+          <input id="phone" type="tel" placeholder="Např. 777123456" maxlength="30" />
+        </div>
+        <div>
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="Např. jan@email.cz" maxlength="120" />
+        </div>
+        <div>
+          <label for="school">Škola / tým / poznámka (volitelné)</label>
+          <input id="school" type="text" placeholder="Např. SPŠ Dopravní" maxlength="120" />
+        </div>
+      </div>
+
+      <p class="footer-note">Praktická úloha na konci umožní nahrát fotografii VIN nebo SPZ. V této ukázkové verzi se obrázek neukládá na server. Pro ostrý provoz je potřeba napojit backend nebo formulářové úložiště.</p>
+
+      <div class="btn-row">
+        <button class="btn-primary" id="startBtn">Spustit challenge</button>
+        <button class="btn-secondary" id="adminBtn">Admin režim</button>
+      </div>
+    </section>
+
+    <section id="screen-quiz" class="card hidden">
+      <div class="topbar">
+        <div class="pill" id="questionCounter">Otázka 1 / 15</div>
+        <div class="pill" id="timer">12:00</div>
+      </div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div id="questionText" class="question-text"></div>
+      <div id="answers" class="answers"></div>
+      <div id="practicalBlock" class="hidden">
+        <label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
+        <input id="photoUpload" type="file" accept="image/*" />
+        <div class="small" style="margin-top:8px;">V ukázkové verzi se soubor jen připojí k výsledku v prohlížeči. Na produkci je nutné ukládání na server.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" id="nextBtn">Další otázka</button>
+        <button class="btn-primary hidden" id="finishBtn">Odeslat výsledky</button>
+      </div>
+    </section>
+
+    <section id="screen-result" class="card hidden center">
+      <h2>Hotovo</h2>
+      <p>Děkujeme za vyplnění soutěže.</p>
+      <div class="score" id="finalScore">0 / 15</div>
+      <p id="finalTime"></p>
+      <div class="result-list">
+        <strong>Co se v této verzi ukládá:</strong>
+        <ul>
+          <li>jméno, e-mail, telefon, škola/tým</li>
+          <li>počet bodů</li>
+          <li>čas dokončení</li>
+          <li>pořadí a promíchání otázek pro konkrétní pokus</li>
+        </ul>
+      </div>
+      <p class="footer-note">Správné odpovědi se účastníkovi nezobrazují.</p>
+    </section>
+
+    <section id="screen-admin" class="card hidden">
+      <h2>Admin režim</h2>
+      <p>V této demoverzi se výsledky ukládají do <code class="inline">localStorage</code> v prohlížeči. To stačí na test a prezentaci. Pro ostré použití je potřeba napojit databázi nebo Google Sheet / Supabase / Firebase.</p>
+      <div class="admin-actions">
+        <button class="btn-primary" id="exportBtn">Export výsledků do CSV</button>
+        <button class="btn-secondary" id="clearBtn">Smazat lokální výsledky</button>
+        <button class="btn-secondary" id="backBtn">Zpět</button>
+      </div>
+      <div id="adminStats" class="result-list" style="margin-top:18px;"></div>
+    </section>
+  </div>
+
+  <script>
+    const QUIZ_MINUTES = 15;
+    const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
+    const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
+
+    const baseQuestions = [
+      {
+        id: 1,
+        text: 'Co přesně je IC Office?',
+        answers: [
+          'systém pro řízení autoservisu a práci se zakázkami',
+          'účetní software pro fakturaci a daně',
+          'aplikace pro diagnostiku vozidel',
+          'rozšířený balík Microsoft 365'
+        ],
+        correct: 'systém pro řízení autoservisu a práci se zakázkami'
+      },
+      {
+        id: 2,
+        text: 'Jak bys nejlépe popsal IC Office kolegovi?',
+        answers: [
+          'nástroj pro řízení zakázek, vozidel a zákazníků',
+          'aplikace pro objednávání dílů',
+          'něco jako Excel pro auta',
+          'program hlavně na fakturaci'
+        ],
+        correct: 'nástroj pro řízení zakázek, vozidel a zákazníků'
+      },
+      {
+        id: 3,
+        text: 'Při příjmu vozidla do servisu je největší ztráta času typicky:',
+        answers: [
+          'ruční dohledávání údajů o vozidle',
+          'přivítání zákazníka',
+          'zaparkování vozu',
+          'otevření kapoty'
+        ],
+        correct: 'ruční dohledávání údajů o vozidle'
+      },
+      {
+        id: 4,
+        text: 'Jaký je hlavní přínos využití VIN v servisním procesu?',
+        answers: [
+          'přesná identifikace vozidla a kompatibilních dílů',
+          'stanovení ceny opravy',
+          'zrychlení mechanické práce',
+          'snížení spotřeby vozidla'
+        ],
+        correct: 'přesná identifikace vozidla a kompatibilních dílů'
+      },
+      {
+        id: 5,
+        text: 'Jaký efekt má načtení VIN pomocí mobilního zařízení?',
+        answers: [
+          'odstranění nutnosti ručního zadávání údajů',
+          'automatické vyřešení závady',
+          'zrychlení diagnostiky motoru',
+          'zvýšení výkonu vozidla'
+        ],
+        correct: 'odstranění nutnosti ručního zadávání údajů'
+      },
+      {
+        id: 6,
+        text: 'Jaký je nejčastější důsledek práce bez digitální evidence zakázek?',
+        answers: [
+          'ztráta přehledu o stavu zakázek',
+          'vyšší výkon mechaniků',
+          'nižší spotřeba materiálu',
+          'lepší orientace v práci'
+        ],
+        correct: 'ztráta přehledu o stavu zakázek'
+      },
+      {
+        id: 7,
+        text: 'Jaký přínos má centrální přehled zakázek v systému?',
+        answers: [
+          'lepší organizace práce a plánování',
+          'automatická oprava vozidel',
+          'snížení počtu zákazníků',
+          'eliminace potřeby mechaniků'
+        ],
+        correct: 'lepší organizace práce a plánování'
+      },
+      {
+        id: 8,
+        text: 'Jaký způsob dohledání historie vozidla je nejefektivnější?',
+        answers: [
+          'vyhledání podle VIN v systému',
+          'hledání v papírové dokumentaci',
+          'dotaz na kolegy',
+          'odhad podle zkušeností'
+        ],
+        correct: 'vyhledání podle VIN v systému'
+      },
+      {
+        id: 9,
+        text: 'Jaké riziko přináší ruční zadávání údajů o vozidle?',
+        answers: [
+          'vznik chyb v datech',
+          'zrychlení procesu',
+          'vyšší přesnost',
+          'snížení administrativy'
+        ],
+        correct: 'vznik chyb v datech'
+      },
+      {
+        id: 10,
+        text: 'Co má největší vliv na schopnost servisu odbavit více zakázek?',
+        answers: [
+          'rychlá práce s informacemi a daty',
+          'vyšší hlasitost rádia',
+          'větší pracovní stůl',
+          'delší pracovní doba'
+        ],
+        correct: 'rychlá práce s informacemi a daty'
+      },
+      {
+        id: 11,
+        text: 'Jaký údaj je nejspolehlivější pro výběr správného dílu?',
+        answers: [
+          'VIN vozidla',
+          'barva vozidla',
+          'jméno zákazníka',
+          'pocit zkušeného mechanika'
+        ],
+        correct: 'VIN vozidla'
+      },
+      {
+        id: 12,
+        text: 'Jaký nástroj nejvíce pomůže snížit chaos v zakázkách?',
+        answers: [
+          'systém s přehledem všech zakázek',
+          'více papírových poznámek',
+          'telefonické domluvy',
+          'paměť vedoucího'
+        ],
+        correct: 'systém s přehledem všech zakázek'
+      },
+      {
+        id: 13,
+        text: 'Co nejčastěji zpomaluje práci v autoservisu?',
+        answers: [
+          'dohledávání informací místo samotné práce',
+          'samotná oprava',
+          'kontrola vozidla',
+          'příchod zákazníka'
+        ],
+        correct: 'dohledávání informací místo samotné práce'
+      },
+      {
+        id: 14,
+        text: 'Co nejvíce pomáhá předcházet chybám při opravě?',
+        answers: [
+          'správná a přesná data o vozidle od začátku',
+          'rychlost práce',
+          'improvizace',
+          'štěstí'
+        ],
+        correct: 'správná a přesná data o vozidle od začátku'
+      },
+      {
+        id: 15,
+        text: 'Potřebuješ rychle identifikovat vozidlo. Co uděláš?',
+        answers: [
+          'použiji VIN z vozidla nebo dokumentace',
+          'použiji SPZ jako plnohodnotnou náhradu VIN',
+          'odhadnu podle typu auta',
+          'zeptám se kolegy, co si myslí'
+        ],
+        correct: 'použiji VIN z vozidla nebo dokumentace',
+        practical: true
+      }
+    ];
+
+    const state = {
+      participant: null,
+      questions: [],
+      currentIndex: 0,
+      selectedAnswer: null,
+      answers: {},
+      timerSeconds: QUIZ_MINUTES * 60,
+      timerInterval: null,
+      startedAt: null,
+      quizVersion: null,
+      uploadedFileName: ''
+    };
+
+    const el = {
+      intro: document.getElementById('screen-intro'),
+      quiz: document.getElementById('screen-quiz'),
+      result: document.getElementById('screen-result'),
+      admin: document.getElementById('screen-admin'),
+      startBtn: document.getElementById('startBtn'),
+      adminBtn: document.getElementById('adminBtn'),
+      questionCounter: document.getElementById('questionCounter'),
+      timer: document.getElementById('timer'),
+      progressBar: document.getElementById('progressBar'),
+      questionText: document.getElementById('questionText'),
+      answers: document.getElementById('answers'),
+      nextBtn: document.getElementById('nextBtn'),
+      finishBtn: document.getElementById('finishBtn'),
+      finalScore: document.getElementById('finalScore'),
+      finalTime: document.getElementById('finalTime'),
+      practicalBlock: document.getElementById('practicalBlock'),
+      photoUpload: document.getElementById('photoUpload'),
+      exportBtn: document.getElementById('exportBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      backBtn: document.getElementById('backBtn'),
+      adminStats: document.getElementById('adminStats')
+    };
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function normalizePhone(phone) {
+      return phone.replace(/\s+/g, '').trim();
+    }
+
+    function attemptKey(email, phone) {
+      return `${email.trim().toLowerCase()}__${normalizePhone(phone)}`;
+    }
+
+    function getStoredAttempts() {
+      return JSON.parse(localStorage.getItem(STORAGE_ATTEMPTS_KEY) || '{}');
+    }
+
+    function saveAttempt(email, phone) {
+      const attempts = getStoredAttempts();
+      attempts[attemptKey(email, phone)] = new Date().toISOString();
+      localStorage.setItem(STORAGE_ATTEMPTS_KEY, JSON.stringify(attempts));
+    }
+
+    function hasAttempt(email, phone) {
+      const attempts = getStoredAttempts();
+      return Boolean(attempts[attemptKey(email, phone)]);
+    }
+
+    function getStoredResults() {
+      return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
+    }
+
+    function saveResult(result) {
+      const results = getStoredResults();
+      results.push(result);
+      localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
+    }
+
+    function validateRegistration() {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const school = document.getElementById('school').value.trim();
+
+      if (!name || !phone || !email) {
+        alert('Vyplň jméno, telefon a e-mail.');
+        return null;
+      }
+
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!emailOk) {
+        alert('E-mail nemá správný formát.');
+        return null;
+      }
+
+      if (hasAttempt(email, phone)) {
+        alert('Tato registrace už soutěž jednou vyplnila.');
+        return null;
+      }
+
+      return { name, phone, email, school };
+    }
+
+    function prepareQuestions() {
+      return shuffle(baseQuestions).map(q => ({
+        ...q,
+        answers: shuffle(q.answers)
+      }));
+    }
+
+    function formatTime(totalSeconds) {
+      const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+      const ss = String(totalSeconds % 60).padStart(2, '0');
+      return `${mm}:${ss}`;
+    }
+
+    function showScreen(screen) {
+      [el.intro, el.quiz, el.result, el.admin].forEach(s => s.classList.add('hidden'));
+      screen.classList.remove('hidden');
+    }
+
+    function startQuiz() {
+      const participant = validateRegistration();
+      if (!participant) return;
+
+      state.participant = participant;
+      state.questions = prepareQuestions();
+      state.currentIndex = 0;
+      state.selectedAnswer = null;
+      state.answers = {};
+      state.timerSeconds = QUIZ_MINUTES * 60;
+      state.startedAt = new Date();
+      state.quizVersion = cryptoRandomId();
+      state.uploadedFileName = '';
+      el.photoUpload.value = '';
+
+      showScreen(el.quiz);
+      renderQuestion();
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(state.timerInterval);
+      el.timer.textContent = formatTime(state.timerSeconds);
+      state.timerInterval = setInterval(() => {
+        state.timerSeconds -= 1;
+        el.timer.textContent = formatTime(Math.max(state.timerSeconds, 0));
+        if (state.timerSeconds <= 0) {
+          clearInterval(state.timerInterval);
+          finishQuiz(true);
+        }
+      }, 1000);
+    }
+
+    function renderQuestion() {
+      const question = state.questions[state.currentIndex];
+      const total = state.questions.length;
+      const current = state.currentIndex + 1;
+
+      el.questionCounter.textContent = `Otázka ${current} / ${total}`;
+      el.progressBar.style.width = `${(current / total) * 100}%`;
+      el.questionText.textContent = question.text;
+      el.answers.innerHTML = '';
+      state.selectedAnswer = state.answers[question.id] || null;
+
+      question.answers.forEach((answer, idx) => {
+        const wrapper = document.createElement('label');
+        wrapper.className = 'answer' + (state.selectedAnswer === answer ? ' selected' : '');
+        wrapper.innerHTML = `
+          <input type="radio" name="question" value="${escapeHtml(answer)}" ${state.selectedAnswer === answer ? 'checked' : ''} />
+          <div><strong>${String.fromCharCode(65 + idx)})</strong> ${escapeHtml(answer)}</div>
+        `;
+        wrapper.addEventListener('click', () => {
+          state.selectedAnswer = answer;
+          state.answers[question.id] = answer;
+          [...el.answers.querySelectorAll('.answer')].forEach(x => x.classList.remove('selected'));
+          wrapper.classList.add('selected');
+        });
+        el.answers.appendChild(wrapper);
+      });
+
+      const isLast = current === total;
+      el.nextBtn.classList.toggle('hidden', isLast);
+      el.finishBtn.classList.toggle('hidden', !isLast);
+      el.practicalBlock.classList.toggle('hidden', !question.practical);
+    }
+
+    function nextQuestion() {
+      const question = state.questions[state.currentIndex];
+      if (!state.answers[question.id]) {
+        alert('Vyber jednu odpověď.');
+        return;
+      }
+      if (state.currentIndex < state.questions.length - 1) {
+        state.currentIndex += 1;
+        renderQuestion();
+      }
+    }
+
+    function finishQuiz(timeout = false) {
+      const lastQuestion = state.questions[state.currentIndex];
+      if (!timeout && !state.answers[lastQuestion.id]) {
+        alert('Vyber jednu odpověď.');
+        return;
+      }
+
+      clearInterval(state.timerInterval);
+      const correctAnswers = state.questions.reduce((sum, q) => {
+        return sum + (state.answers[q.id] === q.correct ? 1 : 0);
+      }, 0);
+
+      const elapsedSeconds = (QUIZ_MINUTES * 60) - Math.max(state.timerSeconds, 0);
+      const photoFile = el.photoUpload.files[0];
+      if (photoFile) state.uploadedFileName = photoFile.name;
+
+      const result = {
+        id: cryptoRandomId(),
+        timestamp: new Date().toISOString(),
+        participant: state.participant,
+        score: correctAnswers,
+        total: state.questions.length,
+        elapsedSeconds,
+        elapsedTime: formatTime(elapsedSeconds),
+        timedOut: timeout,
+        uploadedFileName: state.uploadedFileName,
+        quizVersion: state.quizVersion,
+        questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
+      };
+
+      saveResult(result);
+      saveAttempt(state.participant.email, state.participant.phone);
+
+      el.finalScore.textContent = `${correctAnswers} / ${state.questions.length}`;
+      el.finalTime.textContent = timeout
+        ? `Čas vypršel. Započtený čas: ${formatTime(elapsedSeconds)}`
+        : `Započtený čas: ${formatTime(elapsedSeconds)}`;
+
+      showScreen(el.result);
+    }
+
+    function openAdmin() {
+      renderAdminStats();
+      showScreen(el.admin);
+    }
+
+    function renderAdminStats() {
+      const results = getStoredResults()
+        .sort((a, b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
+
+      if (!results.length) {
+        el.adminStats.innerHTML = '<strong>Zatím nejsou uložené žádné výsledky.</strong>';
+        return;
+      }
+
+      const rows = results.map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${escapeHtml(r.participant.name)}</td>
+          <td>${escapeHtml(r.participant.email)}</td>
+          <td>${escapeHtml(r.participant.phone)}</td>
+          <td>${r.score}/${r.total}</td>
+          <td>${escapeHtml(r.elapsedTime)}</td>
+          <td>${escapeHtml(r.participant.school || '-')}</td>
+          <td>${escapeHtml(r.uploadedFileName || '-')}</td>
+        </tr>
+      `).join('');
+
+      el.adminStats.innerHTML = `
+        <strong>Počet výsledků:</strong> ${results.length}<br><br>
+        <div style="overflow:auto;">
+          <table style="width:100%; border-collapse:collapse; min-width:780px;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Jméno</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">E-mail</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Telefon</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function exportResultsToCSV() {
+      const results = getStoredResults();
+      if (!results.length) {
+        alert('Není co exportovat.');
+        return;
+      }
+
+      const header = [
+        'timestamp','name','email','phone','school','score','total','elapsedTime','elapsedSeconds','timedOut','uploadedFileName','quizVersion'
+      ];
+
+      const lines = results.map(r => [
+        r.timestamp,
+        r.participant.name,
+        r.participant.email,
+        r.participant.phone,
+        r.participant.school || '',
+        r.score,
+        r.total,
+        r.elapsedTime,
+        r.elapsedSeconds,
+        r.timedOut,
+        r.uploadedFileName || '',
+        r.quizVersion
+      ].map(csvEscape).join(';'));
+
+      const csv = [header.join(';'), ...lines].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ic-office-challenge-vysledky.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearResults() {
+      if (!confirm('Opravdu smazat všechny lokální výsledky a registrace?')) return;
+      localStorage.removeItem(STORAGE_RESULTS_KEY);
+      localStorage.removeItem(STORAGE_ATTEMPTS_KEY);
+      renderAdminStats();
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? '');
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+
+    function cryptoRandomId() {
+      if (window.crypto && crypto.getRandomValues) {
+        const arr = new Uint32Array(2);
+        crypto.getRandomValues(arr);
+        return `${arr[0].toString(16)}${arr[1].toString(16)}`;
+      }
+      return String(Date.now()) + Math.random().toString(16).slice(2);
+    }
+
+    el.startBtn.addEventListener('click', startQuiz);
+    el.nextBtn.addEventListener('click', nextQuestion);
+    el.finishBtn.addEventListener('click', () => finishQuiz(false));
+    el.adminBtn.addEventListener('click', openAdmin);
+    el.exportBtn.addEventListener('click', exportResultsToCSV);
+    el.clearBtn.addEventListener('click', clearResults);
+    el.backBtn.addEventListener('click', () => showScreen(el.intro));
+
+    window.addEventListener('beforeunload', function (e) {
+      if (!el.quiz.classList.contains('hidden')) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+  </script>
+</body>
+</html>
