@@ -85,6 +85,11 @@
     @media (max-width: 720px) {
       .grid-2 { grid-template-columns: 1fr; }
       h1 { font-size: 24px; }
+      .question-text { font-size: 19px; }
+      .pill { width: 100%; text-align: center; }
+      .btn-row button { width: 100%; }
+      .answer { padding: 16px; }
+      .wrap { padding: 16px 12px 32px; }
     }
 
     label {
@@ -241,7 +246,7 @@
         <p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek, omezený čas a jedna praktická úloha. Rozhoduje přesnost. Při shodě bodů rozhoduje rychlejší čas.</p>
         <div class="badge-row">
           <div class="badge">15 otázek</div>
-          <div class="badge">15 minut</div>
+          <div class="badge">12 minut</div>
           <div class="badge">1 pokus na registraci</div>
           <div class="badge">výsledky se po odeslání nezobrazují</div>
         </div>
@@ -323,7 +328,7 @@
   </div>
 
   <script>
-    const QUIZ_MINUTES = 15;
+    const QUIZ_MINUTES = 12;
     const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
 
