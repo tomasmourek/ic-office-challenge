@@ -47,7 +47,6 @@
     h2 { font-size: 22px; }
     h3 { font-size: 18px; }
     p { line-height: 1.55; color: var(--text); }
-    .muted { color: var(--muted); }
 
     .hero {
       display: grid;
@@ -327,7 +326,6 @@
           <li>počet bodů</li>
           <li>čas dokončení</li>
           <li>název nahraného souboru</li>
-          <li>pořadí a promíchání otázek pro konkrétní pokus</li>
         </ul>
       </div>
       <p class="footer-note">Správné odpovědi se účastníkovi nezobrazují.</p>
@@ -617,19 +615,25 @@
 
     async function sendToSheets(data) {
       try {
-        await fetch(SHEETS_URL, {
+        const response = await fetch(SHEETS_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'text/plain;charset=utf-8'
           },
           body: JSON.stringify(data)
         });
+
+        const text = await response.text();
+        console.log('Sheets response:', text);
+        alert('Odeslání proběhlo. Zkontroluj Google Sheets.');
       } catch (e) {
         console.error('Chyba odeslání do Google Sheets:', e);
+        alert('Odeslání selhalo. Otevři konzoli F12.');
       }
     }
 
     function testSend() {
+      alert('testSend běží');
       sendToSheets({
         name: 'Test',
         phone: '123456',
@@ -639,7 +643,6 @@
         total: 15,
         elapsedSeconds: 100
       });
-      alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
     }
 
     function validateRegistration() {
