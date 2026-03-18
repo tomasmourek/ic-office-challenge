@@ -134,6 +134,11 @@
       border: 1px solid var(--border);
     }
 
+    .btn-test {
+      background: #111111;
+      color: white;
+    }
+
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -285,12 +290,10 @@
         </div>
       </div>
 
-      
-
       <div class="btn-row">
         <button class="btn-primary" id="startBtn">Spustit challenge</button>
+        <button class="btn-test" id="testSendBtn">TEST SEND</button>
       </div>
-
     </section>
 
     <section id="screen-quiz" class="card hidden">
@@ -304,7 +307,7 @@
       <div id="practicalBlock" class="hidden">
         <label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
         <input id="photoUpload" type="file" accept="image/*" />
-        <div class="small" style="margin-top:8px;">V ukázkové verzi se soubor jen připojí k výsledku v prohlížeči. Na produkci je nutné ukládání na server.</div>
+        <div class="small" style="margin-top:8px;">Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.</div>
       </div>
       <div class="btn-row">
         <button class="btn-secondary" id="nextBtn">Další otázka</button>
@@ -318,11 +321,12 @@
       <div class="score" id="finalScore">0 / 15</div>
       <p id="finalTime"></p>
       <div class="result-list">
-        <strong>Co se v této verzi ukládá:</strong>
+        <strong>Co se v této verzi ukládá do Google Sheets:</strong>
         <ul>
           <li>jméno, e-mail, telefon, škola/tým</li>
           <li>počet bodů</li>
           <li>čas dokončení</li>
+          <li>název nahraného souboru</li>
           <li>pořadí a promíchání otázek pro konkrétní pokus</li>
         </ul>
       </div>
@@ -342,7 +346,7 @@
 
     <section id="screen-admin" class="card hidden">
       <h2>Admin režim</h2>
-      <p>V této demoverzi se výsledky ukládají do <code class="inline">localStorage</code> v prohlížeči. To stačí na test a prezentaci. Pro ostré použití je potřeba napojit databázi nebo Google Sheet / Supabase / Firebase.</p>
+      <p>Lokální přehled výsledků v prohlížeči. Ostrá data zároveň odcházejí do Google Sheets.</p>
       <div class="admin-actions">
         <button class="btn-primary" id="exportBtn">Export výsledků do CSV</button>
         <button class="btn-secondary" id="clearBtn">Smazat lokální výsledky</button>
@@ -357,6 +361,7 @@
     const QUIZ_MINUTES = 15;
     const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
+    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyJvfy6SQALCgLJJE7DjRX5lYq7XwEdFoxwHA5u0wVC3bnua5KxOTarmoDHUF9-kSdG/exec';
 
     const baseQuestions = [
       {
@@ -547,6 +552,7 @@
       admin: document.getElementById('screen-admin'),
       adminLogin: document.getElementById('screen-admin-login'),
       startBtn: document.getElementById('startBtn'),
+      testSendBtn: document.getElementById('testSendBtn'),
       questionCounter: document.getElementById('questionCounter'),
       timer: document.getElementById('timer'),
       progressBar: document.getElementById('progressBar'),
@@ -607,6 +613,33 @@
       const results = getStoredResults();
       results.push(result);
       localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
+    }
+
+    async function sendToSheets(data) {
+      try {
+        await fetch(SHEETS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(data)
+        });
+      } catch (e) {
+        console.error('Chyba odeslání do Google Sheets:', e);
+      }
+    }
+
+    function testSend() {
+      sendToSheets({
+        name: 'Test',
+        phone: '123456',
+        email: 'test@test.cz',
+        school: 'IC',
+        score: 10,
+        total: 15,
+        elapsedSeconds: 100
+      });
+      alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
     }
 
     function validateRegistration() {
@@ -731,7 +764,7 @@
       }
     }
 
-    function finishQuiz(timeout = false) {
+    async function finishQuiz(timeout = false) {
       const lastQuestion = state.questions[state.currentIndex];
       if (!timeout && !state.answers[lastQuestion.id]) {
         alert('Vyber jednu odpověď.');
@@ -763,6 +796,16 @@
 
       saveResult(result);
       saveAttempt(state.participant.email, state.participant.phone);
+
+      await sendToSheets({
+        name: result.participant?.name || '',
+        phone: result.participant?.phone || '',
+        email: result.participant?.email || '',
+        school: result.participant?.school || '',
+        score: result.score,
+        total: result.total,
+        elapsedSeconds: result.elapsedSeconds
+      });
 
       el.finalScore.textContent = `${correctAnswers} / ${state.questions.length}`;
       el.finalTime.textContent = timeout
@@ -899,6 +942,7 @@
     }
 
     el.startBtn.addEventListener('click', startQuiz);
+    el.testSendBtn.addEventListener('click', testSend);
     el.nextBtn.addEventListener('click', nextQuestion);
     el.finishBtn.addEventListener('click', () => finishQuiz(false));
     el.exportBtn.addEventListener('click', exportResultsToCSV);
