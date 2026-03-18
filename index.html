@@ -6,17 +6,15 @@
   <title>IC Office Challenge</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --panel-2: #1f2937;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --accent: #dc2626;
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #f8fafc;
+      --text: #111111;
+      --muted: #6b7280;
+      --accent: #c81e1e;
       --accent-2: #ef4444;
-      --ok: #16a34a;
-      --warn: #f59e0b;
-      --border: #374151;
-      --shadow: 0 10px 35px rgba(0,0,0,.35);
+      --border: #e5e7eb;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
       --radius: 18px;
     }
 
@@ -25,7 +23,7 @@
     body {
       margin: 0;
       font-family: Inter, Arial, sans-serif;
-      background: linear-gradient(180deg, #0b1220, #111827 40%, #0f172a);
+      background: linear-gradient(180deg, #ffffff, #fff7f7 55%, #ffffff);
       color: var(--text);
       min-height: 100vh;
     }
@@ -33,28 +31,22 @@
     .wrap {
       max-width: 920px;
       margin: 0 auto;
-      padding: 24px 16px 48px;
+      padding: 20px 14px 40px;
     }
 
     .card {
-      background: rgba(17, 24, 39, 0.95);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 22px;
-      backdrop-filter: blur(8px);
     }
 
     h1, h2, h3 { margin: 0 0 10px; }
     h1 { font-size: 28px; }
     h2 { font-size: 22px; }
     h3 { font-size: 18px; }
-
-    p {
-      line-height: 1.5;
-      color: var(--text);
-    }
-
+    p { line-height: 1.55; color: var(--text); }
     .muted { color: var(--muted); }
 
     .hero {
@@ -71,12 +63,13 @@
     }
 
     .badge {
-      background: rgba(239, 68, 68, 0.12);
-      color: #fecaca;
-      border: 1px solid rgba(239,68,68,.35);
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
       border-radius: 999px;
       padding: 8px 12px;
       font-size: 13px;
+      font-weight: 600;
     }
 
     .grid {
@@ -97,9 +90,10 @@
     input[type="text"],
     input[type="email"],
     input[type="tel"],
-    input[type="file"] {
+    input[type="file"],
+    input[type="password"] {
       width: 100%;
-      background: #0b1220;
+      background: #ffffff;
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -110,7 +104,7 @@
 
     input:focus {
       border-color: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(239,68,68,.15);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
     }
 
     .btn-row {
@@ -135,7 +129,7 @@
     }
 
     .btn-secondary {
-      background: #1f2937;
+      background: #f3f4f6;
       color: var(--text);
       border: 1px solid var(--border);
     }
@@ -150,17 +144,18 @@
     }
 
     .pill {
-      background: #0b1220;
-      border: 1px solid var(--border);
+      background: #fff5f5;
+      border: 1px solid #fecaca;
       border-radius: 999px;
       padding: 10px 14px;
       font-weight: 700;
+      color: #991b1b;
     }
 
     .progress {
       width: 100%;
       height: 10px;
-      background: #0b1220;
+      background: #f3f4f6;
       border-radius: 999px;
       overflow: hidden;
       border: 1px solid var(--border);
@@ -190,7 +185,7 @@
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      background: #0b1220;
+      background: #ffffff;
       border: 1px solid var(--border);
       padding: 14px;
       border-radius: 14px;
@@ -198,12 +193,17 @@
       transition: transform .12s ease, border-color .15s ease, background .15s ease;
     }
 
-    .answer:hover { transform: translateY(-1px); border-color: #6b7280; }
+    .answer:hover {
+      transform: translateY(-1px);
+      border-color: #f87171;
+      background: #fffafa;
+    }
+
     .answer input { margin-top: 4px; transform: scale(1.15); }
 
     .answer.selected {
       border-color: var(--accent-2);
-      background: rgba(239,68,68,.10);
+      background: #fff1f2;
     }
 
     .footer-note {
@@ -220,65 +220,35 @@
       font-weight: 800;
       line-height: 1;
       margin: 10px 0 16px;
+      color: #991b1b;
     }
 
     .result-list {
       text-align: left;
-      background: #0b1220;
+      background: #fcfcfc;
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 16px;
       margin-top: 16px;
     }
 
-    .small {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .admin-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
+    .small { font-size: 13px; color: var(--muted); }
+    .admin-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
     code.inline {
-      background: #0b1220;
-      border: 1px solid var(--border);
-      padding: 2px 8px;
-      border-radius: 8px;
+      background:#f3f4f6;
+      border:1px solid var(--border);
+      padding:2px 8px;
+      border-radius:8px;
     }
 
     @media (max-width: 720px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .question-text {
-        font-size: 19px;
-      }
-
-      .pill {
-        width: 100%;
-        text-align: center;
-      }
-
-      .btn-row button {
-        width: 100%;
-      }
-
-      .answer {
-        padding: 16px;
-      }
-
-      .wrap {
-        padding: 16px 12px 32px;
-      }
+      .grid-2 { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      .question-text { font-size: 19px; }
+      .pill { width: 100%; text-align: center; }
+      .btn-row button { width: 100%; }
+      .answer { padding: 16px; }
+      .wrap { padding: 16px 12px 32px; }
     }
   </style>
 </head>
@@ -319,8 +289,9 @@
 
       <div class="btn-row">
         <button class="btn-primary" id="startBtn">Spustit challenge</button>
-        <button class="btn-secondary" id="adminBtn">Admin režim</button>
       </div>
+
+      <p class="footer-note">Admin režim není veřejně vidět. Otevřeš ho klávesovou zkratkou <code class="inline">Ctrl + Shift + A</code>.</p>
     </section>
 
     <section id="screen-quiz" class="card hidden">
@@ -359,6 +330,17 @@
       <p class="footer-note">Správné odpovědi se účastníkovi nezobrazují.</p>
     </section>
 
+    <section id="screen-admin-login" class="card hidden">
+      <h2>Admin přihlášení</h2>
+      <p>Zadej heslo pro správu výsledků.</p>
+      <label for="adminPassword">Heslo</label>
+      <input id="adminPassword" type="password" placeholder="Heslo správce" />
+      <div class="btn-row">
+        <button class="btn-primary" id="adminLoginBtn">Přihlásit</button>
+        <button class="btn-secondary" id="adminCancelBtn">Zpět</button>
+      </div>
+    </section>
+
     <section id="screen-admin" class="card hidden">
       <h2>Admin režim</h2>
       <p>V této demoverzi se výsledky ukládají do <code class="inline">localStorage</code> v prohlížeči. To stačí na test a prezentaci. Pro ostré použití je potřeba napojit databázi nebo Google Sheet / Supabase / Firebase.</p>
@@ -372,6 +354,7 @@
   </div>
 
   <script>
+    const ADMIN_PASSWORD = '6371';
     const QUIZ_MINUTES = 15;
     const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
@@ -563,8 +546,8 @@
       quiz: document.getElementById('screen-quiz'),
       result: document.getElementById('screen-result'),
       admin: document.getElementById('screen-admin'),
+      adminLogin: document.getElementById('screen-admin-login'),
       startBtn: document.getElementById('startBtn'),
-      adminBtn: document.getElementById('adminBtn'),
       questionCounter: document.getElementById('questionCounter'),
       timer: document.getElementById('timer'),
       progressBar: document.getElementById('progressBar'),
@@ -579,7 +562,10 @@
       exportBtn: document.getElementById('exportBtn'),
       clearBtn: document.getElementById('clearBtn'),
       backBtn: document.getElementById('backBtn'),
-      adminStats: document.getElementById('adminStats')
+      adminStats: document.getElementById('adminStats'),
+      adminPassword: document.getElementById('adminPassword'),
+      adminLoginBtn: document.getElementById('adminLoginBtn'),
+      adminCancelBtn: document.getElementById('adminCancelBtn')
     };
 
     function shuffle(array) {
@@ -663,7 +649,7 @@
     }
 
     function showScreen(screen) {
-      [el.intro, el.quiz, el.result, el.admin].forEach(s => s.classList.add('hidden'));
+      [el.intro, el.quiz, el.result, el.admin, el.adminLogin].forEach(s => s.classList.add('hidden'));
       screen.classList.remove('hidden');
     }
 
@@ -691,11 +677,9 @@
     function startTimer() {
       clearInterval(state.timerInterval);
       el.timer.textContent = formatTime(state.timerSeconds);
-
       state.timerInterval = setInterval(() => {
         state.timerSeconds -= 1;
         el.timer.textContent = formatTime(Math.max(state.timerSeconds, 0));
-
         if (state.timerSeconds <= 0) {
           clearInterval(state.timerInterval);
           finishQuiz(true);
@@ -742,7 +726,6 @@
         alert('Vyber jednu odpověď.');
         return;
       }
-
       if (state.currentIndex < state.questions.length - 1) {
         state.currentIndex += 1;
         renderQuestion();
@@ -757,7 +740,6 @@
       }
 
       clearInterval(state.timerInterval);
-
       const correctAnswers = state.questions.reduce((sum, q) => {
         return sum + (state.answers[q.id] === q.correct ? 1 : 0);
       }, 0);
@@ -791,14 +773,23 @@
       showScreen(el.result);
     }
 
-    function openAdmin() {
-      renderAdminStats();
-      showScreen(el.admin);
+    function openAdminLogin() {
+      el.adminPassword.value = '';
+      showScreen(el.adminLogin);
+      setTimeout(() => el.adminPassword.focus(), 50);
+    }
+
+    function handleAdminLogin() {
+      if (el.adminPassword.value === ADMIN_PASSWORD) {
+        renderAdminStats();
+        showScreen(el.admin);
+      } else {
+        alert('Nesprávné heslo.');
+      }
     }
 
     function renderAdminStats() {
-      const results = getStoredResults()
-        .sort((a, b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
+      const results = getStoredResults().sort((a, b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
 
       if (!results.length) {
         el.adminStats.innerHTML = '<strong>Zatím nejsou uložené žádné výsledky.</strong>';
@@ -911,10 +902,21 @@
     el.startBtn.addEventListener('click', startQuiz);
     el.nextBtn.addEventListener('click', nextQuestion);
     el.finishBtn.addEventListener('click', () => finishQuiz(false));
-    el.adminBtn.addEventListener('click', openAdmin);
     el.exportBtn.addEventListener('click', exportResultsToCSV);
     el.clearBtn.addEventListener('click', clearResults);
     el.backBtn.addEventListener('click', () => showScreen(el.intro));
+    el.adminLoginBtn.addEventListener('click', handleAdminLogin);
+    el.adminCancelBtn.addEventListener('click', () => showScreen(el.intro));
+    el.adminPassword.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleAdminLogin();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        openAdminLogin();
+      }
+    });
 
     window.addEventListener('beforeunload', function (e) {
       if (!el.quiz.classList.contains('hidden')) {
