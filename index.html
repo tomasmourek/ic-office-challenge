@@ -261,7 +261,7 @@
   <div class="wrap">
     <section id="screen-intro" class="card">
       <div class="hero">
-        <h1>IC Office Challenge</h1>
+        <h1 id="adminHotspot" style="color:#c81e1e; cursor:pointer;">IC Office</h1>
         <p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
         <div class="badge-row">
           <div class="badge">15 otázek</div>
@@ -977,21 +977,12 @@
       }
     });
 
-    // Skrytý admin vstup: 3× klik na název
+    // Skrytý admin vstup: 1× klik na červený nápis IC Office
     (function(){
-      const titleEl = document.querySelector('#screen-intro h1');
-      let clicks = 0;
-      let last = 0;
+      const titleEl = document.getElementById('adminHotspot');
       if (!titleEl) return;
       titleEl.addEventListener('click', () => {
-        const now = Date.now();
-        if (now - last > 1200) clicks = 0;
-        last = now;
-        clicks++;
-        if (clicks >= 3) {
-          clicks = 0;
-          openAdminLogin();
-        }
+        openAdminLogin();
       });
     })();
   </script>
