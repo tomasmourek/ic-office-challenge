@@ -361,7 +361,7 @@
     const QUIZ_MINUTES = 15;
     const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
+    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxfomGVQ1kNL6qLlz24AsklNaWRo5EXmK-wvDRkM7u_jTnm9qUCfZZR2s4-zvHnjJmA/exec';
 
     const baseQuestions = [
       {
@@ -615,26 +615,25 @@
       localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
     }
 
-    async function sendToSheets(data) {
-      try {
-        await fetch(SHEETS_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(data)
-        });
+    function sendToSheets(data) {
+      const params = new URLSearchParams({
+        name: data.name || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        school: data.school || '',
+        score: String(data.score || 0),
+        total: String(data.total || 0),
+        elapsedSeconds: String(data.elapsedSeconds || 0)
+      });
 
-        return true;
-      } catch (e) {
-        console.error('Chyba odeslání do Google Sheets:', e);
-        return false;
-      }
+      const img = new Image();
+      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
+
+      return true;
     }
 
-    async function testSend() {
-      const ok = await sendToSheets({
+    function testSend() {
+      sendToSheets({
         name: 'Test',
         phone: '123456',
         email: 'test@test.cz',
@@ -644,11 +643,7 @@
         elapsedSeconds: 100
       });
 
-      if (ok) {
-        alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
-      } else {
-        alert('Odeslání selhalo.');
-      }
+      alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
     }
 
     function validateRegistration() {
@@ -806,7 +801,7 @@
       saveResult(result);
       saveAttempt(state.participant.email, state.participant.phone);
 
-      await sendToSheets({
+      sendToSheets({
         name: result.participant?.name || '',
         phone: result.participant?.phone || '',
         email: result.participant?.email || '',
