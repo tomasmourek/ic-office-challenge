@@ -292,7 +292,6 @@
 
       <div class="btn-row">
         <button class="btn-primary" id="startBtn">Spustit challenge</button>
-        <button class="btn-test" id="testSendBtn">TEST SEND</button>
       </div>
     </section>
 
@@ -552,7 +551,6 @@
       admin: document.getElementById('screen-admin'),
       adminLogin: document.getElementById('screen-admin-login'),
       startBtn: document.getElementById('startBtn'),
-      testSendBtn: document.getElementById('testSendBtn'),
       questionCounter: document.getElementById('questionCounter'),
       timer: document.getElementById('timer'),
       progressBar: document.getElementById('progressBar'),
@@ -630,20 +628,6 @@
       img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
 
       return true;
-    }
-
-    function testSend() {
-      sendToSheets({
-        name: 'Test',
-        phone: '123456',
-        email: 'test@test.cz',
-        school: 'IC',
-        score: 10,
-        total: 15,
-        elapsedSeconds: 100
-      });
-
-      alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
     }
 
     function validateRegistration() {
@@ -946,7 +930,6 @@
     }
 
     el.startBtn.addEventListener('click', startQuiz);
-    el.testSendBtn.addEventListener('click', testSend);
     el.nextBtn.addEventListener('click', nextQuestion);
     el.finishBtn.addEventListener('click', () => finishQuiz(false));
     el.exportBtn.addEventListener('click', exportResultsToCSV);
