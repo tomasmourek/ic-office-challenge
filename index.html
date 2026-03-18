@@ -964,7 +964,7 @@
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.altKey && (e.key === 'A' || e.key === 'a')) {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
         openAdminLogin();
       }
@@ -976,6 +976,24 @@
         e.returnValue = '';
       }
     });
+
+    // Skrytý admin vstup: 3× klik na název
+    (function(){
+      const titleEl = document.querySelector('#screen-intro h1');
+      let clicks = 0;
+      let last = 0;
+      if (!titleEl) return;
+      titleEl.addEventListener('click', () => {
+        const now = Date.now();
+        if (now - last > 1200) clicks = 0;
+        last = now;
+        clicks++;
+        if (clicks >= 3) {
+          clicks = 0;
+          openAdminLogin();
+        }
+      });
+    })();
   </script>
 </body>
 </html>
