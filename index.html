@@ -21,6 +21,7 @@
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Inter, Arial, sans-serif;
@@ -48,7 +49,12 @@
     h1 { font-size: 28px; }
     h2 { font-size: 22px; }
     h3 { font-size: 18px; }
-    p { line-height: 1.5; color: var(--text); }
+
+    p {
+      line-height: 1.5;
+      color: var(--text);
+    }
+
     .muted { color: var(--muted); }
 
     .hero {
@@ -80,16 +86,6 @@
 
     .grid-2 {
       grid-template-columns: 1fr 1fr;
-    }
-
-    @media (max-width: 720px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      h1 { font-size: 24px; }
-      .question-text { font-size: 19px; }
-      .pill { width: 100%; text-align: center; }
-      .btn-row button { width: 100%; }
-      .answer { padding: 16px; }
-      .wrap { padding: 16px 12px 32px; }
     }
 
     label {
@@ -204,6 +200,7 @@
 
     .answer:hover { transform: translateY(-1px); border-color: #6b7280; }
     .answer input { margin-top: 4px; transform: scale(1.15); }
+
     .answer.selected {
       border-color: var(--accent-2);
       background: rgba(239,68,68,.10);
@@ -217,6 +214,7 @@
 
     .hidden { display: none !important; }
     .center { text-align: center; }
+
     .score {
       font-size: 46px;
       font-weight: 800;
@@ -233,9 +231,55 @@
       margin-top: 16px;
     }
 
-    .small { font-size: 13px; color: var(--muted); }
-    .admin-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-    code.inline { background:#0b1220; border:1px solid var(--border); padding:2px 8px; border-radius:8px; }
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    code.inline {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 720px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .question-text {
+        font-size: 19px;
+      }
+
+      .pill {
+        width: 100%;
+        text-align: center;
+      }
+
+      .btn-row button {
+        width: 100%;
+      }
+
+      .answer {
+        padding: 16px;
+      }
+
+      .wrap {
+        padding: 16px 12px 32px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -246,7 +290,7 @@
         <p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek, omezený čas a jedna praktická úloha. Rozhoduje přesnost. Při shodě bodů rozhoduje rychlejší čas.</p>
         <div class="badge-row">
           <div class="badge">15 otázek</div>
-          <div class="badge">12 minut</div>
+          <div class="badge">15 minut</div>
           <div class="badge">1 pokus na registraci</div>
           <div class="badge">výsledky se po odeslání nezobrazují</div>
         </div>
@@ -328,7 +372,7 @@
   </div>
 
   <script>
-    const QUIZ_MINUTES = 12;
+    const QUIZ_MINUTES = 15;
     const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
 
@@ -637,6 +681,7 @@
       state.quizVersion = cryptoRandomId();
       state.uploadedFileName = '';
       el.photoUpload.value = '';
+      el.timer.textContent = formatTime(state.timerSeconds);
 
       showScreen(el.quiz);
       renderQuestion();
@@ -646,9 +691,11 @@
     function startTimer() {
       clearInterval(state.timerInterval);
       el.timer.textContent = formatTime(state.timerSeconds);
+
       state.timerInterval = setInterval(() => {
         state.timerSeconds -= 1;
         el.timer.textContent = formatTime(Math.max(state.timerSeconds, 0));
+
         if (state.timerSeconds <= 0) {
           clearInterval(state.timerInterval);
           finishQuiz(true);
@@ -695,6 +742,7 @@
         alert('Vyber jednu odpověď.');
         return;
       }
+
       if (state.currentIndex < state.questions.length - 1) {
         state.currentIndex += 1;
         renderQuestion();
@@ -709,6 +757,7 @@
       }
 
       clearInterval(state.timerInterval);
+
       const correctAnswers = state.questions.reduce((sum, q) => {
         return sum + (state.answers[q.id] === q.correct ? 1 : 0);
       }, 0);
