@@ -365,14 +365,14 @@
     const baseQuestions = [
       {
         id: 1,
-        text: 'Co přesně je IC Office?',
+        text: 'Co přesně je IC Office a kolik stojí Kč na den?',
         answers: [
-          'zakázkový a fakturační systém pro profesionální vedení autoservisu',
-          'účetní software pro fakturaci a daně',
-          'aplikace pro diagnostiku vozidel',
-          'rozšířený balík Microsoft 365'
+          'zakázkový a fakturační systém pro profesionální vedení autoservisu / 23 Kč na den',
+          'účetní software pro fakturaci a daně / 120 Kč na den',
+          'aplikace pro diagnostiku vozidel / 80 Kč na den',
+          'rozšířený balík Microsoft 365 / 15 Kč na den'
         ],
-        correct: 'systém pro řízení autoservisu a práci se zakázkami'
+        correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / 23 Kč na den'
       },
       {
         id: 2,
@@ -383,7 +383,7 @@
           'něco jako Excel pro auta',
           'program hlavně na fakturaci'
         ],
-        correct: 'nástroj pro řízení zakázek, vozidel a zákazníků'
+        correct: 'program na vedení autoservisu'
       },
       {
         id: 3,
@@ -394,7 +394,7 @@
           'zaparkování vozu',
           'hledání velkého technického průkazu'
         ],
-        correct: 'ruční dohledávání údajů o vozidle'
+        correct: 'ruční vypisování zakázkového listu'
       },
       {
         id: 4,
@@ -405,7 +405,7 @@
           'zrychlení mechanické práce',
           'hledat nové mechaniky'
         ],
-        correct: 'přesná identifikace vozidla a kompatibilních dílů'
+        correct: 'šetří čas při každodenní práci v autoservisu'
       },
       {
         id: 5,
@@ -416,7 +416,7 @@
           'zrychlení diagnostiky motoru',
           'eliminace překlepu'
         ],
-        correct: 'odstranění nutnosti ručního zadávání údajů'
+        correct: 'automatické vyplnění zakázkového listu'
       },
       {
         id: 6,
@@ -427,7 +427,7 @@
           'Ne neumí',
           'Jen u vozidel v České Republice'
         ],
-        correct: 'ztráta přehledu o stavu zakázek'
+        correct: 'Ano vede a umí jí poslat i e-mailem majiteli vozu'
       },
       {
         id: 7,
@@ -449,18 +449,18 @@
           'Ne nesplňuje',
           'Jen legislativu České Obchodní Inspekce'
         ],
-        correct: 'vyhledání podle VIN v systému'
+        correct: 'Ano, veškerou i GDPR'
       },
       {
         id: 9,
         text: 'Jaké riziko přináší ruční zadávání údajů o vozidle?',
         answers: [
-          'vznik chyb v datech',
+          'vznik chyb a překlepů v informacích o vozidle',
           'zrychlení procesu',
           'vyšší přesnost',
           'snížení administrativy'
         ],
-        correct: 'vznik chyb v datech'
+        correct: 'vznik chyb a překlepů v informacích o vozidle'
       },
       {
         id: 10,
@@ -475,25 +475,25 @@
       },
       {
         id: 11,
-        text: 'Jaký údaj je nejspolehlivější pro výběr správného dílu?',
+        text: 'Podle jakého údaje o vozidle nejpřesněji vybereme správný náhradní díl?',
         answers: [
           'VIN vozidla',
           'barva vozidla',
-          'jméno zákazníka',
-          'pocit zkušeného mechanika'
+          'kód motoru',
+          'rok výroby'
         ],
         correct: 'VIN vozidla'
       },
       {
         id: 12,
-        text: 'Jaký nástroj nejvíce pomůže snížit chaos v zakázkách?',
+        text: 'Je systém IC Office online?',
         answers: [
-          'systém s přehledem všech zakázek',
-          'více papírových poznámek',
-          'telefonické domluvy',
+          'Ano',
+          'Ne je to instalace',
+          'Ano j',
           'paměť vedoucího'
         ],
-        correct: 'systém s přehledem všech zakázek'
+        correct: 'Ano'
       },
       {
         id: 13,
@@ -508,25 +508,25 @@
       },
       {
         id: 14,
-        text: 'Co nejvíce pomáhá předcházet chybám při opravě?',
+        text: 'Kdo vymyslel IC Office?',
         answers: [
-          'správná a přesná data o vozidle od začátku',
-          'rychlost práce',
-          'improvizace',
-          'štěstí'
+          'majitel autoservisu',
+          'ministerstvo školství',
+          'ajťák',
+          'účetní'
         ],
-        correct: 'správná a přesná data o vozidle od začátku'
+        correct: 'majitel autoservisu'
       },
       {
         id: 15,
-        text: 'Potřebuješ rychle identifikovat vozidlo. Co uděláš?',
+        text: 'Kolik autoservisů v ČR použivá IC Office?',
         answers: [
-          'použiji VIN z vozidla nebo dokumentace',
-          'použiji SPZ jako plnohodnotnou náhradu VIN',
-          'odhadnu podle typu auta',
-          'zeptám se kolegy, co si myslí'
+          '170',
+          '370',
+          '700',
+          '70'
         ],
-        correct: 'použiji VIN z vozidla nebo dokumentace',
+        correct: '700',
         practical: true
       }
     ];
