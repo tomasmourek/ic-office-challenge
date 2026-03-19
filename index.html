@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#c81e1e" />
   <meta name="msapplication-TileColor" content="#c81e1e" />
 
-  <!-- Favicon / Apple / moderní zařízení -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1" />
   <link rel="apple-touch-icon" sizes="180x180" href="favicon.png?v=1" />
@@ -31,41 +30,37 @@
     * { box-sizing: border-box; }
 
     body {
-  margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  color: var(--text);
-  min-height: 100vh;
-  position: relative;
-  background: linear-gradient(180deg, #c81e1e, #a81515);
-  overflow-x: hidden;
-}
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      position: relative;
+      background: linear-gradient(180deg, #c81e1e, #a81515);
+      overflow-x: hidden;
+    }
 
     .wrap, .card {
-  position: relative;
-  z-index: 1;
-}
-    
+      position: relative;
+      z-index: 1;
+    }
+
     body::before {
-  content: "";
-  position: fixed;
+      content: "";
+      position: fixed;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      z-index: 0;
+      background-image: url("favicon.png");
+      background-size: 80px 80px;
+      background-repeat: repeat;
+      transform: rotate(45deg);
+      transform-origin: center;
+      opacity: 0.32;
+      pointer-events: none;
+    }
 
-  width: 200%;
-  height: 200%;
-  top: -50%;
-  left: -50%;
-
-  z-index: 0;
-
-  background-image: url("favicon.png");
-  background-size: 80px 80px;
-  background-repeat: repeat;
-
-  transform: rotate(45deg);
-  transform-origin: center;
-
-  opacity: 0.32;
-  pointer-events: none;
-}
     .wrap {
       max-width: 1040px;
       margin: 0 auto;
@@ -288,7 +283,12 @@
       margin-top: 16px;
     }
 
-    .admin-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    .admin-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
 
     .editor-card {
       margin-top: 18px;
@@ -337,7 +337,11 @@
           <span style="color:#c81e1e;">IC Office</span>
           <span style="color:#111111;"> Challenge</span>
         </h1>
-        <p id="introText">Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
+        <p id="introText">
+          Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut.
+          Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas.
+          Vyhodnocení soutěže proběhne na konci dne.
+        </p>
         <div class="badge-row">
           <div class="badge" id="badgeQuestions">15 otázek</div>
           <div class="badge" id="badgeMinutes">15 minut</div>
@@ -375,12 +379,15 @@
         <div class="pill" id="questionCounter">Otázka 1 / 15</div>
         <div class="pill" id="timer">15:00</div>
       </div>
-      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+      <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
       <div id="questionText" class="question-text"></div>
       <img id="questionImage" class="question-image hidden" alt="Obrázek otázky" />
       <div id="answers" class="answers"></div>
-        <div class="small" style="margin-top:8px;">Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.</div>
-      </div>
+
       <div class="btn-row">
         <button class="btn-secondary" id="nextBtn">Další otázka</button>
         <button class="btn-primary hidden" id="finishBtn">Odeslat výsledky</button>
@@ -398,7 +405,6 @@
           <li>jméno, e-mail, telefon, škola/tým</li>
           <li>počet bodů</li>
           <li>čas dokončení</li>
-          <li>název nahraného souboru</li>
           <li>pořadí a promíchání otázek pro konkrétní pokus</li>
         </ul>
       </div>
@@ -462,7 +468,7 @@
     const QUIZ_MINUTES = 15;
     const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-    const STORAGE_CONFIG_KEY = 'ic_office_challenge_config_v2';
+    const STORAGE_CONFIG_KEY = 'ic_office_challenge_config_v3';
     const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
 
     const defaultQuestions = [
@@ -476,8 +482,7 @@
           'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
         ],
         correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 2,
@@ -489,8 +494,7 @@
           'program hlavně na fakturaci'
         ],
         correct: 'program na vedení autoservisu',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 3,
@@ -502,8 +506,7 @@
           'hledání velkého technického průkazu'
         ],
         correct: 'ruční vypisování zakázkového listu',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 4,
@@ -515,8 +518,7 @@
           'hledá nové zaměstnance do servisu'
         ],
         correct: 'šetří čas při každodenní práci v autoservisu',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 5,
@@ -528,8 +530,7 @@
           'eliminace překlepu'
         ],
         correct: 'automatické vyplnění zakázkového listu',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 6,
@@ -541,8 +542,7 @@
           'Jen u vozidel registrovaných v České republice'
         ],
         correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 7,
@@ -554,8 +554,7 @@
           'eliminace potřeby mechaniků'
         ],
         correct: 'lepší organizace práce a plánování',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 8,
@@ -567,8 +566,7 @@
           'Jen požadavky České obchodní inspekce'
         ],
         correct: 'Ano, včetně GDPR',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 9,
@@ -580,8 +578,7 @@
           'snížení administrativy'
         ],
         correct: 'vznik chyb a překlepů v informacích o vozidle',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 10,
@@ -593,8 +590,7 @@
           'delší pracovní doba'
         ],
         correct: 'rychlá práce s informacemi a daty',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 11,
@@ -606,8 +602,7 @@
           'rok výroby'
         ],
         correct: 'VIN vozidla',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 12,
@@ -619,8 +614,7 @@
           'Jen pro velké autoservisy'
         ],
         correct: 'Ano',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 13,
@@ -632,8 +626,7 @@
           'příchod zákazníka'
         ],
         correct: 'dohledávání informací místo samotné práce',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 14,
@@ -645,8 +638,7 @@
           'účetní'
         ],
         correct: 'majitel autoservisu',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       },
       {
         id: 15,
@@ -658,8 +650,7 @@
           '70'
         ],
         correct: '700',
-        imageUrl: '',
-        practical: true
+        imageUrl: ''
       }
     ];
 
@@ -680,7 +671,6 @@
       timerInterval: null,
       startedAt: null,
       quizVersion: null,
-      uploadedFileName: '',
       config: null
     };
 
@@ -701,8 +691,6 @@
       finishBtn: document.getElementById('finishBtn'),
       finalScore: document.getElementById('finalScore'),
       finalTime: document.getElementById('finalTime'),
-      practicalBlock: document.getElementById('practicalBlock'),
-      photoUpload: document.getElementById('photoUpload'),
       exportBtn: document.getElementById('exportBtn'),
       clearBtn: document.getElementById('clearBtn'),
       backBtn: document.getElementById('backBtn'),
@@ -726,13 +714,43 @@
       return JSON.parse(JSON.stringify(obj));
     }
 
+    function normalizeQuestion(raw, index = 0) {
+      const fallbackAnswers = ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'];
+      const answers = Array.isArray(raw?.answers) ? raw.answers.slice(0, 4) : fallbackAnswers.slice();
+      while (answers.length < 4) {
+        answers.push(fallbackAnswers[answers.length]);
+      }
+
+      const safeAnswers = answers.map((a, i) => String(a || fallbackAnswers[i]));
+      const correct = safeAnswers.includes(raw?.correct) ? raw.correct : safeAnswers[0];
+
+      return {
+        id: Number(raw?.id) || Date.now() + index,
+        text: String(raw?.text || `Otázka ${index + 1}`),
+        answers: safeAnswers,
+        correct,
+        imageUrl: String(raw?.imageUrl || '')
+      };
+    }
+
     function getConfig() {
       try {
         const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
         if (!raw) return clone(defaultConfig);
+
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed.questions) || !parsed.questions.length) return clone(defaultConfig);
-        return parsed;
+        if (!Array.isArray(parsed.questions) || !parsed.questions.length) {
+          return clone(defaultConfig);
+        }
+
+        const normalizedQuestions = parsed.questions.map((q, i) => normalizeQuestion(q, i));
+
+        return {
+          minutes: Math.max(1, Number(parsed.minutes) || defaultConfig.minutes),
+          questionCount: Math.max(1, Number(parsed.questionCount) || normalizedQuestions.length),
+          introText: String(parsed.introText || defaultConfig.introText),
+          questions: normalizedQuestions
+        };
       } catch {
         return clone(defaultConfig);
       }
@@ -772,7 +790,11 @@
     }
 
     function getStoredAttempts() {
-      return JSON.parse(localStorage.getItem(STORAGE_ATTEMPTS_KEY) || '{}');
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_ATTEMPTS_KEY) || '{}');
+      } catch {
+        return {};
+      }
     }
 
     function saveAttempt(email, phone) {
@@ -787,7 +809,11 @@
     }
 
     function getStoredResults() {
-      return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
+      } catch {
+        return [];
+      }
     }
 
     function saveResult(result) {
@@ -806,6 +832,7 @@
         total: String(data.total || 0),
         elapsedSeconds: String(data.elapsedSeconds || 0)
       });
+
       const img = new Image();
       img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
       return true;
@@ -838,10 +865,12 @@
 
     function prepareQuestions() {
       const count = Math.min(state.config.questionCount, state.config.questions.length);
-      return shuffle(state.config.questions).slice(0, count).map(q => ({
-        ...clone(q),
-        answers: shuffle(q.answers)
-      }));
+      return shuffle(state.config.questions)
+        .slice(0, count)
+        .map(q => ({
+          ...clone(q),
+          answers: shuffle(q.answers)
+        }));
     }
 
     function formatTime(totalSeconds) {
@@ -867,8 +896,7 @@
       state.timerSeconds = (state.config.minutes || QUIZ_MINUTES) * 60;
       state.startedAt = new Date();
       state.quizVersion = cryptoRandomId();
-      state.uploadedFileName = '';
-      el.photoUpload.value = '';
+
       el.timer.textContent = formatTime(state.timerSeconds);
 
       showScreen(el.quiz);
@@ -879,9 +907,11 @@
     function startTimer() {
       clearInterval(state.timerInterval);
       el.timer.textContent = formatTime(state.timerSeconds);
+
       state.timerInterval = setInterval(() => {
         state.timerSeconds -= 1;
         el.timer.textContent = formatTime(Math.max(state.timerSeconds, 0));
+
         if (state.timerSeconds <= 0) {
           clearInterval(state.timerInterval);
           finishQuiz(true);
@@ -915,19 +945,20 @@
           <input type="radio" name="question" value="${escapeHtml(answer)}" ${state.selectedAnswer === answer ? 'checked' : ''} />
           <div><strong>${String.fromCharCode(65 + idx)})</strong> ${escapeHtml(answer)}</div>
         `;
+
         wrapper.addEventListener('click', () => {
           state.selectedAnswer = answer;
           state.answers[question.id] = answer;
           [...el.answers.querySelectorAll('.answer')].forEach(x => x.classList.remove('selected'));
           wrapper.classList.add('selected');
         });
+
         el.answers.appendChild(wrapper);
       });
 
       const isLast = current === total;
       el.nextBtn.classList.toggle('hidden', isLast);
       el.finishBtn.classList.toggle('hidden', !isLast);
-      el.practicalBlock.classList.toggle('hidden', !question.practical);
     }
 
     function nextQuestion() {
@@ -936,6 +967,7 @@
         alert('Vyber jednu odpověď.');
         return;
       }
+
       if (state.currentIndex < state.questions.length - 1) {
         state.currentIndex += 1;
         renderQuestion();
@@ -944,16 +976,19 @@
 
     function finishQuiz(timeout = false) {
       const lastQuestion = state.questions[state.currentIndex];
+
       if (!timeout && !state.answers[lastQuestion.id]) {
         alert('Vyber jednu odpověď.');
         return;
       }
 
       clearInterval(state.timerInterval);
-      const correctAnswers = state.questions.reduce((sum, q) => sum + (state.answers[q.id] === q.correct ? 1 : 0), 0);
+
+      const correctAnswers = state.questions.reduce((sum, q) => {
+        return sum + (state.answers[q.id] === q.correct ? 1 : 0);
+      }, 0);
+
       const elapsedSeconds = (state.config.minutes * 60) - Math.max(state.timerSeconds, 0);
-      const photoFile = el.photoUpload.files[0];
-      if (photoFile) state.uploadedFileName = photoFile.name;
 
       const result = {
         id: cryptoRandomId(),
@@ -964,7 +999,6 @@
         elapsedSeconds,
         elapsedTime: formatTime(elapsedSeconds),
         timedOut: timeout,
-        uploadedFileName: state.uploadedFileName,
         quizVersion: state.quizVersion,
         questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
       };
@@ -1008,60 +1042,68 @@
     }
 
     function ensureQuestionCount() {
-      let wanted = Math.max(1, Number(el.configQuestionCount.value) || 1);
+      const wanted = Math.max(1, Number(el.configQuestionCount.value) || 1);
+
       while (state.config.questions.length < wanted) {
         state.config.questions.push({
           id: Date.now() + state.config.questions.length,
           text: `Nová otázka ${state.config.questions.length + 1}`,
           answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
           correct: 'Odpověď A',
-          imageUrl: '',
-          practical: false
+          imageUrl: ''
         });
       }
+
       if (state.config.questions.length > wanted) {
         state.config.questions = state.config.questions.slice(0, wanted);
       }
+
       state.config.questionCount = wanted;
     }
 
     function saveAdminConfig() {
-      ensureQuestionCount();
-      state.config.minutes = Math.max(1, Number(el.configMinutes.value) || 15);
-      state.config.introText = el.configTitleText.value.trim() || defaultConfig.introText;
+      try {
+        ensureQuestionCount();
+        state.config.minutes = Math.max(1, Number(el.configMinutes.value) || 15);
+        state.config.introText = el.configTitleText.value.trim() || defaultConfig.introText;
 
-      const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
-      const updated = cards.map((card, idx) => {
-        const answers = [
-          card.querySelector('[data-field="a1"]').value.trim(),
-          card.querySelector('[data-field="a2"]').value.trim(),
-          card.querySelector('[data-field="a3"]').value.trim(),
-          card.querySelector('[data-field="a4"]').value.trim()
-        ];
-        const correctIndex = Number(card.querySelector('[data-field="correct"]').value);
-        const text = card.querySelector('[data-field="text"]').value.trim();
-        const imageUrl = card.querySelector('[data-field="imageUrl"]').value.trim();
-        const practical = card.querySelector('[data-field="practical"]').checked;
+        const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
+        const updated = cards.map((card, idx) => {
+          const answers = [
+            card.querySelector('[data-field="a1"]').value.trim(),
+            card.querySelector('[data-field="a2"]').value.trim(),
+            card.querySelector('[data-field="a3"]').value.trim(),
+            card.querySelector('[data-field="a4"]').value.trim()
+          ];
 
-        if (!text) throw new Error(`Otázka ${idx + 1} nemá text.`);
-        if (answers.some(v => !v)) throw new Error(`Otázka ${idx + 1} nemá všechny odpovědi.`);
+          const correctIndex = Number(card.querySelector('[data-field="correct"]').value);
+          const text = card.querySelector('[data-field="text"]').value.trim();
+          const imageUrl = card.querySelector('[data-field="imageUrl"]').value.trim();
 
-        return {
-          id: Number(card.dataset.questionId),
-          text,
-          answers,
-          correct: answers[correctIndex],
-          imageUrl,
-          practical
-        };
-      });
+          if (!text) throw new Error(`Otázka ${idx + 1} nemá text.`);
+          if (answers.some(v => !v)) throw new Error(`Otázka ${idx + 1} nemá všechny odpovědi.`);
+          if (correctIndex < 0 || correctIndex > 3) throw new Error(`Otázka ${idx + 1} má neplatnou správnou odpověď.`);
 
-      state.config.questions = updated;
-      saveConfig();
-      applyConfigToIntro();
-      syncAdminForm();
-      renderQuestionEditors();
-      alert('Administrace byla uložena.');
+          return {
+            id: Number(card.dataset.questionId),
+            text,
+            answers,
+            correct: answers[correctIndex],
+            imageUrl
+          };
+        });
+
+        state.config.questions = updated;
+        state.config.questionCount = Math.min(state.config.questionCount, state.config.questions.length);
+
+        saveConfig();
+        applyConfigToIntro();
+        syncAdminForm();
+        renderQuestionEditors();
+        alert('Administrace byla uložena.');
+      } catch (error) {
+        alert(error.message || 'Nepodařilo se uložit administraci.');
+      }
     }
 
     function addQuestion() {
@@ -1070,9 +1112,9 @@
         text: `Nová otázka ${state.config.questions.length + 1}`,
         answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
         correct: 'Odpověď A',
-        imageUrl: '',
-        practical: false
+        imageUrl: ''
       });
+
       state.config.questionCount = state.config.questions.length;
       syncAdminForm();
       renderQuestionEditors();
@@ -1083,6 +1125,7 @@
         alert('Musí zůstat alespoň jedna otázka.');
         return;
       }
+
       state.config.questions = state.config.questions.filter(q => q.id !== id);
       state.config.questionCount = state.config.questions.length;
       syncAdminForm();
@@ -1091,6 +1134,7 @@
 
     function resetDefaults() {
       if (!confirm('Opravdu obnovit výchozí otázky a nastavení?')) return;
+
       state.config = clone(defaultConfig);
       saveConfig();
       applyConfigToIntro();
@@ -1107,6 +1151,7 @@
         const card = document.createElement('div');
         card.className = 'editor-card';
         card.dataset.questionId = q.id;
+
         card.innerHTML = `
           <h3>Otázka ${idx + 1}</h3>
           <div class="editor-grid">
@@ -1149,6 +1194,7 @@
             <button class="btn-danger" type="button" data-remove-id="${q.id}">Smazat otázku</button>
           </div>
         `;
+
         el.questionEditors.appendChild(card);
       });
 
@@ -1158,7 +1204,9 @@
     }
 
     function renderAdminStats() {
-      const results = getStoredResults().sort((a, b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
+      const results = getStoredResults().sort((a, b) => {
+        return b.score - a.score || a.elapsedSeconds - b.elapsedSeconds;
+      });
 
       if (!results.length) {
         el.adminStats.innerHTML = '<strong>Zatím nejsou uložené žádné výsledky.</strong>';
@@ -1168,20 +1216,19 @@
       const rows = results.map((r, i) => `
         <tr>
           <td>${i + 1}</td>
-          <td>${escapeHtml(r.participant.name)}</td>
-          <td>${escapeHtml(r.participant.email)}</td>
-          <td>${escapeHtml(r.participant.phone)}</td>
+          <td>${escapeHtml(r.participant?.name || '')}</td>
+          <td>${escapeHtml(r.participant?.email || '')}</td>
+          <td>${escapeHtml(r.participant?.phone || '')}</td>
           <td>${r.score}/${r.total}</td>
-          <td>${escapeHtml(r.elapsedTime)}</td>
-          <td>${escapeHtml(r.participant.school || '-')}</td>
-          <td>${escapeHtml(r.uploadedFileName || '-')}</td>
+          <td>${escapeHtml(r.elapsedTime || '')}</td>
+          <td>${escapeHtml(r.participant?.school || '-')}</td>
         </tr>
       `).join('');
 
       el.adminStats.innerHTML = `
         <strong>Počet výsledků:</strong> ${results.length}<br><br>
         <div style="overflow:auto;">
-          <table style="width:100%; border-collapse:collapse; min-width:780px;">
+          <table style="width:100%; border-collapse:collapse; min-width:720px;">
             <thead>
               <tr>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
@@ -1191,7 +1238,6 @@
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -1202,27 +1248,37 @@
 
     function exportResultsToCSV() {
       const results = getStoredResults();
+
       if (!results.length) {
         alert('Není co exportovat.');
         return;
       }
 
       const header = [
-        'timestamp','name','email','phone','school','score','total','elapsedTime','elapsedSeconds','timedOut','uploadedFileName','quizVersion'
+        'timestamp',
+        'name',
+        'email',
+        'phone',
+        'school',
+        'score',
+        'total',
+        'elapsedTime',
+        'elapsedSeconds',
+        'timedOut',
+        'quizVersion'
       ];
 
       const lines = results.map(r => [
         r.timestamp,
-        r.participant.name,
-        r.participant.email,
-        r.participant.phone,
-        r.participant.school || '',
+        r.participant?.name || '',
+        r.participant?.email || '',
+        r.participant?.phone || '',
+        r.participant?.school || '',
         r.score,
         r.total,
         r.elapsedTime,
         r.elapsedSeconds,
         r.timedOut,
-        r.uploadedFileName || '',
         r.quizVersion
       ].map(csvEscape).join(';'));
 
@@ -1230,6 +1286,7 @@
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
+
       a.href = url;
       a.download = 'ic-office-challenge-vysledky.csv';
       document.body.appendChild(a);
@@ -1240,6 +1297,7 @@
 
     function clearResults() {
       if (!confirm('Opravdu smazat všechny lokální výsledky a registrace?')) return;
+
       localStorage.removeItem(STORAGE_RESULTS_KEY);
       localStorage.removeItem(STORAGE_ATTEMPTS_KEY);
       renderAdminStats();
@@ -1282,9 +1340,11 @@
     el.backBtn.addEventListener('click', () => showScreen(el.intro));
     el.adminLoginBtn.addEventListener('click', handleAdminLogin);
     el.adminCancelBtn.addEventListener('click', () => showScreen(el.intro));
+
     el.adminPassword.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleAdminLogin();
     });
+
     el.saveConfigBtn.addEventListener('click', saveAdminConfig);
     el.addQuestionBtn.addEventListener('click', addQuestion);
     el.resetDefaultsBtn.addEventListener('click', resetDefaults);
@@ -1299,6 +1359,7 @@
     (function () {
       const titleEl = document.getElementById('adminHotspot');
       if (!titleEl) return;
+
       titleEl.addEventListener('click', () => {
         openAdminLogin();
       });
