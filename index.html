@@ -31,13 +31,41 @@
     * { box-sizing: border-box; }
 
     body {
-      margin: 0;
-      font-family: Inter, Arial, sans-serif;
-      background: linear-gradient(180deg, #ffffff, #fff7f7 55%, #ffffff);
-      color: var(--text);
-      min-height: 100vh;
-    }
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  position: relative;
+  background: #ffffff;
+  overflow-x: hidden;
+}
 
+    .wrap, .card {
+  position: relative;
+  z-index: 1;
+}
+    
+    body::before {
+  content: "";
+  position: fixed;
+
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+
+  z-index: 0;
+
+  background-image: url("favicon.png");
+  background-size: 80px 80px;
+  background-repeat: repeat;
+
+  transform: rotate(45deg);
+  transform-origin: center;
+
+  opacity: 0.05;
+  pointer-events: none;
+}
     .wrap {
       max-width: 1040px;
       margin: 0 auto;
