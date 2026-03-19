@@ -3,17 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 <title>IC Office Challenge</title>
-<meta name="theme-color" content="#c81e1e" />
-<meta name="msapplication-TileColor" content="#c81e1e" />
-
-<!-- Favicon / Apple / moderní zařízení -->
-<link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1" />
-<link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1" />
-<link rel="apple-touch-icon" sizes="180x180" href="favicon.png?v=1" />
-<link rel="manifest" href="site.webmanifest" />
-
 <style>
 :root {
 --bg: #ffffff;
@@ -33,42 +23,13 @@
 body {
 margin: 0;
 font-family: Inter, Arial, sans-serif;
+background: linear-gradient(180deg, #ffffff, #fff7f7 55%, #ffffff);
 color: var(--text);
 min-height: 100vh;
-position: relative;
-background: linear-gradient(180deg, #c81e1e, #a81515);
-overflow-x: hidden;
 }
 
-.wrap, .card {
-position: relative;
-z-index: 1;
-}
-
-body::before {
-content: "";
-position: fixed;
-
-width: 200%;
-height: 200%;
-top: -50%;
-left: -50%;
-
-z-index: 0;
-
-background-image: url("favicon.png");
-background-size: 80px 80px;
-background-repeat: repeat;
-
-transform: rotate(45deg);
-transform-origin: center;
-
-  opacity: 0.08;
-  opacity: 0.16;
-pointer-events: none;
-}
 .wrap {
-max-width: 1040px;
+max-width: 920px;
 margin: 0 auto;
 padding: 20px 14px 40px;
 }
@@ -87,7 +48,6 @@ h2 { font-size: 22px; }
 h3 { font-size: 18px; }
 p { line-height: 1.55; color: var(--text); }
 .muted { color: var(--muted); }
-.small { font-size: 13px; color: var(--muted); }
 
 .hero {
 display: grid;
@@ -112,9 +72,14 @@ font-size: 13px;
 font-weight: 600;
 }
 
-.grid { display: grid; gap: 14px; }
-.grid-2 { grid-template-columns: 1fr 1fr; }
-.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid {
+display: grid;
+gap: 14px;
+}
+
+.grid-2 {
+grid-template-columns: 1fr 1fr;
+}
 
 label {
 display: block;
@@ -126,10 +91,7 @@ input[type="text"],
 input[type="email"],
 input[type="tel"],
 input[type="file"],
-input[type="password"],
-input[type="number"],
-textarea,
-select {
+input[type="password"] {
 width: 100%;
 background: #ffffff;
 color: var(--text);
@@ -138,12 +100,9 @@ border-radius: 12px;
 padding: 14px 14px;
 outline: none;
 font-size: 15px;
-font-family: inherit;
 }
 
-textarea { min-height: 88px; resize: vertical; }
-
-input:focus, textarea:focus, select:focus {
+input:focus {
 border-color: var(--accent-2);
 box-shadow: 0 0 0 3px rgba(239,68,68,.12);
 }
@@ -175,10 +134,10 @@ color: var(--text);
 border: 1px solid var(--border);
 }
 
-.btn-danger {
-background: #111111;
-color: white;
-}
+    .btn-test {
+      background: #111111;
+      color: white;
+    }
 
 .topbar {
 display: flex;
@@ -252,17 +211,6 @@ border-color: var(--accent-2);
 background: #fff1f2;
 }
 
-.question-image {
-display: block;
-width: 100%;
-max-height: 300px;
-object-fit: contain;
-border: 1px solid var(--border);
-border-radius: 14px;
-margin: 0 0 16px;
-background: #fafafa;
-}
-
 .footer-note {
 margin-top: 14px;
 color: var(--muted);
@@ -289,44 +237,23 @@ padding: 16px;
 margin-top: 16px;
 }
 
+.small { font-size: 13px; color: var(--muted); }
 .admin-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-
-.editor-card {
-margin-top: 18px;
-padding: 16px;
-border: 1px solid var(--border);
-border-radius: 16px;
-background: #fcfcfc;
-}
-
-.editor-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 12px;
-}
-
-.full { grid-column: 1 / -1; }
-
-.image-preview {
-display: block;
-width: 100%;
-max-height: 180px;
-object-fit: contain;
-border: 1px solid var(--border);
-border-radius: 12px;
-margin-top: 8px;
-background: #fff;
+code.inline {
+background:#f3f4f6;
+border:1px solid var(--border);
+padding:2px 8px;
+border-radius:8px;
 }
 
 @media (max-width: 720px) {
-.grid-2, .grid-3, .editor-grid { grid-template-columns: 1fr; }
+.grid-2 { grid-template-columns: 1fr; }
 h1 { font-size: 24px; }
 .question-text { font-size: 19px; }
 .pill { width: 100%; text-align: center; }
 .btn-row button { width: 100%; }
 .answer { padding: 16px; }
 .wrap { padding: 16px 12px 32px; }
-.full { grid-column: auto; }
 }
 </style>
 </head>
@@ -338,10 +265,10 @@ h1 { font-size: 24px; }
 <span style="color:#c81e1e;">IC Office</span>
 <span style="color:#111111;"> Challenge</span>
 </h1>
-<p id="introText">Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
+<p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
 <div class="badge-row">
-<div class="badge" id="badgeQuestions">15 otázek</div>
-<div class="badge" id="badgeMinutes">15 minut</div>
+<div class="badge">15 otázek</div>
+<div class="badge">15 minut</div>
 <div class="badge">1 pokus na registraci</div>
 <div class="badge">výsledky se po odeslání nezobrazují</div>
 </div>
@@ -368,6 +295,7 @@ h1 { font-size: 24px; }
 
 <div class="btn-row">
 <button class="btn-primary" id="startBtn">Spustit challenge</button>
+        
 </div>
 </section>
 
@@ -378,7 +306,6 @@ h1 { font-size: 24px; }
 </div>
 <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
 <div id="questionText" class="question-text"></div>
-<img id="questionImage" class="question-image hidden" alt="Obrázek otázky" />
 <div id="answers" class="answers"></div>
 <div id="practicalBlock" class="hidden">
 <label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
@@ -411,7 +338,7 @@ h1 { font-size: 24px; }
 
 <section id="screen-admin-login" class="card hidden">
 <h2>Admin přihlášení</h2>
-<p>Zadej heslo pro správu výsledků a nastavení soutěže.</p>
+<p>Zadej heslo pro správu výsledků.</p>
 <label for="adminPassword">Heslo</label>
 <input id="adminPassword" type="password" placeholder="Heslo správce" />
 <div class="btn-row">
@@ -422,42 +349,13 @@ h1 { font-size: 24px; }
 
 <section id="screen-admin" class="card hidden">
 <h2>Admin režim</h2>
-<p>V administraci můžeš upravovat počet otázek, jejich znění, odpovědi, správné odpovědi, celkový čas i obrázky k otázkám.</p>
-
-<div class="editor-card">
-<h3>Nastavení soutěže</h3>
-<div class="grid grid-3">
-<div>
-<label for="configQuestionCount">Počet otázek</label>
-<input id="configQuestionCount" type="number" min="1" max="100" />
-</div>
-<div>
-<label for="configMinutes">Čas testu (minuty)</label>
-<input id="configMinutes" type="number" min="1" max="180" />
-</div>
-<div>
-<label for="configTitleText">Úvodní text</label>
-<input id="configTitleText" type="text" />
-</div>
-</div>
-<div class="btn-row">
-<button class="btn-primary" id="saveConfigBtn">Uložit nastavení</button>
-<button class="btn-secondary" id="addQuestionBtn">Přidat otázku</button>
-<button class="btn-danger" id="resetDefaultsBtn">Obnovit výchozí</button>
-</div>
-</div>
-
-<div id="questionEditors"></div>
-
-<div class="editor-card">
-<h3>Výsledky</h3>
+<p>Lokální přehled výsledků v prohlížeči. Ostrá data zároveň odcházejí do Google Sheets.</p>
 <div class="admin-actions">
 <button class="btn-primary" id="exportBtn">Export výsledků do CSV</button>
 <button class="btn-secondary" id="clearBtn">Smazat lokální výsledky</button>
 <button class="btn-secondary" id="backBtn">Zpět</button>
 </div>
 <div id="adminStats" class="result-list" style="margin-top:18px;"></div>
-</div>
 </section>
 </div>
 
@@ -466,10 +364,9 @@ const ADMIN_PASSWORD = '6371';
 const QUIZ_MINUTES = 15;
 const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
 const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-const STORAGE_CONFIG_KEY = 'ic_office_challenge_config_v2';
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
 
-const defaultQuestions = [
+const baseQuestions = [
 {
 id: 1,
 text: 'Co přesně je IC Office a kolik stojí přibližně na den?',
@@ -479,9 +376,7 @@ answers: [
 'aplikace pro diagnostiku vozidel / zhruba 80 Kč na den',
 'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
 ],
-correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-imageUrl: '',
-practical: false
+correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den'
 },
 {
 id: 2,
@@ -492,9 +387,7 @@ answers: [
 'něco jako Excel pro auta',
 'program hlavně na fakturaci'
 ],
-correct: 'program na vedení autoservisu',
-imageUrl: '',
-practical: false
+correct: 'program na vedení autoservisu'
 },
 {
 id: 3,
@@ -505,9 +398,7 @@ answers: [
 'zaparkování vozu',
 'hledání velkého technického průkazu'
 ],
-correct: 'ruční vypisování zakázkového listu',
-imageUrl: '',
-practical: false
+correct: 'ruční vypisování zakázkového listu'
 },
 {
 id: 4,
@@ -518,9 +409,7 @@ answers: [
 'zrychluje samotnou mechanickou opravu',
 'hledá nové zaměstnance do servisu'
 ],
-correct: 'šetří čas při každodenní práci v autoservisu',
-imageUrl: '',
-practical: false
+correct: 'šetří čas při každodenní práci v autoservisu'
 },
 {
 id: 5,
@@ -531,9 +420,7 @@ answers: [
 'zrychlení diagnostiky motoru',
 'eliminace překlepu'
 ],
-correct: 'automatické vyplnění zakázkového listu',
-imageUrl: '',
-practical: false
+correct: 'automatické vyplnění zakázkového listu'
 },
 {
 id: 6,
@@ -544,9 +431,7 @@ answers: [
 'Ne, historii oprav nevede',
 'Jen u vozidel registrovaných v České republice'
 ],
-correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-imageUrl: '',
-practical: false
+correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu'
 },
 {
 id: 7,
@@ -557,9 +442,7 @@ answers: [
 'snížení počtu zákazníků',
 'eliminace potřeby mechaniků'
 ],
-correct: 'lepší organizace práce a plánování',
-imageUrl: '',
-practical: false
+correct: 'lepší organizace práce a plánování'
 },
 {
 id: 8,
@@ -570,9 +453,7 @@ answers: [
 'Ne, legislativu neřeší',
 'Jen požadavky České obchodní inspekce'
 ],
-correct: 'Ano, včetně GDPR',
-imageUrl: '',
-practical: false
+correct: 'Ano, včetně GDPR'
 },
 {
 id: 9,
@@ -583,9 +464,7 @@ answers: [
 'vyšší přesnost',
 'snížení administrativy'
 ],
-correct: 'vznik chyb a překlepů v informacích o vozidle',
-imageUrl: '',
-practical: false
+correct: 'vznik chyb a překlepů v informacích o vozidle'
 },
 {
 id: 10,
@@ -596,9 +475,7 @@ answers: [
 'větší pracovní stůl',
 'delší pracovní doba'
 ],
-correct: 'rychlá práce s informacemi a daty',
-imageUrl: '',
-practical: false
+correct: 'rychlá práce s informacemi a daty'
 },
 {
 id: 11,
@@ -609,9 +486,7 @@ answers: [
 'kód motoru',
 'rok výroby'
 ],
-correct: 'VIN vozidla',
-imageUrl: '',
-practical: false
+correct: 'VIN vozidla'
 },
 {
 id: 12,
@@ -622,9 +497,7 @@ answers: [
 'Jen na tabletu',
 'Jen pro velké autoservisy'
 ],
-correct: 'Ano',
-imageUrl: '',
-practical: false
+correct: 'Ano'
 },
 {
 id: 13,
@@ -635,9 +508,7 @@ answers: [
 'kontrola vozidla',
 'příchod zákazníka'
 ],
-correct: 'dohledávání informací místo samotné práce',
-imageUrl: '',
-practical: false
+correct: 'dohledávání informací místo samotné práce'
 },
 {
 id: 14,
@@ -648,9 +519,7 @@ answers: [
 'ajťák',
 'účetní'
 ],
-correct: 'majitel autoservisu',
-imageUrl: '',
-practical: false
+correct: 'majitel autoservisu'
 },
 {
 id: 15,
@@ -662,17 +531,9 @@ answers: [
 '70'
 ],
 correct: '700',
-imageUrl: '',
 practical: true
 }
 ];
-
-const defaultConfig = {
-minutes: 15,
-questionCount: 15,
-introText: 'Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.',
-questions: defaultQuestions
-};
 
 const state = {
 participant: null,
@@ -684,8 +545,7 @@ timerSeconds: QUIZ_MINUTES * 60,
 timerInterval: null,
 startedAt: null,
 quizVersion: null,
-uploadedFileName: '',
-config: null
+uploadedFileName: ''
 };
 
 const el = {
@@ -695,11 +555,11 @@ result: document.getElementById('screen-result'),
 admin: document.getElementById('screen-admin'),
 adminLogin: document.getElementById('screen-admin-login'),
 startBtn: document.getElementById('startBtn'),
+      : document.getElementById(''),
 questionCounter: document.getElementById('questionCounter'),
 timer: document.getElementById('timer'),
 progressBar: document.getElementById('progressBar'),
 questionText: document.getElementById('questionText'),
-questionImage: document.getElementById('questionImage'),
 answers: document.getElementById('answers'),
 nextBtn: document.getElementById('nextBtn'),
 finishBtn: document.getElementById('finishBtn'),
@@ -713,50 +573,8 @@ backBtn: document.getElementById('backBtn'),
 adminStats: document.getElementById('adminStats'),
 adminPassword: document.getElementById('adminPassword'),
 adminLoginBtn: document.getElementById('adminLoginBtn'),
-adminCancelBtn: document.getElementById('adminCancelBtn'),
-configQuestionCount: document.getElementById('configQuestionCount'),
-configMinutes: document.getElementById('configMinutes'),
-configTitleText: document.getElementById('configTitleText'),
-saveConfigBtn: document.getElementById('saveConfigBtn'),
-addQuestionBtn: document.getElementById('addQuestionBtn'),
-resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
-questionEditors: document.getElementById('questionEditors'),
-introText: document.getElementById('introText'),
-badgeQuestions: document.getElementById('badgeQuestions'),
-badgeMinutes: document.getElementById('badgeMinutes')
+adminCancelBtn: document.getElementById('adminCancelBtn')
 };
-
-function clone(obj) {
-return JSON.parse(JSON.stringify(obj));
-}
-
-function getConfig() {
-try {
-const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-if (!raw) return clone(defaultConfig);
-const parsed = JSON.parse(raw);
-if (!Array.isArray(parsed.questions) || !parsed.questions.length) return clone(defaultConfig);
-return parsed;
-} catch {
-return clone(defaultConfig);
-}
-}
-
-function saveConfig() {
-localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(state.config));
-}
-
-function applyConfigToIntro() {
-el.introText.textContent = state.config.introText;
-el.badgeQuestions.textContent = `${state.config.questionCount} otázek`;
-el.badgeMinutes.textContent = `${state.config.minutes} minut`;
-}
-
-function syncAdminForm() {
-el.configQuestionCount.value = state.config.questionCount;
-el.configMinutes.value = state.config.minutes;
-el.configTitleText.value = state.config.introText;
-}
 
 function shuffle(array) {
 const arr = [...array];
@@ -800,19 +618,53 @@ results.push(result);
 localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
 }
 
-function sendToSheets(data) {
-const params = new URLSearchParams({
-name: data.name || '',
-phone: data.phone || '',
-email: data.email || '',
-school: data.school || '',
-score: String(data.score || 0),
-total: String(data.total || 0),
-elapsedSeconds: String(data.elapsedSeconds || 0)
+    async function sendToSheets(data) {
+      try {
+        await fetch(SHEETS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(data)
+        });
+
+        return true;
+      } catch (e) {
+        console.error('Chyba odeslání do Google Sheets:', e);
+        return false;
+      }
+    }
+
+    async function testSend() {
+      const ok = await sendToSheets({
+        name: 'Test',
+        phone: '123456',
+        email: 'test@test.cz',
+        school: 'IC',
+        score: 10,
+        total: 15,
+        elapsedSeconds: 100
+    function sendToSheets(data) {
+      const params = new URLSearchParams({
+        name: data.name || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        school: data.school || '',
+        score: String(data.score || 0),
+        total: String(data.total || 0),
+        elapsedSeconds: String(data.elapsedSeconds || 0)
 });
-const img = new Image();
-img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
-return true;
+
+      if (ok) {
+        alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
+      } else {
+        alert('Odeslání selhalo.');
+      }
+      const img = new Image();
+      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
+
+      return true;
 }
 
 function validateRegistration() {
@@ -841,9 +693,8 @@ return { name, phone, email, school };
 }
 
 function prepareQuestions() {
-const count = Math.min(state.config.questionCount, state.config.questions.length);
-return shuffle(state.config.questions).slice(0, count).map(q => ({
-...clone(q),
+return shuffle(baseQuestions).map(q => ({
+...q,
 answers: shuffle(q.answers)
 }));
 }
@@ -868,7 +719,7 @@ state.questions = prepareQuestions();
 state.currentIndex = 0;
 state.selectedAnswer = null;
 state.answers = {};
-state.timerSeconds = (state.config.minutes || QUIZ_MINUTES) * 60;
+state.timerSeconds = QUIZ_MINUTES * 60;
 state.startedAt = new Date();
 state.quizVersion = cryptoRandomId();
 state.uploadedFileName = '';
@@ -904,14 +755,6 @@ el.questionText.textContent = question.text;
 el.answers.innerHTML = '';
 state.selectedAnswer = state.answers[question.id] || null;
 
-if (question.imageUrl) {
-el.questionImage.src = question.imageUrl;
-el.questionImage.classList.remove('hidden');
-} else {
-el.questionImage.src = '';
-el.questionImage.classList.add('hidden');
-}
-
 question.answers.forEach((answer, idx) => {
 const wrapper = document.createElement('label');
 wrapper.className = 'answer' + (state.selectedAnswer === answer ? ' selected' : '');
@@ -946,7 +789,8 @@ renderQuestion();
 }
 }
 
-function finishQuiz(timeout = false) {
+    async function finishQuiz(timeout = false) {
+    function finishQuiz(timeout = false) {
 const lastQuestion = state.questions[state.currentIndex];
 if (!timeout && !state.answers[lastQuestion.id]) {
 alert('Vyber jednu odpověď.');
@@ -954,8 +798,11 @@ return;
 }
 
 clearInterval(state.timerInterval);
-const correctAnswers = state.questions.reduce((sum, q) => sum + (state.answers[q.id] === q.correct ? 1 : 0), 0);
-const elapsedSeconds = (state.config.minutes * 60) - Math.max(state.timerSeconds, 0);
+const correctAnswers = state.questions.reduce((sum, q) => {
+return sum + (state.answers[q.id] === q.correct ? 1 : 0);
+}, 0);
+
+const elapsedSeconds = (QUIZ_MINUTES * 60) - Math.max(state.timerSeconds, 0);
 const photoFile = el.photoUpload.files[0];
 if (photoFile) state.uploadedFileName = photoFile.name;
 
@@ -976,7 +823,8 @@ questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
 saveResult(result);
 saveAttempt(state.participant.email, state.participant.phone);
 
-sendToSheets({
+      await sendToSheets({
+      sendToSheets({
 name: result.participant?.name || '',
 phone: result.participant?.phone || '',
 email: result.participant?.email || '',
@@ -1002,167 +850,11 @@ setTimeout(() => el.adminPassword.focus(), 50);
 
 function handleAdminLogin() {
 if (el.adminPassword.value === ADMIN_PASSWORD) {
-syncAdminForm();
-renderQuestionEditors();
 renderAdminStats();
 showScreen(el.admin);
 } else {
 alert('Nesprávné heslo.');
 }
-}
-
-function ensureQuestionCount() {
-let wanted = Math.max(1, Number(el.configQuestionCount.value) || 1);
-while (state.config.questions.length < wanted) {
-state.config.questions.push({
-id: Date.now() + state.config.questions.length,
-text: `Nová otázka ${state.config.questions.length + 1}`,
-answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
-correct: 'Odpověď A',
-imageUrl: '',
-practical: false
-});
-}
-if (state.config.questions.length > wanted) {
-state.config.questions = state.config.questions.slice(0, wanted);
-}
-state.config.questionCount = wanted;
-}
-
-function saveAdminConfig() {
-ensureQuestionCount();
-state.config.minutes = Math.max(1, Number(el.configMinutes.value) || 15);
-state.config.introText = el.configTitleText.value.trim() || defaultConfig.introText;
-
-const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
-const updated = cards.map((card, idx) => {
-const answers = [
-card.querySelector('[data-field="a1"]').value.trim(),
-card.querySelector('[data-field="a2"]').value.trim(),
-card.querySelector('[data-field="a3"]').value.trim(),
-card.querySelector('[data-field="a4"]').value.trim()
-];
-const correctIndex = Number(card.querySelector('[data-field="correct"]').value);
-const text = card.querySelector('[data-field="text"]').value.trim();
-const imageUrl = card.querySelector('[data-field="imageUrl"]').value.trim();
-const practical = card.querySelector('[data-field="practical"]').checked;
-
-if (!text) throw new Error(`Otázka ${idx + 1} nemá text.`);
-if (answers.some(v => !v)) throw new Error(`Otázka ${idx + 1} nemá všechny odpovědi.`);
-
-return {
-id: Number(card.dataset.questionId),
-text,
-answers,
-correct: answers[correctIndex],
-imageUrl,
-practical
-};
-});
-
-state.config.questions = updated;
-saveConfig();
-applyConfigToIntro();
-syncAdminForm();
-renderQuestionEditors();
-alert('Administrace byla uložena.');
-}
-
-function addQuestion() {
-state.config.questions.push({
-id: Date.now(),
-text: `Nová otázka ${state.config.questions.length + 1}`,
-answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
-correct: 'Odpověď A',
-imageUrl: '',
-practical: false
-});
-state.config.questionCount = state.config.questions.length;
-syncAdminForm();
-renderQuestionEditors();
-}
-
-function removeQuestion(id) {
-if (state.config.questions.length <= 1) {
-alert('Musí zůstat alespoň jedna otázka.');
-return;
-}
-state.config.questions = state.config.questions.filter(q => q.id !== id);
-state.config.questionCount = state.config.questions.length;
-syncAdminForm();
-renderQuestionEditors();
-}
-
-function resetDefaults() {
-if (!confirm('Opravdu obnovit výchozí otázky a nastavení?')) return;
-state.config = clone(defaultConfig);
-saveConfig();
-applyConfigToIntro();
-syncAdminForm();
-renderQuestionEditors();
-alert('Výchozí nastavení bylo obnoveno.');
-}
-
-function renderQuestionEditors() {
-el.questionEditors.innerHTML = '';
-
-state.config.questions.forEach((q, idx) => {
-const correctIndex = Math.max(0, q.answers.findIndex(a => a === q.correct));
-const card = document.createElement('div');
-card.className = 'editor-card';
-card.dataset.questionId = q.id;
-card.innerHTML = `
-         <h3>Otázka ${idx + 1}</h3>
-         <div class="editor-grid">
-           <div class="full">
-             <label>Znění otázky</label>
-             <textarea data-field="text">${escapeHtml(q.text)}</textarea>
-           </div>
-           <div class="full">
-             <label>URL obrázku (volitelné)</label>
-             <input data-field="imageUrl" type="text" value="${escapeHtml(q.imageUrl || '')}" placeholder="https://.../obrazek.jpg" />
-             ${q.imageUrl ? `<img class="image-preview" src="${escapeHtml(q.imageUrl)}" alt="Preview" />` : ''}
-           </div>
-           <div>
-             <label>Odpověď A</label>
-             <input data-field="a1" type="text" value="${escapeHtml(q.answers[0] || '')}" />
-           </div>
-           <div>
-             <label>Odpověď B</label>
-             <input data-field="a2" type="text" value="${escapeHtml(q.answers[1] || '')}" />
-           </div>
-           <div>
-             <label>Odpověď C</label>
-             <input data-field="a3" type="text" value="${escapeHtml(q.answers[2] || '')}" />
-           </div>
-           <div>
-             <label>Odpověď D</label>
-             <input data-field="a4" type="text" value="${escapeHtml(q.answers[3] || '')}" />
-           </div>
-           <div>
-             <label>Správná odpověď</label>
-             <select data-field="correct">
-               <option value="0" ${correctIndex === 0 ? 'selected' : ''}>A</option>
-               <option value="1" ${correctIndex === 1 ? 'selected' : ''}>B</option>
-               <option value="2" ${correctIndex === 2 ? 'selected' : ''}>C</option>
-               <option value="3" ${correctIndex === 3 ? 'selected' : ''}>D</option>
-             </select>
-           </div>
-           <div>
-             <label>Praktická úloha</label>
-             <input data-field="practical" type="checkbox" ${q.practical ? 'checked' : ''} />
-           </div>
-         </div>
-         <div class="btn-row">
-           <button class="btn-danger" type="button" data-remove-id="${q.id}">Smazat otázku</button>
-         </div>
-       `;
-el.questionEditors.appendChild(card);
-});
-
-[...document.querySelectorAll('[data-remove-id]')].forEach(btn => {
-btn.addEventListener('click', () => removeQuestion(Number(btn.dataset.removeId)));
-});
 }
 
 function renderAdminStats() {
@@ -1254,7 +946,7 @@ renderAdminStats();
 }
 
 function escapeHtml(text) {
-return String(text ?? '')
+return String(text)
 .replace(/&/g, '&amp;')
 .replace(/</g, '&lt;')
 .replace(/>/g, '&gt;')
@@ -1276,13 +968,8 @@ return `${arr[0].toString(16)}${arr[1].toString(16)}`;
 return String(Date.now()) + Math.random().toString(16).slice(2);
 }
 
-function init() {
-state.config = getConfig();
-applyConfigToIntro();
-syncAdminForm();
-}
-
 el.startBtn.addEventListener('click', startQuiz);
+    el..addEventListener('click', testSend);
 el.nextBtn.addEventListener('click', nextQuestion);
 el.finishBtn.addEventListener('click', () => finishQuiz(false));
 el.exportBtn.addEventListener('click', exportResultsToCSV);
@@ -1293,9 +980,13 @@ el.adminCancelBtn.addEventListener('click', () => showScreen(el.intro));
 el.adminPassword.addEventListener('keydown', (e) => {
 if (e.key === 'Enter') handleAdminLogin();
 });
-el.saveConfigBtn.addEventListener('click', saveAdminConfig);
-el.addQuestionBtn.addEventListener('click', addQuestion);
-el.resetDefaultsBtn.addEventListener('click', resetDefaults);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.altKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        openAdminLogin();
+      }
+    });
 
 window.addEventListener('beforeunload', function (e) {
 if (!el.quiz.classList.contains('hidden')) {
@@ -1304,15 +995,16 @@ e.returnValue = '';
 }
 });
 
-(function () {
+    // Skrytý admin vstup: 1× klik na červený nápis IC Office
+    (function(){
+    // 1× klik na nadpis otevře admin login
+    (function () {
 const titleEl = document.getElementById('adminHotspot');
 if (!titleEl) return;
 titleEl.addEventListener('click', () => {
 openAdminLogin();
 });
 })();
-
-init();
 </script>
 </body>
 </html>
