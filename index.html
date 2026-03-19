@@ -379,9 +379,6 @@
       <div id="questionText" class="question-text"></div>
       <img id="questionImage" class="question-image hidden" alt="Obrázek otázky" />
       <div id="answers" class="answers"></div>
-      <div id="practicalBlock" class="hidden">
-        <label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
-        <input id="photoUpload" type="file" accept="image/*" />
         <div class="small" style="margin-top:8px;">Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.</div>
       </div>
       <div class="btn-row">
@@ -1146,10 +1143,6 @@
                 <option value="2" ${correctIndex === 2 ? 'selected' : ''}>C</option>
                 <option value="3" ${correctIndex === 3 ? 'selected' : ''}>D</option>
               </select>
-            </div>
-            <div>
-              <label>Praktická úloha</label>
-              <input data-field="practical" type="checkbox" ${q.practical ? 'checked' : ''} />
             </div>
           </div>
           <div class="btn-row">
