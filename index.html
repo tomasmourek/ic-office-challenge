@@ -361,8 +361,7 @@ const ADMIN_PASSWORD = '6371';
 const QUIZ_MINUTES = 15;
 const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
 const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
-    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxfomGVQ1kNL6qLlz24AsklNaWRo5EXmK-wvDRkM7u_jTnm9qUCfZZR2s4-zvHnjJmA/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxfomGVQ1kNL6qLlz24AsklNaWRo5EXmK-wvDRkM7u_jTnm9qUCfZZR2s4-zvHnjJmA/exec';
 
 const baseQuestions = [
 {
@@ -592,7 +591,11 @@ return `${email.trim().toLowerCase()}__${normalizePhone(phone)}`;
 }
 
 function getStoredAttempts() {
+try {
 return JSON.parse(localStorage.getItem(STORAGE_ATTEMPTS_KEY) || '{}');
+} catch {
+return {};
+}
 }
 
 function saveAttempt(email, phone) {
@@ -607,7 +610,11 @@ return Boolean(attempts[attemptKey(email, phone)]);
 }
 
 function getStoredResults() {
+try {
 return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
+} catch {
+return [];
+}
 }
 
 function saveResult(result) {
@@ -616,42 +623,24 @@ results.push(result);
 localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
 }
 
-    async function sendToSheets(data) {
-      try {
-        await fetch(SHEETS_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(data)
-        });
-    function sendToSheets(data) {
-      const params = new URLSearchParams({
-        name: data.name || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        school: data.school || '',
-        score: String(data.score || 0),
-        total: String(data.total || 0),
-        elapsedSeconds: String(data.elapsedSeconds || 0)
-      });
+function sendToSheets(data) {
+const params = new URLSearchParams({
+name: data.name || '',
+phone: data.phone || '',
+email: data.email || '',
+school: data.school || '',
+score: String(data.score || 0),
+total: String(data.total || 0),
+elapsedSeconds: String(data.elapsedSeconds || 0)
+});
 
-        return true;
-      } catch (e) {
-        console.error('Chyba odeslání do Google Sheets:', e);
-        return false;
-      }
-      const img = new Image();
-      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
-
-      return true;
+const img = new Image();
+img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
+return true;
 }
 
-    async function testSend() {
-      const ok = await sendToSheets({
-    function testSend() {
-      sendToSheets({
+function testSend() {
+sendToSheets({
 name: 'Test',
 phone: '123456',
 email: 'test@test.cz',
@@ -661,12 +650,7 @@ total: 15,
 elapsedSeconds: 100
 });
 
-      if (ok) {
-        alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
-      } else {
-        alert('Odeslání selhalo.');
-      }
-      alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
+alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
 }
 
 function validateRegistration() {
@@ -761,9 +745,9 @@ question.answers.forEach((answer, idx) => {
 const wrapper = document.createElement('label');
 wrapper.className = 'answer' + (state.selectedAnswer === answer ? ' selected' : '');
 wrapper.innerHTML = `
-         <input type="radio" name="question" value="${escapeHtml(answer)}" ${state.selectedAnswer === answer ? 'checked' : ''} />
-         <div><strong>${String.fromCharCode(65 + idx)})</strong> ${escapeHtml(answer)}</div>
-       `;
+<input type="radio" name="question" value="${escapeHtml(answer)}" ${state.selectedAnswer === answer ? 'checked' : ''} />
+<div><strong>${String.fromCharCode(65 + idx)})</strong> ${escapeHtml(answer)}</div>
+`;
 wrapper.addEventListener('click', () => {
 state.selectedAnswer = answer;
 state.answers[question.id] = answer;
@@ -791,7 +775,7 @@ renderQuestion();
 }
 }
 
-async function finishQuiz(timeout = false) {
+function finishQuiz(timeout = false) {
 const lastQuestion = state.questions[state.currentIndex];
 if (!timeout && !state.answers[lastQuestion.id]) {
 alert('Vyber jednu odpověď.');
@@ -824,8 +808,7 @@ questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
 saveResult(result);
 saveAttempt(state.participant.email, state.participant.phone);
 
-      await sendToSheets({
-      sendToSheets({
+sendToSheets({
 name: result.participant?.name || '',
 phone: result.participant?.phone || '',
 email: result.participant?.email || '',
@@ -867,38 +850,38 @@ return;
 }
 
 const rows = results.map((r, i) => `
-       <tr>
-         <td>${i + 1}</td>
-         <td>${escapeHtml(r.participant.name)}</td>
-         <td>${escapeHtml(r.participant.email)}</td>
-         <td>${escapeHtml(r.participant.phone)}</td>
-         <td>${r.score}/${r.total}</td>
-         <td>${escapeHtml(r.elapsedTime)}</td>
-         <td>${escapeHtml(r.participant.school || '-')}</td>
-         <td>${escapeHtml(r.uploadedFileName || '-')}</td>
-       </tr>
-     `).join('');
+<tr>
+<td>${i + 1}</td>
+<td>${escapeHtml(r.participant.name)}</td>
+<td>${escapeHtml(r.participant.email)}</td>
+<td>${escapeHtml(r.participant.phone)}</td>
+<td>${r.score}/${r.total}</td>
+<td>${escapeHtml(r.elapsedTime)}</td>
+<td>${escapeHtml(r.participant.school || '-')}</td>
+<td>${escapeHtml(r.uploadedFileName || '-')}</td>
+</tr>
+`).join('');
 
 el.adminStats.innerHTML = `
-       <strong>Počet výsledků:</strong> ${results.length}<br><br>
-       <div style="overflow:auto;">
-         <table style="width:100%; border-collapse:collapse; min-width:780px;">
-           <thead>
-             <tr>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Jméno</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">E-mail</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Telefon</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
-               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
-             </tr>
-           </thead>
-           <tbody>${rows}</tbody>
-         </table>
-       </div>
-     `;
+<strong>Počet výsledků:</strong> ${results.length}<br><br>
+<div style="overflow:auto;">
+<table style="width:100%; border-collapse:collapse; min-width:780px;">
+<thead>
+<tr>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Jméno</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">E-mail</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Telefon</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
+<th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
+</tr>
+</thead>
+<tbody>${rows}</tbody>
+</table>
+</div>
+`;
 }
 
 function exportResultsToCSV() {
@@ -947,7 +930,7 @@ renderAdminStats();
 }
 
 function escapeHtml(text) {
-return String(text)
+return String(text ?? '')
 .replace(/&/g, '&amp;')
 .replace(/</g, '&lt;')
 .replace(/>/g, '&gt;')
