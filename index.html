@@ -134,10 +134,10 @@ color: var(--text);
 border: 1px solid var(--border);
 }
 
-    .btn-test {
-      background: #111111;
-      color: white;
-    }
+.btn-test {
+background: #111111;
+color: white;
+}
 
 .topbar {
 display: flex;
@@ -261,11 +261,9 @@ h1 { font-size: 24px; }
 <div class="wrap">
 <section id="screen-intro" class="card">
 <div class="hero">
-<h1 id="adminHotspot" style="cursor:pointer;">
-<span style="color:#c81e1e;">IC Office</span>
-<span style="color:#111111;"> Challenge</span>
-</h1>
-<p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
+<h1>IC Office Challenge</h1>
+        <p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek, omezený čas a jedna praktická úloha. Rozhoduje přesnost. Při shodě bodů rozhoduje rychlejší čas.</p>
+        <p>Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
 <div class="badge-row">
 <div class="badge">15 otázek</div>
 <div class="badge">15 minut</div>
@@ -364,19 +362,26 @@ const ADMIN_PASSWORD = '6371';
 const QUIZ_MINUTES = 15;
 const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
 const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
+    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxfomGVQ1kNL6qLlz24AsklNaWRo5EXmK-wvDRkM7u_jTnm9qUCfZZR2s4-zvHnjJmA/exec';
+    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
 
 const baseQuestions = [
 {
 id: 1,
-text: 'Co přesně je IC Office a kolik stojí přibližně na den?',
+        text: 'Co přesně je IC Office a kolik stojí Kč na den?',
+        text: 'Co přesně je IC Office a kolik stojí přibližně na den?',
 answers: [
-'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-'účetní software pro fakturaci a daně / zhruba 120 Kč na den',
-'aplikace pro diagnostiku vozidel / zhruba 80 Kč na den',
-'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
+          'zakázkový a fakturační systém pro profesionální vedení autoservisu / 23 Kč na den',
+          'účetní software pro fakturaci a daně / 120 Kč na den',
+          'aplikace pro diagnostiku vozidel / 80 Kč na den',
+          'rozšířený balík Microsoft 365 / 15 Kč na den'
+          'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
+          'účetní software pro fakturaci a daně / zhruba 120 Kč na den',
+          'aplikace pro diagnostiku vozidel / zhruba 80 Kč na den',
+          'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
 ],
-correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den'
+        correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / 23 Kč na den'
+        correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den'
 },
 {
 id: 2,
@@ -405,15 +410,19 @@ id: 4,
 text: 'V čem pomáhá IC Office majitelům autoservisu?',
 answers: [
 'šetří čas při každodenní práci v autoservisu',
-'stanovuje cenu opravy za mechanika',
-'zrychluje samotnou mechanickou opravu',
-'hledá nové zaměstnance do servisu'
+          'stanovení ceny opravy',
+          'zrychlení mechanické práce',
+          'hledat nové mechaniky'
+          'stanovuje cenu opravy za mechanika',
+          'zrychluje samotnou mechanickou opravu',
+          'hledá nové zaměstnance do servisu'
 ],
 correct: 'šetří čas při každodenní práci v autoservisu'
 },
 {
 id: 5,
-text: 'Jaký je hlavní přínos načtení informací o vozidle pomocí fotografie VIN kódu?',
+        text: 'Jaký je přínos načítání informací o vozidle pomocí fotografie s VIN kódem?',
+        text: 'Jaký je hlavní přínos načtení informací o vozidle pomocí fotografie VIN kódu?',
 answers: [
 'automatické vyplnění zakázkového listu',
 'automatické vyřešení závady',
@@ -424,14 +433,20 @@ correct: 'automatické vyplnění zakázkového listu'
 },
 {
 id: 6,
-text: 'Vede IC Office historii oprav vozidla?',
+        text: 'Vede IC Office historii o opravách vozidel?',
+        text: 'Vede IC Office historii oprav vozidla?',
 answers: [
-'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-'Ano, ale jen v papírové podobě',
-'Ne, historii oprav nevede',
-'Jen u vozidel registrovaných v České republice'
+          'Ano vede a umí jí poslat i e-mailem majiteli vozu',
+          'Ano vede jen v papírové podobě',
+          'Ne neumí',
+          'Jen u vozidel v České Republice'
+          'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
+          'Ano, ale jen v papírové podobě',
+          'Ne, historii oprav nevede',
+          'Jen u vozidel registrovaných v České republice'
 ],
-correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu'
+        correct: 'Ano vede a umí jí poslat i e-mailem majiteli vozu'
+        correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu'
 },
 {
 id: 7,
@@ -448,12 +463,16 @@ correct: 'lepší organizace práce a plánování'
 id: 8,
 text: 'Splňuje systém IC Office právní legislativu?',
 answers: [
-'Ano, včetně GDPR',
+          'Ano, veškerou i GDPR',
+          'Ano, včetně GDPR',
 'Jen GDPR',
-'Ne, legislativu neřeší',
-'Jen požadavky České obchodní inspekce'
+          'Ne nesplňuje',
+          'Jen legislativu České Obchodní Inspekce'
+          'Ne, legislativu neřeší',
+          'Jen požadavky České obchodní inspekce'
 ],
-correct: 'Ano, včetně GDPR'
+        correct: 'Ano, veškerou i GDPR'
+        correct: 'Ano, včetně GDPR'
 },
 {
 id: 9,
@@ -493,9 +512,12 @@ id: 12,
 text: 'Je systém IC Office online?',
 answers: [
 'Ano',
-'Ne, je to lokální instalace',
-'Jen na tabletu',
-'Jen pro velké autoservisy'
+          'Ne je to instalace',
+          'Ano j',
+          'paměť vedoucího'
+          'Ne, je to lokální instalace',
+          'Jen na tabletu',
+          'Jen pro velké autoservisy'
 ],
 correct: 'Ano'
 },
@@ -523,7 +545,8 @@ correct: 'majitel autoservisu'
 },
 {
 id: 15,
-text: 'Kolik autoservisů v ČR používá IC Office?',
+        text: 'Kolik autoservisů v ČR použivá IC Office?',
+        text: 'Kolik autoservisů v ČR používá IC Office?',
 answers: [
 '170',
 '370',
@@ -618,6 +641,16 @@ results.push(result);
 localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
 }
 
+    function sendToSheets(data) {
+      const params = new URLSearchParams({
+        name: data.name || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        school: data.school || '',
+        score: String(data.score || 0),
+        total: String(data.total || 0),
+        elapsedSeconds: String(data.elapsedSeconds || 0)
+      });
     async function sendToSheets(data) {
       try {
         await fetch(SHEETS_URL, {
@@ -636,6 +669,8 @@ localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
       }
     }
 
+      const img = new Image();
+      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
     async function testSend() {
       const ok = await sendToSheets({
         name: 'Test',
@@ -645,26 +680,14 @@ localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
         score: 10,
         total: 15,
         elapsedSeconds: 100
-    function sendToSheets(data) {
-      const params = new URLSearchParams({
-        name: data.name || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        school: data.school || '',
-        score: String(data.score || 0),
-        total: String(data.total || 0),
-        elapsedSeconds: String(data.elapsedSeconds || 0)
-});
+      });
 
+      return true;
       if (ok) {
         alert('Testovací odeslání bylo spuštěno. Zkontroluj Google Sheets.');
       } else {
         alert('Odeslání selhalo.');
       }
-      const img = new Image();
-      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
-
-      return true;
 }
 
 function validateRegistration() {
@@ -789,8 +812,7 @@ renderQuestion();
 }
 }
 
-    async function finishQuiz(timeout = false) {
-    function finishQuiz(timeout = false) {
+async function finishQuiz(timeout = false) {
 const lastQuestion = state.questions[state.currentIndex];
 if (!timeout && !state.answers[lastQuestion.id]) {
 alert('Vyber jednu odpověď.');
@@ -823,8 +845,8 @@ questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
 saveResult(result);
 saveAttempt(state.participant.email, state.participant.phone);
 
-      await sendToSheets({
       sendToSheets({
+      await sendToSheets({
 name: result.participant?.name || '',
 phone: result.participant?.phone || '',
 email: result.participant?.email || '',
@@ -981,12 +1003,12 @@ el.adminPassword.addEventListener('keydown', (e) => {
 if (e.key === 'Enter') handleAdminLogin();
 });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.altKey && (e.key === 'A' || e.key === 'a')) {
-        e.preventDefault();
-        openAdminLogin();
-      }
-    });
+document.addEventListener('keydown', (e) => {
+if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+e.preventDefault();
+openAdminLogin();
+}
+});
 
 window.addEventListener('beforeunload', function (e) {
 if (!el.quiz.classList.contains('hidden')) {
@@ -994,17 +1016,6 @@ e.preventDefault();
 e.returnValue = '';
 }
 });
-
-    // Skrytý admin vstup: 1× klik na červený nápis IC Office
-    (function(){
-    // 1× klik na nadpis otevře admin login
-    (function () {
-const titleEl = document.getElementById('adminHotspot');
-if (!titleEl) return;
-titleEl.addEventListener('click', () => {
-openAdminLogin();
-});
-})();
 </script>
 </body>
 </html>
