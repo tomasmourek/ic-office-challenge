@@ -1,1371 +1,1318 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>IC Office Challenge</title>
-  <meta name="theme-color" content="#c81e1e" />
-  <meta name="msapplication-TileColor" content="#c81e1e" />
+<title>IC Office Challenge</title>
+<meta name="theme-color" content="#c81e1e" />
+<meta name="msapplication-TileColor" content="#c81e1e" />
 
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1" />
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1" />
-  <link rel="apple-touch-icon" sizes="180x180" href="favicon.png?v=1" />
-  <link rel="manifest" href="site.webmanifest" />
+<!-- Favicon / Apple / moderní zařízení -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1" />
+<link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1" />
+<link rel="apple-touch-icon" sizes="180x180" href="favicon.png?v=1" />
+<link rel="manifest" href="site.webmanifest" />
 
-  <style>
-    :root {
-      --bg: #ffffff;
-      --panel: #ffffff;
-      --panel-2: #f8fafc;
-      --text: #111111;
-      --muted: #6b7280;
-      --accent: #c81e1e;
-      --accent-2: #ef4444;
-      --border: #e5e7eb;
-      --shadow: 0 10px 25px rgba(0,0,0,.08);
-      --radius: 18px;
-    }
+<style>
+:root {
+--bg: #ffffff;
+--panel: #ffffff;
+--panel-2: #f8fafc;
+--text: #111111;
+--muted: #6b7280;
+--accent: #c81e1e;
+--accent-2: #ef4444;
+--border: #e5e7eb;
+--shadow: 0 10px 25px rgba(0,0,0,.08);
+--radius: 18px;
+}
 
-    * { box-sizing: border-box; }
+* { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: Inter, Arial, sans-serif;
-      color: var(--text);
-      min-height: 100vh;
-      position: relative;
-      background: linear-gradient(180deg, #c81e1e, #a81515);
-      overflow-x: hidden;
-    }
+body {
+margin: 0;
+font-family: Inter, Arial, sans-serif;
+color: var(--text);
+min-height: 100vh;
+position: relative;
+background: linear-gradient(180deg, #c81e1e, #a81515);
+overflow-x: hidden;
+}
 
-    .wrap, .card {
-      position: relative;
-      z-index: 1;
-    }
+.wrap, .card {
+position: relative;
+z-index: 1;
+}
 
-    body::before {
-      content: "";
-      position: fixed;
-      width: 200%;
-      height: 200%;
-      top: -50%;
-      left: -50%;
-      z-index: 0;
-      background-image: url("favicon.png");
-      background-size: 80px 80px;
-      background-repeat: repeat;
-      transform: rotate(45deg);
-      transform-origin: center;
-      opacity: 0.32;
-      pointer-events: none;
-    }
+body::before {
+content: "";
+position: fixed;
 
-    .wrap {
-      max-width: 1040px;
-      margin: 0 auto;
-      padding: 20px 14px 40px;
-    }
+width: 200%;
+height: 200%;
+top: -50%;
+left: -50%;
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 22px;
-    }
+z-index: 0;
 
-    h1, h2, h3 { margin: 0 0 10px; }
-    h1 { font-size: 28px; }
-    h2 { font-size: 22px; }
-    h3 { font-size: 18px; }
-    p { line-height: 1.55; color: var(--text); }
-    .muted { color: var(--muted); }
-    .small { font-size: 13px; color: var(--muted); }
+background-image: url("favicon.png");
+background-size: 80px 80px;
+background-repeat: repeat;
 
-    .hero {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
+transform: rotate(45deg);
+transform-origin: center;
 
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 6px;
-    }
+  opacity: 0.08;
+  opacity: 0.16;
+pointer-events: none;
+}
+.wrap {
+max-width: 1040px;
+margin: 0 auto;
+padding: 20px 14px 40px;
+}
 
-    .badge {
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 13px;
-      font-weight: 600;
-    }
+.card {
+background: var(--panel);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+box-shadow: var(--shadow);
+padding: 22px;
+}
 
-    .grid { display: grid; gap: 14px; }
-    .grid-2 { grid-template-columns: 1fr 1fr; }
-    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+h1, h2, h3 { margin: 0 0 10px; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+p { line-height: 1.55; color: var(--text); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; color: var(--muted); }
 
-    label {
-      display: block;
-      margin-bottom: 7px;
-      font-weight: 600;
-    }
+.hero {
+display: grid;
+gap: 12px;
+margin-bottom: 18px;
+}
 
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="file"],
-    input[type="password"],
-    input[type="number"],
-    textarea,
-    select {
-      width: 100%;
-      background: #ffffff;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 14px;
-      outline: none;
-      font-size: 15px;
-      font-family: inherit;
-    }
+.badge-row {
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
+margin-top: 6px;
+}
 
-    textarea { min-height: 88px; resize: vertical; }
+.badge {
+background: #fee2e2;
+color: #b91c1c;
+border: 1px solid #fecaca;
+border-radius: 999px;
+padding: 8px 12px;
+font-size: 13px;
+font-weight: 600;
+}
 
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
-    }
+.grid { display: grid; gap: 14px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
+label {
+display: block;
+margin-bottom: 7px;
+font-weight: 600;
+}
 
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 13px 18px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 15px;
-    }
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="file"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+width: 100%;
+background: #ffffff;
+color: var(--text);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 14px 14px;
+outline: none;
+font-size: 15px;
+font-family: inherit;
+}
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: white;
-    }
+textarea { min-height: 88px; resize: vertical; }
 
-    .btn-secondary {
-      background: #f3f4f6;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
+input:focus, textarea:focus, select:focus {
+border-color: var(--accent-2);
+box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+}
 
-    .btn-danger {
-      background: #111111;
-      color: white;
-    }
+.btn-row {
+display: flex;
+gap: 12px;
+flex-wrap: wrap;
+margin-top: 10px;
+}
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
+button {
+border: 0;
+border-radius: 12px;
+padding: 13px 18px;
+font-weight: 700;
+cursor: pointer;
+font-size: 15px;
+}
 
-    .pill {
-      background: #fff5f5;
-      border: 1px solid #fecaca;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-weight: 700;
-      color: #991b1b;
-    }
+.btn-primary {
+background: linear-gradient(135deg, var(--accent), var(--accent-2));
+color: white;
+}
 
-    .progress {
-      width: 100%;
-      height: 10px;
-      background: #f3f4f6;
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      margin-bottom: 18px;
-    }
+.btn-secondary {
+background: #f3f4f6;
+color: var(--text);
+border: 1px solid var(--border);
+}
 
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      transition: width .25s ease;
-    }
+.btn-danger {
+background: #111111;
+color: white;
+}
 
-    .question-text {
-      font-size: 22px;
-      line-height: 1.4;
-      margin-bottom: 16px;
-    }
+.topbar {
+display: flex;
+justify-content: space-between;
+gap: 12px;
+align-items: center;
+margin-bottom: 18px;
+flex-wrap: wrap;
+}
 
-    .answers {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
+.pill {
+background: #fff5f5;
+border: 1px solid #fecaca;
+border-radius: 999px;
+padding: 10px 14px;
+font-weight: 700;
+color: #991b1b;
+}
 
-    .answer {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      padding: 14px;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: transform .12s ease, border-color .15s ease, background .15s ease;
-    }
+.progress {
+width: 100%;
+height: 10px;
+background: #f3f4f6;
+border-radius: 999px;
+overflow: hidden;
+border: 1px solid var(--border);
+margin-bottom: 18px;
+}
 
-    .answer:hover {
-      transform: translateY(-1px);
-      border-color: #f87171;
-      background: #fffafa;
-    }
+.progress-bar {
+height: 100%;
+width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--accent-2));
+transition: width .25s ease;
+}
 
-    .answer input { margin-top: 4px; transform: scale(1.15); }
+.question-text {
+font-size: 22px;
+line-height: 1.4;
+margin-bottom: 16px;
+}
 
-    .answer.selected {
-      border-color: var(--accent-2);
-      background: #fff1f2;
-    }
+.answers {
+display: grid;
+gap: 12px;
+margin-bottom: 18px;
+}
 
-    .question-image {
-      display: block;
-      width: 100%;
-      max-height: 300px;
-      object-fit: contain;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin: 0 0 16px;
-      background: #fafafa;
-    }
+.answer {
+display: flex;
+align-items: flex-start;
+gap: 12px;
+background: #ffffff;
+border: 1px solid var(--border);
+padding: 14px;
+border-radius: 14px;
+cursor: pointer;
+transition: transform .12s ease, border-color .15s ease, background .15s ease;
+}
 
-    .footer-note {
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 14px;
-    }
+.answer:hover {
+transform: translateY(-1px);
+border-color: #f87171;
+background: #fffafa;
+}
 
-    .hidden { display: none !important; }
-    .center { text-align: center; }
+.answer input { margin-top: 4px; transform: scale(1.15); }
 
-    .score {
-      font-size: 46px;
-      font-weight: 800;
-      line-height: 1;
-      margin: 10px 0 16px;
-      color: #991b1b;
-    }
+.answer.selected {
+border-color: var(--accent-2);
+background: #fff1f2;
+}
 
-    .result-list {
-      text-align: left;
-      background: #fcfcfc;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: 16px;
-    }
+.question-image {
+display: block;
+width: 100%;
+max-height: 300px;
+object-fit: contain;
+border: 1px solid var(--border);
+border-radius: 14px;
+margin: 0 0 16px;
+background: #fafafa;
+}
 
-    .admin-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
+.footer-note {
+margin-top: 14px;
+color: var(--muted);
+font-size: 14px;
+}
 
-    .editor-card {
-      margin-top: 18px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: #fcfcfc;
-    }
+.hidden { display: none !important; }
+.center { text-align: center; }
 
-    .editor-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+.score {
+font-size: 46px;
+font-weight: 800;
+line-height: 1;
+margin: 10px 0 16px;
+color: #991b1b;
+}
 
-    .full { grid-column: 1 / -1; }
+.result-list {
+text-align: left;
+background: #fcfcfc;
+border: 1px solid var(--border);
+border-radius: 14px;
+padding: 16px;
+margin-top: 16px;
+}
 
-    .image-preview {
-      display: block;
-      width: 100%;
-      max-height: 180px;
-      object-fit: contain;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-top: 8px;
-      background: #fff;
-    }
+.admin-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
 
-    @media (max-width: 720px) {
-      .grid-2, .grid-3, .editor-grid { grid-template-columns: 1fr; }
-      h1 { font-size: 24px; }
-      .question-text { font-size: 19px; }
-      .pill { width: 100%; text-align: center; }
-      .btn-row button { width: 100%; }
-      .answer { padding: 16px; }
-      .wrap { padding: 16px 12px 32px; }
-      .full { grid-column: auto; }
-    }
-  </style>
+.editor-card {
+margin-top: 18px;
+padding: 16px;
+border: 1px solid var(--border);
+border-radius: 16px;
+background: #fcfcfc;
+}
+
+.editor-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+}
+
+.full { grid-column: 1 / -1; }
+
+.image-preview {
+display: block;
+width: 100%;
+max-height: 180px;
+object-fit: contain;
+border: 1px solid var(--border);
+border-radius: 12px;
+margin-top: 8px;
+background: #fff;
+}
+
+@media (max-width: 720px) {
+.grid-2, .grid-3, .editor-grid { grid-template-columns: 1fr; }
+h1 { font-size: 24px; }
+.question-text { font-size: 19px; }
+.pill { width: 100%; text-align: center; }
+.btn-row button { width: 100%; }
+.answer { padding: 16px; }
+.wrap { padding: 16px 12px 32px; }
+.full { grid-column: auto; }
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <section id="screen-intro" class="card">
-      <div class="hero">
-        <h1 id="adminHotspot" style="cursor:pointer;">
-          <span style="color:#c81e1e;">IC Office</span>
-          <span style="color:#111111;"> Challenge</span>
-        </h1>
-        <p id="introText">
-          Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut.
-          Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas.
-          Vyhodnocení soutěže proběhne na konci dne.
-        </p>
-        <div class="badge-row">
-          <div class="badge" id="badgeQuestions">15 otázek</div>
-          <div class="badge" id="badgeMinutes">15 minut</div>
-          <div class="badge">1 pokus na registraci</div>
-          <div class="badge">výsledky se po odeslání nezobrazují</div>
-        </div>
-      </div>
-
-      <div class="grid grid-2" style="margin-top:18px;">
-        <div>
-          <label for="name">Jméno a příjmení</label>
-          <input id="name" type="text" placeholder="Např. Jan Novák" maxlength="80" />
-        </div>
-        <div>
-          <label for="phone">Telefon</label>
-          <input id="phone" type="tel" placeholder="Např. 777123456" maxlength="30" />
-        </div>
-        <div>
-          <label for="email">E-mail</label>
-          <input id="email" type="email" placeholder="Např. jan@email.cz" maxlength="120" />
-        </div>
-        <div>
-          <label for="school">Škola / tým / poznámka (volitelné)</label>
-          <input id="school" type="text" placeholder="Např. SPŠ Dopravní" maxlength="120" />
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-primary" id="startBtn">Spustit challenge</button>
-      </div>
-    </section>
-
-    <section id="screen-quiz" class="card hidden">
-      <div class="topbar">
-        <div class="pill" id="questionCounter">Otázka 1 / 15</div>
-        <div class="pill" id="timer">15:00</div>
-      </div>
-
-      <div class="progress">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-
-      <div id="questionText" class="question-text"></div>
-      <img id="questionImage" class="question-image hidden" alt="Obrázek otázky" />
-      <div id="answers" class="answers"></div>
-
-      <div class="btn-row">
-        <button class="btn-secondary" id="nextBtn">Další otázka</button>
-        <button class="btn-primary hidden" id="finishBtn">Odeslat výsledky</button>
-      </div>
-    </section>
-
-    <section id="screen-result" class="card hidden center">
-      <h2>Hotovo</h2>
-      <p>Děkujeme za vyplnění soutěže.</p>
-      <div class="score" id="finalScore">0 / 15</div>
-      <p id="finalTime"></p>
-      <div class="result-list">
-        <strong>Co se v této verzi ukládá do Google Sheets:</strong>
-        <ul>
-          <li>jméno, e-mail, telefon, škola/tým</li>
-          <li>počet bodů</li>
-          <li>čas dokončení</li>
-          <li>pořadí a promíchání otázek pro konkrétní pokus</li>
-        </ul>
-      </div>
-      <p class="footer-note">Správné odpovědi se účastníkovi nezobrazují.</p>
-    </section>
-
-    <section id="screen-admin-login" class="card hidden">
-      <h2>Admin přihlášení</h2>
-      <p>Zadej heslo pro správu výsledků a nastavení soutěže.</p>
-      <label for="adminPassword">Heslo</label>
-      <input id="adminPassword" type="password" placeholder="Heslo správce" />
-      <div class="btn-row">
-        <button class="btn-primary" id="adminLoginBtn">Přihlásit</button>
-        <button class="btn-secondary" id="adminCancelBtn">Zpět</button>
-      </div>
-    </section>
-
-    <section id="screen-admin" class="card hidden">
-      <h2>Admin režim</h2>
-      <p>V administraci můžeš upravovat počet otázek, jejich znění, odpovědi, správné odpovědi, celkový čas i obrázky k otázkám.</p>
-
-      <div class="editor-card">
-        <h3>Nastavení soutěže</h3>
-        <div class="grid grid-3">
-          <div>
-            <label for="configQuestionCount">Počet otázek</label>
-            <input id="configQuestionCount" type="number" min="1" max="100" />
-          </div>
-          <div>
-            <label for="configMinutes">Čas testu (minuty)</label>
-            <input id="configMinutes" type="number" min="1" max="180" />
-          </div>
-          <div>
-            <label for="configTitleText">Úvodní text</label>
-            <input id="configTitleText" type="text" />
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-primary" id="saveConfigBtn">Uložit nastavení</button>
-          <button class="btn-secondary" id="addQuestionBtn">Přidat otázku</button>
-          <button class="btn-danger" id="resetDefaultsBtn">Obnovit výchozí</button>
-        </div>
-      </div>
-
-      <div id="questionEditors"></div>
-
-      <div class="editor-card">
-        <h3>Výsledky</h3>
-        <div class="admin-actions">
-          <button class="btn-primary" id="exportBtn">Export výsledků do CSV</button>
-          <button class="btn-secondary" id="clearBtn">Smazat lokální výsledky</button>
-          <button class="btn-secondary" id="backBtn">Zpět</button>
-        </div>
-        <div id="adminStats" class="result-list" style="margin-top:18px;"></div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    const ADMIN_PASSWORD = '6371';
-    const QUIZ_MINUTES = 15;
-    const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
-    const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-    const STORAGE_CONFIG_KEY = 'ic_office_challenge_config_v3';
-    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
-
-    const defaultQuestions = [
-      {
-        id: 1,
-        text: 'Co přesně je IC Office a kolik stojí přibližně na den?',
-        answers: [
-          'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-          'účetní software pro fakturaci a daně / zhruba 120 Kč na den',
-          'aplikace pro diagnostiku vozidel / zhruba 80 Kč na den',
-          'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
-        ],
-        correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-        imageUrl: ''
-      },
-      {
-        id: 2,
-        text: 'Jak bys nejlépe popsal IC Office kolegovi?',
-        answers: [
-          'program na vedení autoservisu',
-          'aplikace pro objednávání dílů',
-          'něco jako Excel pro auta',
-          'program hlavně na fakturaci'
-        ],
-        correct: 'program na vedení autoservisu',
-        imageUrl: ''
-      },
-      {
-        id: 3,
-        text: 'Při příjmu vozidla do servisu je největší ztráta času typicky:',
-        answers: [
-          'ruční vypisování zakázkového listu',
-          'přivítání zákazníka',
-          'zaparkování vozu',
-          'hledání velkého technického průkazu'
-        ],
-        correct: 'ruční vypisování zakázkového listu',
-        imageUrl: ''
-      },
-      {
-        id: 4,
-        text: 'V čem pomáhá IC Office majitelům autoservisu?',
-        answers: [
-          'šetří čas při každodenní práci v autoservisu',
-          'stanovuje cenu opravy za mechanika',
-          'zrychluje samotnou mechanickou opravu',
-          'hledá nové zaměstnance do servisu'
-        ],
-        correct: 'šetří čas při každodenní práci v autoservisu',
-        imageUrl: ''
-      },
-      {
-        id: 5,
-        text: 'Jaký je hlavní přínos načtení informací o vozidle pomocí fotografie VIN kódu?',
-        answers: [
-          'automatické vyplnění zakázkového listu',
-          'automatické vyřešení závady',
-          'zrychlení diagnostiky motoru',
-          'eliminace překlepu'
-        ],
-        correct: 'automatické vyplnění zakázkového listu',
-        imageUrl: ''
-      },
-      {
-        id: 6,
-        text: 'Vede IC Office historii oprav vozidla?',
-        answers: [
-          'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-          'Ano, ale jen v papírové podobě',
-          'Ne, historii oprav nevede',
-          'Jen u vozidel registrovaných v České republice'
-        ],
-        correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-        imageUrl: ''
-      },
-      {
-        id: 7,
-        text: 'Jaký přínos má přehled zakázek v systému?',
-        answers: [
-          'lepší organizace práce a plánování',
-          'automatická oprava vozidel',
-          'snížení počtu zákazníků',
-          'eliminace potřeby mechaniků'
-        ],
-        correct: 'lepší organizace práce a plánování',
-        imageUrl: ''
-      },
-      {
-        id: 8,
-        text: 'Splňuje systém IC Office právní legislativu?',
-        answers: [
-          'Ano, včetně GDPR',
-          'Jen GDPR',
-          'Ne, legislativu neřeší',
-          'Jen požadavky České obchodní inspekce'
-        ],
-        correct: 'Ano, včetně GDPR',
-        imageUrl: ''
-      },
-      {
-        id: 9,
-        text: 'Jaké riziko přináší ruční zadávání údajů o vozidle?',
-        answers: [
-          'vznik chyb a překlepů v informacích o vozidle',
-          'zrychlení procesu',
-          'vyšší přesnost',
-          'snížení administrativy'
-        ],
-        correct: 'vznik chyb a překlepů v informacích o vozidle',
-        imageUrl: ''
-      },
-      {
-        id: 10,
-        text: 'Co má největší vliv na schopnost servisu odbavit více zakázek?',
-        answers: [
-          'rychlá práce s informacemi a daty',
-          'vyšší hlasitost rádia',
-          'větší pracovní stůl',
-          'delší pracovní doba'
-        ],
-        correct: 'rychlá práce s informacemi a daty',
-        imageUrl: ''
-      },
-      {
-        id: 11,
-        text: 'Podle jakého údaje o vozidle nejpřesněji vybereme správný náhradní díl?',
-        answers: [
-          'VIN vozidla',
-          'barva vozidla',
-          'kód motoru',
-          'rok výroby'
-        ],
-        correct: 'VIN vozidla',
-        imageUrl: ''
-      },
-      {
-        id: 12,
-        text: 'Je systém IC Office online?',
-        answers: [
-          'Ano',
-          'Ne, je to lokální instalace',
-          'Jen na tabletu',
-          'Jen pro velké autoservisy'
-        ],
-        correct: 'Ano',
-        imageUrl: ''
-      },
-      {
-        id: 13,
-        text: 'Co nejčastěji zpomaluje práci v autoservisu?',
-        answers: [
-          'dohledávání informací místo samotné práce',
-          'samotná oprava',
-          'kontrola vozidla',
-          'příchod zákazníka'
-        ],
-        correct: 'dohledávání informací místo samotné práce',
-        imageUrl: ''
-      },
-      {
-        id: 14,
-        text: 'Kdo vymyslel IC Office?',
-        answers: [
-          'majitel autoservisu',
-          'ministerstvo školství',
-          'ajťák',
-          'účetní'
-        ],
-        correct: 'majitel autoservisu',
-        imageUrl: ''
-      },
-      {
-        id: 15,
-        text: 'Kolik autoservisů v ČR používá IC Office?',
-        answers: [
-          '170',
-          '370',
-          '700',
-          '70'
-        ],
-        correct: '700',
-        imageUrl: ''
-      }
-    ];
-
-    const defaultConfig = {
-      minutes: 15,
-      questionCount: 15,
-      introText: 'Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.',
-      questions: defaultQuestions
-    };
-
-    const state = {
-      participant: null,
-      questions: [],
-      currentIndex: 0,
-      selectedAnswer: null,
-      answers: {},
-      timerSeconds: QUIZ_MINUTES * 60,
-      timerInterval: null,
-      startedAt: null,
-      quizVersion: null,
-      config: null
-    };
-
-    const el = {
-      intro: document.getElementById('screen-intro'),
-      quiz: document.getElementById('screen-quiz'),
-      result: document.getElementById('screen-result'),
-      admin: document.getElementById('screen-admin'),
-      adminLogin: document.getElementById('screen-admin-login'),
-      startBtn: document.getElementById('startBtn'),
-      questionCounter: document.getElementById('questionCounter'),
-      timer: document.getElementById('timer'),
-      progressBar: document.getElementById('progressBar'),
-      questionText: document.getElementById('questionText'),
-      questionImage: document.getElementById('questionImage'),
-      answers: document.getElementById('answers'),
-      nextBtn: document.getElementById('nextBtn'),
-      finishBtn: document.getElementById('finishBtn'),
-      finalScore: document.getElementById('finalScore'),
-      finalTime: document.getElementById('finalTime'),
-      exportBtn: document.getElementById('exportBtn'),
-      clearBtn: document.getElementById('clearBtn'),
-      backBtn: document.getElementById('backBtn'),
-      adminStats: document.getElementById('adminStats'),
-      adminPassword: document.getElementById('adminPassword'),
-      adminLoginBtn: document.getElementById('adminLoginBtn'),
-      adminCancelBtn: document.getElementById('adminCancelBtn'),
-      configQuestionCount: document.getElementById('configQuestionCount'),
-      configMinutes: document.getElementById('configMinutes'),
-      configTitleText: document.getElementById('configTitleText'),
-      saveConfigBtn: document.getElementById('saveConfigBtn'),
-      addQuestionBtn: document.getElementById('addQuestionBtn'),
-      resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
-      questionEditors: document.getElementById('questionEditors'),
-      introText: document.getElementById('introText'),
-      badgeQuestions: document.getElementById('badgeQuestions'),
-      badgeMinutes: document.getElementById('badgeMinutes')
-    };
-
-    function clone(obj) {
-      return JSON.parse(JSON.stringify(obj));
-    }
-
-    function normalizeQuestion(raw, index = 0) {
-      const fallbackAnswers = ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'];
-      const answers = Array.isArray(raw?.answers) ? raw.answers.slice(0, 4) : fallbackAnswers.slice();
-      while (answers.length < 4) {
-        answers.push(fallbackAnswers[answers.length]);
-      }
-
-      const safeAnswers = answers.map((a, i) => String(a || fallbackAnswers[i]));
-      const correct = safeAnswers.includes(raw?.correct) ? raw.correct : safeAnswers[0];
-
-      return {
-        id: Number(raw?.id) || Date.now() + index,
-        text: String(raw?.text || `Otázka ${index + 1}`),
-        answers: safeAnswers,
-        correct,
-        imageUrl: String(raw?.imageUrl || '')
-      };
-    }
-
-    function getConfig() {
-      try {
-        const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-        if (!raw) return clone(defaultConfig);
-
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed.questions) || !parsed.questions.length) {
-          return clone(defaultConfig);
-        }
-
-        const normalizedQuestions = parsed.questions.map((q, i) => normalizeQuestion(q, i));
-
-        return {
-          minutes: Math.max(1, Number(parsed.minutes) || defaultConfig.minutes),
-          questionCount: Math.max(1, Number(parsed.questionCount) || normalizedQuestions.length),
-          introText: String(parsed.introText || defaultConfig.introText),
-          questions: normalizedQuestions
-        };
-      } catch {
-        return clone(defaultConfig);
-      }
-    }
-
-    function saveConfig() {
-      localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(state.config));
-    }
-
-    function applyConfigToIntro() {
-      el.introText.textContent = state.config.introText;
-      el.badgeQuestions.textContent = `${state.config.questionCount} otázek`;
-      el.badgeMinutes.textContent = `${state.config.minutes} minut`;
-    }
-
-    function syncAdminForm() {
-      el.configQuestionCount.value = state.config.questionCount;
-      el.configMinutes.value = state.config.minutes;
-      el.configTitleText.value = state.config.introText;
-    }
-
-    function shuffle(array) {
-      const arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    function normalizePhone(phone) {
-      return phone.replace(/\s+/g, '').trim();
-    }
-
-    function attemptKey(email, phone) {
-      return `${email.trim().toLowerCase()}__${normalizePhone(phone)}`;
-    }
-
-    function getStoredAttempts() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_ATTEMPTS_KEY) || '{}');
-      } catch {
-        return {};
-      }
-    }
-
-    function saveAttempt(email, phone) {
-      const attempts = getStoredAttempts();
-      attempts[attemptKey(email, phone)] = new Date().toISOString();
-      localStorage.setItem(STORAGE_ATTEMPTS_KEY, JSON.stringify(attempts));
-    }
-
-    function hasAttempt(email, phone) {
-      const attempts = getStoredAttempts();
-      return Boolean(attempts[attemptKey(email, phone)]);
-    }
-
-    function getStoredResults() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
-      } catch {
-        return [];
-      }
-    }
-
-    function saveResult(result) {
-      const results = getStoredResults();
-      results.push(result);
-      localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
-    }
-
-    function sendToSheets(data) {
-      const params = new URLSearchParams({
-        name: data.name || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        school: data.school || '',
-        score: String(data.score || 0),
-        total: String(data.total || 0),
-        elapsedSeconds: String(data.elapsedSeconds || 0)
-      });
-
-      const img = new Image();
-      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
-      return true;
-    }
-
-    function validateRegistration() {
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const email = document.getElementById('email').value.trim().toLowerCase();
-      const school = document.getElementById('school').value.trim();
-
-      if (!name || !phone || !email) {
-        alert('Vyplň jméno, telefon a e-mail.');
-        return null;
-      }
-
-      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      if (!emailOk) {
-        alert('E-mail nemá správný formát.');
-        return null;
-      }
-
-      if (hasAttempt(email, phone)) {
-        alert('Tato registrace už soutěž jednou vyplnila.');
-        return null;
-      }
-
-      return { name, phone, email, school };
-    }
-
-    function prepareQuestions() {
-      const count = Math.min(state.config.questionCount, state.config.questions.length);
-      return shuffle(state.config.questions)
-        .slice(0, count)
-        .map(q => ({
-          ...clone(q),
-          answers: shuffle(q.answers)
-        }));
-    }
-
-    function formatTime(totalSeconds) {
-      const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-      const ss = String(totalSeconds % 60).padStart(2, '0');
-      return `${mm}:${ss}`;
-    }
-
-    function showScreen(screen) {
-      [el.intro, el.quiz, el.result, el.admin, el.adminLogin].forEach(s => s.classList.add('hidden'));
-      screen.classList.remove('hidden');
-    }
-
-    function startQuiz() {
-      const participant = validateRegistration();
-      if (!participant) return;
-
-      state.participant = participant;
-      state.questions = prepareQuestions();
-      state.currentIndex = 0;
-      state.selectedAnswer = null;
-      state.answers = {};
-      state.timerSeconds = (state.config.minutes || QUIZ_MINUTES) * 60;
-      state.startedAt = new Date();
-      state.quizVersion = cryptoRandomId();
-
-      el.timer.textContent = formatTime(state.timerSeconds);
-
-      showScreen(el.quiz);
-      renderQuestion();
-      startTimer();
-    }
-
-    function startTimer() {
-      clearInterval(state.timerInterval);
-      el.timer.textContent = formatTime(state.timerSeconds);
-
-      state.timerInterval = setInterval(() => {
-        state.timerSeconds -= 1;
-        el.timer.textContent = formatTime(Math.max(state.timerSeconds, 0));
-
-        if (state.timerSeconds <= 0) {
-          clearInterval(state.timerInterval);
-          finishQuiz(true);
-        }
-      }, 1000);
-    }
-
-    function renderQuestion() {
-      const question = state.questions[state.currentIndex];
-      const total = state.questions.length;
-      const current = state.currentIndex + 1;
-
-      el.questionCounter.textContent = `Otázka ${current} / ${total}`;
-      el.progressBar.style.width = `${(current / total) * 100}%`;
-      el.questionText.textContent = question.text;
-      el.answers.innerHTML = '';
-      state.selectedAnswer = state.answers[question.id] || null;
-
-      if (question.imageUrl) {
-        el.questionImage.src = question.imageUrl;
-        el.questionImage.classList.remove('hidden');
-      } else {
-        el.questionImage.src = '';
-        el.questionImage.classList.add('hidden');
-      }
-
-      question.answers.forEach((answer, idx) => {
-        const wrapper = document.createElement('label');
-        wrapper.className = 'answer' + (state.selectedAnswer === answer ? ' selected' : '');
-        wrapper.innerHTML = `
-          <input type="radio" name="question" value="${escapeHtml(answer)}" ${state.selectedAnswer === answer ? 'checked' : ''} />
-          <div><strong>${String.fromCharCode(65 + idx)})</strong> ${escapeHtml(answer)}</div>
-        `;
-
-        wrapper.addEventListener('click', () => {
-          state.selectedAnswer = answer;
-          state.answers[question.id] = answer;
-          [...el.answers.querySelectorAll('.answer')].forEach(x => x.classList.remove('selected'));
-          wrapper.classList.add('selected');
-        });
-
-        el.answers.appendChild(wrapper);
-      });
-
-      const isLast = current === total;
-      el.nextBtn.classList.toggle('hidden', isLast);
-      el.finishBtn.classList.toggle('hidden', !isLast);
-    }
-
-    function nextQuestion() {
-      const question = state.questions[state.currentIndex];
-      if (!state.answers[question.id]) {
-        alert('Vyber jednu odpověď.');
-        return;
-      }
-
-      if (state.currentIndex < state.questions.length - 1) {
-        state.currentIndex += 1;
-        renderQuestion();
-      }
-    }
-
-    function finishQuiz(timeout = false) {
-      const lastQuestion = state.questions[state.currentIndex];
-
-      if (!timeout && !state.answers[lastQuestion.id]) {
-        alert('Vyber jednu odpověď.');
-        return;
-      }
-
-      clearInterval(state.timerInterval);
-
-      const correctAnswers = state.questions.reduce((sum, q) => {
-        return sum + (state.answers[q.id] === q.correct ? 1 : 0);
-      }, 0);
-
-      const elapsedSeconds = (state.config.minutes * 60) - Math.max(state.timerSeconds, 0);
-
-      const result = {
-        id: cryptoRandomId(),
-        timestamp: new Date().toISOString(),
-        participant: state.participant,
-        score: correctAnswers,
-        total: state.questions.length,
-        elapsedSeconds,
-        elapsedTime: formatTime(elapsedSeconds),
-        timedOut: timeout,
-        quizVersion: state.quizVersion,
-        questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
-      };
-
-      saveResult(result);
-      saveAttempt(state.participant.email, state.participant.phone);
-
-      sendToSheets({
-        name: result.participant?.name || '',
-        phone: result.participant?.phone || '',
-        email: result.participant?.email || '',
-        school: result.participant?.school || '',
-        score: result.score,
-        total: result.total,
-        elapsedSeconds: result.elapsedSeconds
-      });
-
-      el.finalScore.textContent = `${correctAnswers} / ${state.questions.length}`;
-      el.finalTime.textContent = timeout
-        ? `Čas vypršel. Započtený čas: ${formatTime(elapsedSeconds)}`
-        : `Započtený čas: ${formatTime(elapsedSeconds)}`;
-
-      showScreen(el.result);
-    }
-
-    function openAdminLogin() {
-      el.adminPassword.value = '';
-      showScreen(el.adminLogin);
-      setTimeout(() => el.adminPassword.focus(), 50);
-    }
-
-    function handleAdminLogin() {
-      if (el.adminPassword.value === ADMIN_PASSWORD) {
-        syncAdminForm();
-        renderQuestionEditors();
-        renderAdminStats();
-        showScreen(el.admin);
-      } else {
-        alert('Nesprávné heslo.');
-      }
-    }
-
-    function ensureQuestionCount() {
-      const wanted = Math.max(1, Number(el.configQuestionCount.value) || 1);
-
-      while (state.config.questions.length < wanted) {
-        state.config.questions.push({
-          id: Date.now() + state.config.questions.length,
-          text: `Nová otázka ${state.config.questions.length + 1}`,
-          answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
-          correct: 'Odpověď A',
-          imageUrl: ''
-        });
-      }
-
-      if (state.config.questions.length > wanted) {
-        state.config.questions = state.config.questions.slice(0, wanted);
-      }
-
-      state.config.questionCount = wanted;
-    }
-
-    function saveAdminConfig() {
-      try {
-        ensureQuestionCount();
-        state.config.minutes = Math.max(1, Number(el.configMinutes.value) || 15);
-        state.config.introText = el.configTitleText.value.trim() || defaultConfig.introText;
-
-        const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
-        const updated = cards.map((card, idx) => {
-          const answers = [
-            card.querySelector('[data-field="a1"]').value.trim(),
-            card.querySelector('[data-field="a2"]').value.trim(),
-            card.querySelector('[data-field="a3"]').value.trim(),
-            card.querySelector('[data-field="a4"]').value.trim()
-          ];
-
-          const correctIndex = Number(card.querySelector('[data-field="correct"]').value);
-          const text = card.querySelector('[data-field="text"]').value.trim();
-          const imageUrl = card.querySelector('[data-field="imageUrl"]').value.trim();
-
-          if (!text) throw new Error(`Otázka ${idx + 1} nemá text.`);
-          if (answers.some(v => !v)) throw new Error(`Otázka ${idx + 1} nemá všechny odpovědi.`);
-          if (correctIndex < 0 || correctIndex > 3) throw new Error(`Otázka ${idx + 1} má neplatnou správnou odpověď.`);
-
-          return {
-            id: Number(card.dataset.questionId),
-            text,
-            answers,
-            correct: answers[correctIndex],
-            imageUrl
-          };
-        });
-
-        state.config.questions = updated;
-        state.config.questionCount = Math.min(state.config.questionCount, state.config.questions.length);
-
-        saveConfig();
-        applyConfigToIntro();
-        syncAdminForm();
-        renderQuestionEditors();
-        alert('Administrace byla uložena.');
-      } catch (error) {
-        alert(error.message || 'Nepodařilo se uložit administraci.');
-      }
-    }
-
-    function addQuestion() {
-      state.config.questions.push({
-        id: Date.now(),
-        text: `Nová otázka ${state.config.questions.length + 1}`,
-        answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
-        correct: 'Odpověď A',
-        imageUrl: ''
-      });
-
-      state.config.questionCount = state.config.questions.length;
-      syncAdminForm();
-      renderQuestionEditors();
-    }
-
-    function removeQuestion(id) {
-      if (state.config.questions.length <= 1) {
-        alert('Musí zůstat alespoň jedna otázka.');
-        return;
-      }
-
-      state.config.questions = state.config.questions.filter(q => q.id !== id);
-      state.config.questionCount = state.config.questions.length;
-      syncAdminForm();
-      renderQuestionEditors();
-    }
-
-    function resetDefaults() {
-      if (!confirm('Opravdu obnovit výchozí otázky a nastavení?')) return;
-
-      state.config = clone(defaultConfig);
-      saveConfig();
-      applyConfigToIntro();
-      syncAdminForm();
-      renderQuestionEditors();
-      alert('Výchozí nastavení bylo obnoveno.');
-    }
-
-    function renderQuestionEditors() {
-      el.questionEditors.innerHTML = '';
-
-      state.config.questions.forEach((q, idx) => {
-        const correctIndex = Math.max(0, q.answers.findIndex(a => a === q.correct));
-        const card = document.createElement('div');
-        card.className = 'editor-card';
-        card.dataset.questionId = q.id;
-
-        card.innerHTML = `
-          <h3>Otázka ${idx + 1}</h3>
-          <div class="editor-grid">
-            <div class="full">
-              <label>Znění otázky</label>
-              <textarea data-field="text">${escapeHtml(q.text)}</textarea>
-            </div>
-            <div class="full">
-              <label>URL obrázku (volitelné)</label>
-              <input data-field="imageUrl" type="text" value="${escapeHtml(q.imageUrl || '')}" placeholder="https://.../obrazek.jpg" />
-              ${q.imageUrl ? `<img class="image-preview" src="${escapeHtml(q.imageUrl)}" alt="Preview" />` : ''}
-            </div>
-            <div>
-              <label>Odpověď A</label>
-              <input data-field="a1" type="text" value="${escapeHtml(q.answers[0] || '')}" />
-            </div>
-            <div>
-              <label>Odpověď B</label>
-              <input data-field="a2" type="text" value="${escapeHtml(q.answers[1] || '')}" />
-            </div>
-            <div>
-              <label>Odpověď C</label>
-              <input data-field="a3" type="text" value="${escapeHtml(q.answers[2] || '')}" />
-            </div>
-            <div>
-              <label>Odpověď D</label>
-              <input data-field="a4" type="text" value="${escapeHtml(q.answers[3] || '')}" />
-            </div>
-            <div>
-              <label>Správná odpověď</label>
-              <select data-field="correct">
-                <option value="0" ${correctIndex === 0 ? 'selected' : ''}>A</option>
-                <option value="1" ${correctIndex === 1 ? 'selected' : ''}>B</option>
-                <option value="2" ${correctIndex === 2 ? 'selected' : ''}>C</option>
-                <option value="3" ${correctIndex === 3 ? 'selected' : ''}>D</option>
-              </select>
-            </div>
-          </div>
-          <div class="btn-row">
-            <button class="btn-danger" type="button" data-remove-id="${q.id}">Smazat otázku</button>
-          </div>
-        `;
-
-        el.questionEditors.appendChild(card);
-      });
-
-      [...document.querySelectorAll('[data-remove-id]')].forEach(btn => {
-        btn.addEventListener('click', () => removeQuestion(Number(btn.dataset.removeId)));
-      });
-    }
-
-    function renderAdminStats() {
-      const results = getStoredResults().sort((a, b) => {
-        return b.score - a.score || a.elapsedSeconds - b.elapsedSeconds;
-      });
-
-      if (!results.length) {
-        el.adminStats.innerHTML = '<strong>Zatím nejsou uložené žádné výsledky.</strong>';
-        return;
-      }
-
-      const rows = results.map((r, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${escapeHtml(r.participant?.name || '')}</td>
-          <td>${escapeHtml(r.participant?.email || '')}</td>
-          <td>${escapeHtml(r.participant?.phone || '')}</td>
-          <td>${r.score}/${r.total}</td>
-          <td>${escapeHtml(r.elapsedTime || '')}</td>
-          <td>${escapeHtml(r.participant?.school || '-')}</td>
-        </tr>
-      `).join('');
-
-      el.adminStats.innerHTML = `
-        <strong>Počet výsledků:</strong> ${results.length}<br><br>
-        <div style="overflow:auto;">
-          <table style="width:100%; border-collapse:collapse; min-width:720px;">
-            <thead>
-              <tr>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Jméno</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">E-mail</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Telefon</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      `;
-    }
-
-    function exportResultsToCSV() {
-      const results = getStoredResults();
-
-      if (!results.length) {
-        alert('Není co exportovat.');
-        return;
-      }
-
-      const header = [
-        'timestamp',
-        'name',
-        'email',
-        'phone',
-        'school',
-        'score',
-        'total',
-        'elapsedTime',
-        'elapsedSeconds',
-        'timedOut',
-        'quizVersion'
-      ];
-
-      const lines = results.map(r => [
-        r.timestamp,
-        r.participant?.name || '',
-        r.participant?.email || '',
-        r.participant?.phone || '',
-        r.participant?.school || '',
-        r.score,
-        r.total,
-        r.elapsedTime,
-        r.elapsedSeconds,
-        r.timedOut,
-        r.quizVersion
-      ].map(csvEscape).join(';'));
-
-      const csv = [header.join(';'), ...lines].join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-
-      a.href = url;
-      a.download = 'ic-office-challenge-vysledky.csv';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    function clearResults() {
-      if (!confirm('Opravdu smazat všechny lokální výsledky a registrace?')) return;
-
-      localStorage.removeItem(STORAGE_RESULTS_KEY);
-      localStorage.removeItem(STORAGE_ATTEMPTS_KEY);
-      renderAdminStats();
-    }
-
-    function escapeHtml(text) {
-      return String(text ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function csvEscape(value) {
-      const text = String(value ?? '');
-      return '"' + text.replace(/"/g, '""') + '"';
-    }
-
-    function cryptoRandomId() {
-      if (window.crypto && crypto.getRandomValues) {
-        const arr = new Uint32Array(2);
-        crypto.getRandomValues(arr);
-        return `${arr[0].toString(16)}${arr[1].toString(16)}`;
-      }
-      return String(Date.now()) + Math.random().toString(16).slice(2);
-    }
-
-    function init() {
-      state.config = getConfig();
-      applyConfigToIntro();
-      syncAdminForm();
-    }
-
-    el.startBtn.addEventListener('click', startQuiz);
-    el.nextBtn.addEventListener('click', nextQuestion);
-    el.finishBtn.addEventListener('click', () => finishQuiz(false));
-    el.exportBtn.addEventListener('click', exportResultsToCSV);
-    el.clearBtn.addEventListener('click', clearResults);
-    el.backBtn.addEventListener('click', () => showScreen(el.intro));
-    el.adminLoginBtn.addEventListener('click', handleAdminLogin);
-    el.adminCancelBtn.addEventListener('click', () => showScreen(el.intro));
-
-    el.adminPassword.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleAdminLogin();
-    });
-
-    el.saveConfigBtn.addEventListener('click', saveAdminConfig);
-    el.addQuestionBtn.addEventListener('click', addQuestion);
-    el.resetDefaultsBtn.addEventListener('click', resetDefaults);
-
-    window.addEventListener('beforeunload', function (e) {
-      if (!el.quiz.classList.contains('hidden')) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
-
-    (function () {
-      const titleEl = document.getElementById('adminHotspot');
-      if (!titleEl) return;
-
-      titleEl.addEventListener('click', () => {
-        openAdminLogin();
-      });
-    })();
-
-    init();
-  </script>
+<div class="wrap">
+<section id="screen-intro" class="card">
+<div class="hero">
+<h1 id="adminHotspot" style="cursor:pointer;">
+<span style="color:#c81e1e;">IC Office</span>
+<span style="color:#111111;"> Challenge</span>
+</h1>
+<p id="introText">Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.</p>
+<div class="badge-row">
+<div class="badge" id="badgeQuestions">15 otázek</div>
+<div class="badge" id="badgeMinutes">15 minut</div>
+<div class="badge">1 pokus na registraci</div>
+<div class="badge">výsledky se po odeslání nezobrazují</div>
+</div>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;">
+<div>
+<label for="name">Jméno a příjmení</label>
+<input id="name" type="text" placeholder="Např. Jan Novák" maxlength="80" />
+</div>
+<div>
+<label for="phone">Telefon</label>
+<input id="phone" type="tel" placeholder="Např. 777123456" maxlength="30" />
+</div>
+<div>
+<label for="email">E-mail</label>
+<input id="email" type="email" placeholder="Např. jan@email.cz" maxlength="120" />
+</div>
+<div>
+<label for="school">Škola / tým / poznámka (volitelné)</label>
+<input id="school" type="text" placeholder="Např. SPŠ Dopravní" maxlength="120" />
+</div>
+</div>
+
+<div class="btn-row">
+<button class="btn-primary" id="startBtn">Spustit challenge</button>
+</div>
+</section>
+
+<section id="screen-quiz" class="card hidden">
+<div class="topbar">
+<div class="pill" id="questionCounter">Otázka 1 / 15</div>
+<div class="pill" id="timer">15:00</div>
+</div>
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+<div id="questionText" class="question-text"></div>
+<img id="questionImage" class="question-image hidden" alt="Obrázek otázky" />
+<div id="answers" class="answers"></div>
+<div id="practicalBlock" class="hidden">
+<label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
+<input id="photoUpload" type="file" accept="image/*" />
+<div class="small" style="margin-top:8px;">Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.</div>
+</div>
+<div class="btn-row">
+<button class="btn-secondary" id="nextBtn">Další otázka</button>
+<button class="btn-primary hidden" id="finishBtn">Odeslat výsledky</button>
+</div>
+</section>
+
+<section id="screen-result" class="card hidden center">
+<h2>Hotovo</h2>
+<p>Děkujeme za vyplnění soutěže.</p>
+<div class="score" id="finalScore">0 / 15</div>
+<p id="finalTime"></p>
+<div class="result-list">
+<strong>Co se v této verzi ukládá do Google Sheets:</strong>
+<ul>
+<li>jméno, e-mail, telefon, škola/tým</li>
+<li>počet bodů</li>
+<li>čas dokončení</li>
+<li>název nahraného souboru</li>
+<li>pořadí a promíchání otázek pro konkrétní pokus</li>
+</ul>
+</div>
+<p class="footer-note">Správné odpovědi se účastníkovi nezobrazují.</p>
+</section>
+
+<section id="screen-admin-login" class="card hidden">
+<h2>Admin přihlášení</h2>
+<p>Zadej heslo pro správu výsledků a nastavení soutěže.</p>
+<label for="adminPassword">Heslo</label>
+<input id="adminPassword" type="password" placeholder="Heslo správce" />
+<div class="btn-row">
+<button class="btn-primary" id="adminLoginBtn">Přihlásit</button>
+<button class="btn-secondary" id="adminCancelBtn">Zpět</button>
+</div>
+</section>
+
+<section id="screen-admin" class="card hidden">
+<h2>Admin režim</h2>
+<p>V administraci můžeš upravovat počet otázek, jejich znění, odpovědi, správné odpovědi, celkový čas i obrázky k otázkám.</p>
+
+<div class="editor-card">
+<h3>Nastavení soutěže</h3>
+<div class="grid grid-3">
+<div>
+<label for="configQuestionCount">Počet otázek</label>
+<input id="configQuestionCount" type="number" min="1" max="100" />
+</div>
+<div>
+<label for="configMinutes">Čas testu (minuty)</label>
+<input id="configMinutes" type="number" min="1" max="180" />
+</div>
+<div>
+<label for="configTitleText">Úvodní text</label>
+<input id="configTitleText" type="text" />
+</div>
+</div>
+<div class="btn-row">
+<button class="btn-primary" id="saveConfigBtn">Uložit nastavení</button>
+<button class="btn-secondary" id="addQuestionBtn">Přidat otázku</button>
+<button class="btn-danger" id="resetDefaultsBtn">Obnovit výchozí</button>
+</div>
+</div>
+
+<div id="questionEditors"></div>
+
+<div class="editor-card">
+<h3>Výsledky</h3>
+<div class="admin-actions">
+<button class="btn-primary" id="exportBtn">Export výsledků do CSV</button>
+<button class="btn-secondary" id="clearBtn">Smazat lokální výsledky</button>
+<button class="btn-secondary" id="backBtn">Zpět</button>
+</div>
+<div id="adminStats" class="result-list" style="margin-top:18px;"></div>
+</div>
+</section>
+</div>
+
+<script>
+const ADMIN_PASSWORD = '6371';
+const QUIZ_MINUTES = 15;
+const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
+const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
+const STORAGE_CONFIG_KEY = 'ic_office_challenge_config_v2';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxm_WpRUQR-99ZWq6I7n4i_D-NWM-4-E-idl_L34wvXQa-NsugayshBkoBCQKRlbGWI/exec';
+
+const defaultQuestions = [
+{
+id: 1,
+text: 'Co přesně je IC Office a kolik stojí přibližně na den?',
+answers: [
+'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
+'účetní software pro fakturaci a daně / zhruba 120 Kč na den',
+'aplikace pro diagnostiku vozidel / zhruba 80 Kč na den',
+'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
+],
+correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
+imageUrl: '',
+practical: false
+},
+{
+id: 2,
+text: 'Jak bys nejlépe popsal IC Office kolegovi?',
+answers: [
+'program na vedení autoservisu',
+'aplikace pro objednávání dílů',
+'něco jako Excel pro auta',
+'program hlavně na fakturaci'
+],
+correct: 'program na vedení autoservisu',
+imageUrl: '',
+practical: false
+},
+{
+id: 3,
+text: 'Při příjmu vozidla do servisu je největší ztráta času typicky:',
+answers: [
+'ruční vypisování zakázkového listu',
+'přivítání zákazníka',
+'zaparkování vozu',
+'hledání velkého technického průkazu'
+],
+correct: 'ruční vypisování zakázkového listu',
+imageUrl: '',
+practical: false
+},
+{
+id: 4,
+text: 'V čem pomáhá IC Office majitelům autoservisu?',
+answers: [
+'šetří čas při každodenní práci v autoservisu',
+'stanovuje cenu opravy za mechanika',
+'zrychluje samotnou mechanickou opravu',
+'hledá nové zaměstnance do servisu'
+],
+correct: 'šetří čas při každodenní práci v autoservisu',
+imageUrl: '',
+practical: false
+},
+{
+id: 5,
+text: 'Jaký je hlavní přínos načtení informací o vozidle pomocí fotografie VIN kódu?',
+answers: [
+'automatické vyplnění zakázkového listu',
+'automatické vyřešení závady',
+'zrychlení diagnostiky motoru',
+'eliminace překlepu'
+],
+correct: 'automatické vyplnění zakázkového listu',
+imageUrl: '',
+practical: false
+},
+{
+id: 6,
+text: 'Vede IC Office historii oprav vozidla?',
+answers: [
+'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
+'Ano, ale jen v papírové podobě',
+'Ne, historii oprav nevede',
+'Jen u vozidel registrovaných v České republice'
+],
+correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
+imageUrl: '',
+practical: false
+},
+{
+id: 7,
+text: 'Jaký přínos má přehled zakázek v systému?',
+answers: [
+'lepší organizace práce a plánování',
+'automatická oprava vozidel',
+'snížení počtu zákazníků',
+'eliminace potřeby mechaniků'
+],
+correct: 'lepší organizace práce a plánování',
+imageUrl: '',
+practical: false
+},
+{
+id: 8,
+text: 'Splňuje systém IC Office právní legislativu?',
+answers: [
+'Ano, včetně GDPR',
+'Jen GDPR',
+'Ne, legislativu neřeší',
+'Jen požadavky České obchodní inspekce'
+],
+correct: 'Ano, včetně GDPR',
+imageUrl: '',
+practical: false
+},
+{
+id: 9,
+text: 'Jaké riziko přináší ruční zadávání údajů o vozidle?',
+answers: [
+'vznik chyb a překlepů v informacích o vozidle',
+'zrychlení procesu',
+'vyšší přesnost',
+'snížení administrativy'
+],
+correct: 'vznik chyb a překlepů v informacích o vozidle',
+imageUrl: '',
+practical: false
+},
+{
+id: 10,
+text: 'Co má největší vliv na schopnost servisu odbavit více zakázek?',
+answers: [
+'rychlá práce s informacemi a daty',
+'vyšší hlasitost rádia',
+'větší pracovní stůl',
+'delší pracovní doba'
+],
+correct: 'rychlá práce s informacemi a daty',
+imageUrl: '',
+practical: false
+},
+{
+id: 11,
+text: 'Podle jakého údaje o vozidle nejpřesněji vybereme správný náhradní díl?',
+answers: [
+'VIN vozidla',
+'barva vozidla',
+'kód motoru',
+'rok výroby'
+],
+correct: 'VIN vozidla',
+imageUrl: '',
+practical: false
+},
+{
+id: 12,
+text: 'Je systém IC Office online?',
+answers: [
+'Ano',
+'Ne, je to lokální instalace',
+'Jen na tabletu',
+'Jen pro velké autoservisy'
+],
+correct: 'Ano',
+imageUrl: '',
+practical: false
+},
+{
+id: 13,
+text: 'Co nejčastěji zpomaluje práci v autoservisu?',
+answers: [
+'dohledávání informací místo samotné práce',
+'samotná oprava',
+'kontrola vozidla',
+'příchod zákazníka'
+],
+correct: 'dohledávání informací místo samotné práce',
+imageUrl: '',
+practical: false
+},
+{
+id: 14,
+text: 'Kdo vymyslel IC Office?',
+answers: [
+'majitel autoservisu',
+'ministerstvo školství',
+'ajťák',
+'účetní'
+],
+correct: 'majitel autoservisu',
+imageUrl: '',
+practical: false
+},
+{
+id: 15,
+text: 'Kolik autoservisů v ČR používá IC Office?',
+answers: [
+'170',
+'370',
+'700',
+'70'
+],
+correct: '700',
+imageUrl: '',
+practical: true
+}
+];
+
+const defaultConfig = {
+minutes: 15,
+questionCount: 15,
+introText: 'Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.',
+questions: defaultQuestions
+};
+
+const state = {
+participant: null,
+questions: [],
+currentIndex: 0,
+selectedAnswer: null,
+answers: {},
+timerSeconds: QUIZ_MINUTES * 60,
+timerInterval: null,
+startedAt: null,
+quizVersion: null,
+uploadedFileName: '',
+config: null
+};
+
+const el = {
+intro: document.getElementById('screen-intro'),
+quiz: document.getElementById('screen-quiz'),
+result: document.getElementById('screen-result'),
+admin: document.getElementById('screen-admin'),
+adminLogin: document.getElementById('screen-admin-login'),
+startBtn: document.getElementById('startBtn'),
+questionCounter: document.getElementById('questionCounter'),
+timer: document.getElementById('timer'),
+progressBar: document.getElementById('progressBar'),
+questionText: document.getElementById('questionText'),
+questionImage: document.getElementById('questionImage'),
+answers: document.getElementById('answers'),
+nextBtn: document.getElementById('nextBtn'),
+finishBtn: document.getElementById('finishBtn'),
+finalScore: document.getElementById('finalScore'),
+finalTime: document.getElementById('finalTime'),
+practicalBlock: document.getElementById('practicalBlock'),
+photoUpload: document.getElementById('photoUpload'),
+exportBtn: document.getElementById('exportBtn'),
+clearBtn: document.getElementById('clearBtn'),
+backBtn: document.getElementById('backBtn'),
+adminStats: document.getElementById('adminStats'),
+adminPassword: document.getElementById('adminPassword'),
+adminLoginBtn: document.getElementById('adminLoginBtn'),
+adminCancelBtn: document.getElementById('adminCancelBtn'),
+configQuestionCount: document.getElementById('configQuestionCount'),
+configMinutes: document.getElementById('configMinutes'),
+configTitleText: document.getElementById('configTitleText'),
+saveConfigBtn: document.getElementById('saveConfigBtn'),
+addQuestionBtn: document.getElementById('addQuestionBtn'),
+resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
+questionEditors: document.getElementById('questionEditors'),
+introText: document.getElementById('introText'),
+badgeQuestions: document.getElementById('badgeQuestions'),
+badgeMinutes: document.getElementById('badgeMinutes')
+};
+
+function clone(obj) {
+return JSON.parse(JSON.stringify(obj));
+}
+
+function getConfig() {
+try {
+const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
+if (!raw) return clone(defaultConfig);
+const parsed = JSON.parse(raw);
+if (!Array.isArray(parsed.questions) || !parsed.questions.length) return clone(defaultConfig);
+return parsed;
+} catch {
+return clone(defaultConfig);
+}
+}
+
+function saveConfig() {
+localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(state.config));
+}
+
+function applyConfigToIntro() {
+el.introText.textContent = state.config.introText;
+el.badgeQuestions.textContent = `${state.config.questionCount} otázek`;
+el.badgeMinutes.textContent = `${state.config.minutes} minut`;
+}
+
+function syncAdminForm() {
+el.configQuestionCount.value = state.config.questionCount;
+el.configMinutes.value = state.config.minutes;
+el.configTitleText.value = state.config.introText;
+}
+
+function shuffle(array) {
+const arr = [...array];
+for (let i = arr.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+[arr[i], arr[j]] = [arr[j], arr[i]];
+}
+return arr;
+}
+
+function normalizePhone(phone) {
+return phone.replace(/\s+/g, '').trim();
+}
+
+function attemptKey(email, phone) {
+return `${email.trim().toLowerCase()}__${normalizePhone(phone)}`;
+}
+
+function getStoredAttempts() {
+return JSON.parse(localStorage.getItem(STORAGE_ATTEMPTS_KEY) || '{}');
+}
+
+function saveAttempt(email, phone) {
+const attempts = getStoredAttempts();
+attempts[attemptKey(email, phone)] = new Date().toISOString();
+localStorage.setItem(STORAGE_ATTEMPTS_KEY, JSON.stringify(attempts));
+}
+
+function hasAttempt(email, phone) {
+const attempts = getStoredAttempts();
+return Boolean(attempts[attemptKey(email, phone)]);
+}
+
+function getStoredResults() {
+return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
+}
+
+function saveResult(result) {
+const results = getStoredResults();
+results.push(result);
+localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
+}
+
+function sendToSheets(data) {
+const params = new URLSearchParams({
+name: data.name || '',
+phone: data.phone || '',
+email: data.email || '',
+school: data.school || '',
+score: String(data.score || 0),
+total: String(data.total || 0),
+elapsedSeconds: String(data.elapsedSeconds || 0)
+});
+const img = new Image();
+img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
+return true;
+}
+
+function validateRegistration() {
+const name = document.getElementById('name').value.trim();
+const phone = document.getElementById('phone').value.trim();
+const email = document.getElementById('email').value.trim().toLowerCase();
+const school = document.getElementById('school').value.trim();
+
+if (!name || !phone || !email) {
+alert('Vyplň jméno, telefon a e-mail.');
+return null;
+}
+
+const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+if (!emailOk) {
+alert('E-mail nemá správný formát.');
+return null;
+}
+
+if (hasAttempt(email, phone)) {
+alert('Tato registrace už soutěž jednou vyplnila.');
+return null;
+}
+
+return { name, phone, email, school };
+}
+
+function prepareQuestions() {
+const count = Math.min(state.config.questionCount, state.config.questions.length);
+return shuffle(state.config.questions).slice(0, count).map(q => ({
+...clone(q),
+answers: shuffle(q.answers)
+}));
+}
+
+function formatTime(totalSeconds) {
+const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+const ss = String(totalSeconds % 60).padStart(2, '0');
+return `${mm}:${ss}`;
+}
+
+function showScreen(screen) {
+[el.intro, el.quiz, el.result, el.admin, el.adminLogin].forEach(s => s.classList.add('hidden'));
+screen.classList.remove('hidden');
+}
+
+function startQuiz() {
+const participant = validateRegistration();
+if (!participant) return;
+
+state.participant = participant;
+state.questions = prepareQuestions();
+state.currentIndex = 0;
+state.selectedAnswer = null;
+state.answers = {};
+state.timerSeconds = (state.config.minutes || QUIZ_MINUTES) * 60;
+state.startedAt = new Date();
+state.quizVersion = cryptoRandomId();
+state.uploadedFileName = '';
+el.photoUpload.value = '';
+el.timer.textContent = formatTime(state.timerSeconds);
+
+showScreen(el.quiz);
+renderQuestion();
+startTimer();
+}
+
+function startTimer() {
+clearInterval(state.timerInterval);
+el.timer.textContent = formatTime(state.timerSeconds);
+state.timerInterval = setInterval(() => {
+state.timerSeconds -= 1;
+el.timer.textContent = formatTime(Math.max(state.timerSeconds, 0));
+if (state.timerSeconds <= 0) {
+clearInterval(state.timerInterval);
+finishQuiz(true);
+}
+}, 1000);
+}
+
+function renderQuestion() {
+const question = state.questions[state.currentIndex];
+const total = state.questions.length;
+const current = state.currentIndex + 1;
+
+el.questionCounter.textContent = `Otázka ${current} / ${total}`;
+el.progressBar.style.width = `${(current / total) * 100}%`;
+el.questionText.textContent = question.text;
+el.answers.innerHTML = '';
+state.selectedAnswer = state.answers[question.id] || null;
+
+if (question.imageUrl) {
+el.questionImage.src = question.imageUrl;
+el.questionImage.classList.remove('hidden');
+} else {
+el.questionImage.src = '';
+el.questionImage.classList.add('hidden');
+}
+
+question.answers.forEach((answer, idx) => {
+const wrapper = document.createElement('label');
+wrapper.className = 'answer' + (state.selectedAnswer === answer ? ' selected' : '');
+wrapper.innerHTML = `
+         <input type="radio" name="question" value="${escapeHtml(answer)}" ${state.selectedAnswer === answer ? 'checked' : ''} />
+         <div><strong>${String.fromCharCode(65 + idx)})</strong> ${escapeHtml(answer)}</div>
+       `;
+wrapper.addEventListener('click', () => {
+state.selectedAnswer = answer;
+state.answers[question.id] = answer;
+[...el.answers.querySelectorAll('.answer')].forEach(x => x.classList.remove('selected'));
+wrapper.classList.add('selected');
+});
+el.answers.appendChild(wrapper);
+});
+
+const isLast = current === total;
+el.nextBtn.classList.toggle('hidden', isLast);
+el.finishBtn.classList.toggle('hidden', !isLast);
+el.practicalBlock.classList.toggle('hidden', !question.practical);
+}
+
+function nextQuestion() {
+const question = state.questions[state.currentIndex];
+if (!state.answers[question.id]) {
+alert('Vyber jednu odpověď.');
+return;
+}
+if (state.currentIndex < state.questions.length - 1) {
+state.currentIndex += 1;
+renderQuestion();
+}
+}
+
+function finishQuiz(timeout = false) {
+const lastQuestion = state.questions[state.currentIndex];
+if (!timeout && !state.answers[lastQuestion.id]) {
+alert('Vyber jednu odpověď.');
+return;
+}
+
+clearInterval(state.timerInterval);
+const correctAnswers = state.questions.reduce((sum, q) => sum + (state.answers[q.id] === q.correct ? 1 : 0), 0);
+const elapsedSeconds = (state.config.minutes * 60) - Math.max(state.timerSeconds, 0);
+const photoFile = el.photoUpload.files[0];
+if (photoFile) state.uploadedFileName = photoFile.name;
+
+const result = {
+id: cryptoRandomId(),
+timestamp: new Date().toISOString(),
+participant: state.participant,
+score: correctAnswers,
+total: state.questions.length,
+elapsedSeconds,
+elapsedTime: formatTime(elapsedSeconds),
+timedOut: timeout,
+uploadedFileName: state.uploadedFileName,
+quizVersion: state.quizVersion,
+questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
+};
+
+saveResult(result);
+saveAttempt(state.participant.email, state.participant.phone);
+
+sendToSheets({
+name: result.participant?.name || '',
+phone: result.participant?.phone || '',
+email: result.participant?.email || '',
+school: result.participant?.school || '',
+score: result.score,
+total: result.total,
+elapsedSeconds: result.elapsedSeconds
+});
+
+el.finalScore.textContent = `${correctAnswers} / ${state.questions.length}`;
+el.finalTime.textContent = timeout
+? `Čas vypršel. Započtený čas: ${formatTime(elapsedSeconds)}`
+: `Započtený čas: ${formatTime(elapsedSeconds)}`;
+
+showScreen(el.result);
+}
+
+function openAdminLogin() {
+el.adminPassword.value = '';
+showScreen(el.adminLogin);
+setTimeout(() => el.adminPassword.focus(), 50);
+}
+
+function handleAdminLogin() {
+if (el.adminPassword.value === ADMIN_PASSWORD) {
+syncAdminForm();
+renderQuestionEditors();
+renderAdminStats();
+showScreen(el.admin);
+} else {
+alert('Nesprávné heslo.');
+}
+}
+
+function ensureQuestionCount() {
+let wanted = Math.max(1, Number(el.configQuestionCount.value) || 1);
+while (state.config.questions.length < wanted) {
+state.config.questions.push({
+id: Date.now() + state.config.questions.length,
+text: `Nová otázka ${state.config.questions.length + 1}`,
+answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
+correct: 'Odpověď A',
+imageUrl: '',
+practical: false
+});
+}
+if (state.config.questions.length > wanted) {
+state.config.questions = state.config.questions.slice(0, wanted);
+}
+state.config.questionCount = wanted;
+}
+
+function saveAdminConfig() {
+ensureQuestionCount();
+state.config.minutes = Math.max(1, Number(el.configMinutes.value) || 15);
+state.config.introText = el.configTitleText.value.trim() || defaultConfig.introText;
+
+const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
+const updated = cards.map((card, idx) => {
+const answers = [
+card.querySelector('[data-field="a1"]').value.trim(),
+card.querySelector('[data-field="a2"]').value.trim(),
+card.querySelector('[data-field="a3"]').value.trim(),
+card.querySelector('[data-field="a4"]').value.trim()
+];
+const correctIndex = Number(card.querySelector('[data-field="correct"]').value);
+const text = card.querySelector('[data-field="text"]').value.trim();
+const imageUrl = card.querySelector('[data-field="imageUrl"]').value.trim();
+const practical = card.querySelector('[data-field="practical"]').checked;
+
+if (!text) throw new Error(`Otázka ${idx + 1} nemá text.`);
+if (answers.some(v => !v)) throw new Error(`Otázka ${idx + 1} nemá všechny odpovědi.`);
+
+return {
+id: Number(card.dataset.questionId),
+text,
+answers,
+correct: answers[correctIndex],
+imageUrl,
+practical
+};
+});
+
+state.config.questions = updated;
+saveConfig();
+applyConfigToIntro();
+syncAdminForm();
+renderQuestionEditors();
+alert('Administrace byla uložena.');
+}
+
+function addQuestion() {
+state.config.questions.push({
+id: Date.now(),
+text: `Nová otázka ${state.config.questions.length + 1}`,
+answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
+correct: 'Odpověď A',
+imageUrl: '',
+practical: false
+});
+state.config.questionCount = state.config.questions.length;
+syncAdminForm();
+renderQuestionEditors();
+}
+
+function removeQuestion(id) {
+if (state.config.questions.length <= 1) {
+alert('Musí zůstat alespoň jedna otázka.');
+return;
+}
+state.config.questions = state.config.questions.filter(q => q.id !== id);
+state.config.questionCount = state.config.questions.length;
+syncAdminForm();
+renderQuestionEditors();
+}
+
+function resetDefaults() {
+if (!confirm('Opravdu obnovit výchozí otázky a nastavení?')) return;
+state.config = clone(defaultConfig);
+saveConfig();
+applyConfigToIntro();
+syncAdminForm();
+renderQuestionEditors();
+alert('Výchozí nastavení bylo obnoveno.');
+}
+
+function renderQuestionEditors() {
+el.questionEditors.innerHTML = '';
+
+state.config.questions.forEach((q, idx) => {
+const correctIndex = Math.max(0, q.answers.findIndex(a => a === q.correct));
+const card = document.createElement('div');
+card.className = 'editor-card';
+card.dataset.questionId = q.id;
+card.innerHTML = `
+         <h3>Otázka ${idx + 1}</h3>
+         <div class="editor-grid">
+           <div class="full">
+             <label>Znění otázky</label>
+             <textarea data-field="text">${escapeHtml(q.text)}</textarea>
+           </div>
+           <div class="full">
+             <label>URL obrázku (volitelné)</label>
+             <input data-field="imageUrl" type="text" value="${escapeHtml(q.imageUrl || '')}" placeholder="https://.../obrazek.jpg" />
+             ${q.imageUrl ? `<img class="image-preview" src="${escapeHtml(q.imageUrl)}" alt="Preview" />` : ''}
+           </div>
+           <div>
+             <label>Odpověď A</label>
+             <input data-field="a1" type="text" value="${escapeHtml(q.answers[0] || '')}" />
+           </div>
+           <div>
+             <label>Odpověď B</label>
+             <input data-field="a2" type="text" value="${escapeHtml(q.answers[1] || '')}" />
+           </div>
+           <div>
+             <label>Odpověď C</label>
+             <input data-field="a3" type="text" value="${escapeHtml(q.answers[2] || '')}" />
+           </div>
+           <div>
+             <label>Odpověď D</label>
+             <input data-field="a4" type="text" value="${escapeHtml(q.answers[3] || '')}" />
+           </div>
+           <div>
+             <label>Správná odpověď</label>
+             <select data-field="correct">
+               <option value="0" ${correctIndex === 0 ? 'selected' : ''}>A</option>
+               <option value="1" ${correctIndex === 1 ? 'selected' : ''}>B</option>
+               <option value="2" ${correctIndex === 2 ? 'selected' : ''}>C</option>
+               <option value="3" ${correctIndex === 3 ? 'selected' : ''}>D</option>
+             </select>
+           </div>
+           <div>
+             <label>Praktická úloha</label>
+             <input data-field="practical" type="checkbox" ${q.practical ? 'checked' : ''} />
+           </div>
+         </div>
+         <div class="btn-row">
+           <button class="btn-danger" type="button" data-remove-id="${q.id}">Smazat otázku</button>
+         </div>
+       `;
+el.questionEditors.appendChild(card);
+});
+
+[...document.querySelectorAll('[data-remove-id]')].forEach(btn => {
+btn.addEventListener('click', () => removeQuestion(Number(btn.dataset.removeId)));
+});
+}
+
+function renderAdminStats() {
+const results = getStoredResults().sort((a, b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
+
+if (!results.length) {
+el.adminStats.innerHTML = '<strong>Zatím nejsou uložené žádné výsledky.</strong>';
+return;
+}
+
+const rows = results.map((r, i) => `
+       <tr>
+         <td>${i + 1}</td>
+         <td>${escapeHtml(r.participant.name)}</td>
+         <td>${escapeHtml(r.participant.email)}</td>
+         <td>${escapeHtml(r.participant.phone)}</td>
+         <td>${r.score}/${r.total}</td>
+         <td>${escapeHtml(r.elapsedTime)}</td>
+         <td>${escapeHtml(r.participant.school || '-')}</td>
+         <td>${escapeHtml(r.uploadedFileName || '-')}</td>
+       </tr>
+     `).join('');
+
+el.adminStats.innerHTML = `
+       <strong>Počet výsledků:</strong> ${results.length}<br><br>
+       <div style="overflow:auto;">
+         <table style="width:100%; border-collapse:collapse; min-width:780px;">
+           <thead>
+             <tr>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Jméno</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">E-mail</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Telefon</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
+               <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
+             </tr>
+           </thead>
+           <tbody>${rows}</tbody>
+         </table>
+       </div>
+     `;
+}
+
+function exportResultsToCSV() {
+const results = getStoredResults();
+if (!results.length) {
+alert('Není co exportovat.');
+return;
+}
+
+const header = [
+'timestamp','name','email','phone','school','score','total','elapsedTime','elapsedSeconds','timedOut','uploadedFileName','quizVersion'
+];
+
+const lines = results.map(r => [
+r.timestamp,
+r.participant.name,
+r.participant.email,
+r.participant.phone,
+r.participant.school || '',
+r.score,
+r.total,
+r.elapsedTime,
+r.elapsedSeconds,
+r.timedOut,
+r.uploadedFileName || '',
+r.quizVersion
+].map(csvEscape).join(';'));
+
+const csv = [header.join(';'), ...lines].join('\n');
+const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'ic-office-challenge-vysledky.csv';
+document.body.appendChild(a);
+a.click();
+a.remove();
+URL.revokeObjectURL(url);
+}
+
+function clearResults() {
+if (!confirm('Opravdu smazat všechny lokální výsledky a registrace?')) return;
+localStorage.removeItem(STORAGE_RESULTS_KEY);
+localStorage.removeItem(STORAGE_ATTEMPTS_KEY);
+renderAdminStats();
+}
+
+function escapeHtml(text) {
+return String(text ?? '')
+.replace(/&/g, '&amp;')
+.replace(/</g, '&lt;')
+.replace(/>/g, '&gt;')
+.replace(/"/g, '&quot;')
+.replace(/'/g, '&#039;');
+}
+
+function csvEscape(value) {
+const text = String(value ?? '');
+return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function cryptoRandomId() {
+if (window.crypto && crypto.getRandomValues) {
+const arr = new Uint32Array(2);
+crypto.getRandomValues(arr);
+return `${arr[0].toString(16)}${arr[1].toString(16)}`;
+}
+return String(Date.now()) + Math.random().toString(16).slice(2);
+}
+
+function init() {
+state.config = getConfig();
+applyConfigToIntro();
+syncAdminForm();
+}
+
+el.startBtn.addEventListener('click', startQuiz);
+el.nextBtn.addEventListener('click', nextQuestion);
+el.finishBtn.addEventListener('click', () => finishQuiz(false));
+el.exportBtn.addEventListener('click', exportResultsToCSV);
+el.clearBtn.addEventListener('click', clearResults);
+el.backBtn.addEventListener('click', () => showScreen(el.intro));
+el.adminLoginBtn.addEventListener('click', handleAdminLogin);
+el.adminCancelBtn.addEventListener('click', () => showScreen(el.intro));
+el.adminPassword.addEventListener('keydown', (e) => {
+if (e.key === 'Enter') handleAdminLogin();
+});
+el.saveConfigBtn.addEventListener('click', saveAdminConfig);
+el.addQuestionBtn.addEventListener('click', addQuestion);
+el.resetDefaultsBtn.addEventListener('click', resetDefaults);
+
+window.addEventListener('beforeunload', function (e) {
+if (!el.quiz.classList.contains('hidden')) {
+e.preventDefault();
+e.returnValue = '';
+}
+});
+
+(function () {
+const titleEl = document.getElementById('adminHotspot');
+if (!titleEl) return;
+titleEl.addEventListener('click', () => {
+openAdminLogin();
+});
+})();
+
+init();
+</script>
 </body>
 </html>
