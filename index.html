@@ -364,7 +364,7 @@
           <div class="badge" id="badgeQuestions">15 otázek</div>
           <div class="badge" id="badgeMinutes">15 minut</div>
           <div class="badge">1 pokus na registraci</div>
-          <div class="badge">výsledky se po odeslání nezobrazují</div>
+          <div class="badge">výsledky se po odeslání zobrazí</div>
         </div>
       </div>
 
@@ -425,19 +425,9 @@
       <p>Děkujeme za vyplnění soutěže.</p>
       <div class="score" id="finalScore">0 / 15</div>
       <p id="finalTime"></p>
+      <p id="wrongCountText" style="font-size:20px; font-weight:700; margin:10px 0 0;"></p>
 
-      <div class="result-list">
-        <strong>Co se v této verzi ukládá do Google Sheets:</strong>
-        <ul>
-          <li>jméno, e-mail, telefon, škola/tým</li>
-          <li>počet bodů</li>
-          <li>čas dokončení</li>
-          <li>název nahraného souboru</li>
-          <li>pořadí a promíchání otázek pro konkrétní pokus</li>
-        </ul>
-      </div>
-
-      <p class="footer-note">Správné odpovědi se účastníkovi nezobrazují.</p>
+      <div id="reviewBlock" class="result-list hidden" style="margin-top:22px; text-align:left;"></div>
     </section>
 
     <section id="screen-admin-login" class="card hidden">
@@ -738,6 +728,8 @@
       finishBtn: document.getElementById('finishBtn'),
       finalScore: document.getElementById('finalScore'),
       finalTime: document.getElementById('finalTime'),
+      wrongCountText: document.getElementById('wrongCountText'),
+      reviewBlock: document.getElementById('reviewBlock'),
       practicalBlock: document.getElementById('practicalBlock'),
       photoUpload: document.getElementById('photoUpload'),
       exportBtn: document.getElementById('exportBtn'),
@@ -1007,6 +999,8 @@
       clearInterval(state.timerInterval);
 
       const correctAnswers = state.questions.reduce((sum, q) => sum + (state.answers[q.id] === q.correct ? 1 : 0), 0);
+      const wrongQuestions = state.questions.filter(q => state.answers[q.id] !== q.correct);
+      const wrongCount = wrongQuestions.length;
       const elapsedSeconds = (state.config.minutes * 60) - Math.max(state.timerSeconds, 0);
       const photoFile = el.photoUpload.files[0];
       if (photoFile) state.uploadedFileName = photoFile.name;
@@ -1016,13 +1010,20 @@
         timestamp: new Date().toISOString(),
         participant: state.participant,
         score: correctAnswers,
+        wrongCount,
         total: state.questions.length,
         elapsedSeconds,
         elapsedTime: formatTime(elapsedSeconds),
         timedOut: timeout,
         uploadedFileName: state.uploadedFileName,
         quizVersion: state.quizVersion,
-        questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers }))
+        questionsOrder: state.questions.map(q => ({ id: q.id, answers: q.answers })),
+        wrongQuestions: wrongQuestions.map(q => ({
+          id: q.id,
+          text: q.text,
+          selectedAnswer: state.answers[q.id] || '',
+          correctAnswer: q.correct
+        }))
       };
 
       saveResult(result);
@@ -1043,6 +1044,26 @@
         ? `Čas vypršel. Započtený čas: ${formatTime(elapsedSeconds)}`
         : `Započtený čas: ${formatTime(elapsedSeconds)}`;
 
+      el.wrongCountText.textContent = `Počet chybných odpovědí: ${wrongCount}`;
+
+      if (wrongQuestions.length > 0) {
+        el.reviewBlock.innerHTML = `
+          <strong>Chybné odpovědi:</strong>
+          <div style="margin-top:12px;">
+            ${wrongQuestions.map((q, index) => `
+              <div style="margin-bottom:18px; padding:14px; border:1px solid var(--border); border-radius:12px; background:#fff;">
+                <div style="font-weight:700; margin-bottom:8px;">${index + 1}. ${escapeHtml(q.text)}</div>
+                <div style="margin-bottom:6px;"><strong>Tvoje odpověď:</strong> ${escapeHtml(state.answers[q.id] || 'Bez odpovědi')}</div>
+                <div><strong>Správná odpověď:</strong> ${escapeHtml(q.correct)}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        el.reviewBlock.innerHTML = `<strong>Všechny odpovědi byly správně.</strong>`;
+      }
+
+      el.reviewBlock.classList.remove('hidden');
       showScreen(el.result);
     }
 
@@ -1239,6 +1260,7 @@
           <td>${escapeHtml(r.participant.email)}</td>
           <td>${escapeHtml(r.participant.phone)}</td>
           <td>${r.score}/${r.total}</td>
+          <td>${r.wrongCount ?? '-'}</td>
           <td>${escapeHtml(r.elapsedTime)}</td>
           <td>${escapeHtml(r.participant.school || '-')}</td>
           <td>${escapeHtml(r.uploadedFileName || '-')}</td>
@@ -1248,7 +1270,7 @@
       el.adminStats.innerHTML = `
         <strong>Počet výsledků:</strong> ${results.length}<br><br>
         <div style="overflow:auto;">
-          <table style="width:100%; border-collapse:collapse; min-width:780px;">
+          <table style="width:100%; border-collapse:collapse; min-width:900px;">
             <thead>
               <tr>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
@@ -1256,6 +1278,7 @@
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">E-mail</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Telefon</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Body</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Chyby</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
@@ -1275,7 +1298,7 @@
       }
 
       const header = [
-        'timestamp','name','email','phone','school','score','total','elapsedTime','elapsedSeconds','timedOut','uploadedFileName','quizVersion'
+        'timestamp','name','email','phone','school','score','wrongCount','total','elapsedTime','elapsedSeconds','timedOut','uploadedFileName','quizVersion'
       ];
 
       const lines = results.map(r => [
@@ -1285,6 +1308,7 @@
         r.participant.phone,
         r.participant.school || '',
         r.score,
+        r.wrongCount ?? '',
         r.total,
         r.elapsedTime,
         r.elapsedSeconds,
