@@ -1,6 +1,8 @@
 {
   "name": "IC Office Challenge",
   "short_name": "IC Challenge",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "favicon.png",
