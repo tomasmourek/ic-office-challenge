@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>IC Office Challenge</title>
 
   <style>
@@ -25,9 +24,33 @@
     body {
       margin: 0;
       font-family: Inter, Arial, sans-serif;
-      background: linear-gradient(180deg, #ffffff, #fff7f7 55%, #ffffff);
       color: var(--text);
       min-height: 100vh;
+      position: relative;
+      background: linear-gradient(180deg, #c81e1e, #a81515);
+      overflow-x: hidden;
+    }
+
+    .wrap, .card {
+      position: relative;
+      z-index: 1;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      z-index: 0;
+      background-image: url("favicon.png");
+      background-size: 80px 80px;
+      background-repeat: repeat;
+      transform: rotate(45deg);
+      transform-origin: center;
+      opacity: 0.25;
+      pointer-events: none;
     }
 
     .wrap {
@@ -386,7 +409,9 @@
       <div id="practicalBlock" class="hidden">
         <label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
         <input id="photoUpload" type="file" accept="image/*" />
-        <div class="small" style="margin-top:8px;">Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.</div>
+        <div class="small" style="margin-top:8px;">
+          Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.
+        </div>
       </div>
 
       <div class="btn-row">
