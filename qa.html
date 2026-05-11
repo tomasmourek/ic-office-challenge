@@ -326,6 +326,164 @@
       font-size: 12px;
     }
     footer a { color: var(--muted); }
+
+    /* ====== Branded IC Office video rámeček (intro / outro screens) ====== */
+    .ic-stage {
+      position: relative;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 36px 28px;
+      background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(200, 30, 30, 0.18);
+      border: 1px solid #fecaca;
+      overflow: hidden;
+    }
+    body.display-mode .ic-stage {
+      background: linear-gradient(180deg, #11172a 0%, #1c2440 100%);
+      border-color: #2a3454;
+      box-shadow: 0 40px 120px rgba(200, 30, 30, 0.25);
+    }
+
+    /* Červený pásek IC Office nahoře a dole */
+    .ic-stage::before,
+    .ic-stage::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+    }
+    .ic-stage::before { top: 0; }
+    .ic-stage::after { bottom: 0; }
+
+    .ic-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .ic-brand img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    .ic-brand-text {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-size: clamp(20px, 2.6vw, 28px);
+    }
+    .ic-brand-text .ic { color: var(--accent); }
+
+    .ic-stage h2 {
+      font-size: clamp(24px, 3.6vw, 38px);
+      margin: 0 0 8px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .ic-stage .lead {
+      font-size: clamp(15px, 1.8vw, 18px);
+      color: var(--muted);
+      margin: 0 0 22px;
+      line-height: 1.55;
+    }
+    .ic-stage .body-text {
+      font-size: clamp(15px, 1.8vw, 18px);
+      line-height: 1.6;
+      margin: 0 0 22px;
+      white-space: pre-wrap;
+    }
+    body.display-mode .ic-stage h2,
+    body.display-mode .ic-stage .body-text { color: #ffffff; }
+
+    /* Video rámeček uvnitř stage */
+    .ic-video-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 2px solid var(--accent);
+    }
+    .ic-video-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .ic-video-frame::before {
+      content: "IC OFFICE";
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      background: rgba(200, 30, 30, 0.9);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .ic-footer {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    body.display-mode .ic-footer { border-top-color: #2a3454; }
+    .ic-footer .ic-tag {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Velký font na projektoru */
+    body.display-mode .ic-stage { padding: 56px 48px; }
+    body.display-mode .ic-stage h2 { font-size: clamp(38px, 5.5vw, 64px); }
+    body.display-mode .ic-stage .lead,
+    body.display-mode .ic-stage .body-text { font-size: clamp(20px, 2.4vw, 28px); }
+    body.display-mode .ic-brand img { width: 56px; height: 56px; }
+    body.display-mode .ic-brand-text { font-size: clamp(26px, 3vw, 36px); }
+
+    /* Phase přepínač v adminu */
+    .phase-switch {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      margin-top: 6px;
+    }
+    .phase-switch button {
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--muted);
+      transition: background 150ms ease, color 150ms ease;
+    }
+    .phase-switch button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .phase-switch button:hover:not(.active) {
+      background: #e2e8f0;
+      color: var(--text);
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -337,6 +495,56 @@
       <h1><span class="ic">IC Office</span> <span id="modeSuffix">— dotazy</span></h1>
       <p class="subtitle" id="subtitle">Načítám…</p>
     </header>
+
+    <!-- ============ INTRO PHASE (společný pro účastníka i projektor) ============ -->
+    <section id="screen-intro-phase" class="hidden">
+      <div class="ic-stage">
+        <div class="ic-brand">
+          <img src="favicon.png" alt="IC Office" />
+          <div class="ic-brand-text"><span class="ic">IC Office</span> · školení</div>
+        </div>
+        <h2 id="introTitle">Vítej na školení</h2>
+        <p class="lead" id="introLead">—</p>
+
+        <div id="introVideoWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-video-frame">
+            <iframe id="introVideoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="body-text" id="introBody"></div>
+
+        <div class="ic-footer">
+          <span>Připravujeme se. Brzy začínáme 🎤</span>
+          <span class="ic-tag">www.ic-office.eu</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OUTRO PHASE (společný pro účastníka i projektor) ============ -->
+    <section id="screen-outro-phase" class="hidden">
+      <div class="ic-stage">
+        <div class="ic-brand">
+          <img src="favicon.png" alt="IC Office" />
+          <div class="ic-brand-text"><span class="ic">IC Office</span> · děkujeme</div>
+        </div>
+        <h2 id="outroTitle">Děkujeme za účast</h2>
+        <p class="lead" id="outroLead">Doufáme, že ti školení dalo, co si od něj sliboval/a.</p>
+
+        <div id="outroVideoWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-video-frame">
+            <iframe id="outroVideoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="body-text" id="outroBody"></div>
+
+        <div class="ic-footer">
+          <span>Najdi nás na <a href="https://www.ic-office.eu" target="_blank" rel="noopener">www.ic-office.eu</a></span>
+          <span class="ic-tag">IC Office</span>
+        </div>
+      </div>
+    </section>
 
     <!-- ============ PARTICIPANT MODE ============ -->
     <section id="screen-participant" class="hidden">
@@ -458,6 +666,53 @@
       </div>
 
       <div class="card">
+        <h3 style="margin:0 0 4px;">Fáze školení</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Klikni na fázi — okamžitě se přepne, co vidí účastníci i projektor.
+          <strong>Intro</strong> = před školením, <strong>Live</strong> = otevřené Q&amp;A, <strong>Outro</strong> = závěr.
+        </p>
+        <div class="phase-switch" id="phaseSwitch">
+          <button data-phase="intro">🎬 Intro</button>
+          <button data-phase="live">🎤 Live Q&amp;A</button>
+          <button data-phase="outro">👋 Outro</button>
+        </div>
+
+        <div style="margin-top:18px;">
+          <h4 style="margin:0 0 8px; font-size:15px;">🎬 Intro — uvodní obrazovka</h4>
+          <label for="introTitleInput">Titulek</label>
+          <input id="introTitleInput" type="text" maxlength="120" placeholder="Např. Vítej na školení IC Office" />
+          <div style="height:8px;"></div>
+          <label for="introVideoInput">YouTube ID nebo URL (volitelné)</label>
+          <input id="introVideoInput" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+          <div style="height:8px;"></div>
+          <label for="introBodyInput">Doplňující text (volitelné)</label>
+          <textarea id="introBodyInput" maxlength="2000" placeholder="Co účastníky čeká, program, organizační info…"></textarea>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-primary" id="saveIntroBtn">Uložit intro</button>
+            <a class="btn btn-ghost" id="previewIntroLink" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">Náhled ↗</a>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;">
+          <h4 style="margin:0 0 8px; font-size:15px;">👋 Outro — závěrečná obrazovka</h4>
+          <label for="outroTitleInput">Titulek</label>
+          <input id="outroTitleInput" type="text" maxlength="120" placeholder="Např. Děkujeme za účast" />
+          <div style="height:8px;"></div>
+          <label for="outroVideoInput">YouTube ID nebo URL (volitelné)</label>
+          <input id="outroVideoInput" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+          <div style="height:8px;"></div>
+          <label for="outroBodyInput">Doplňující text (volitelné)</label>
+          <textarea id="outroBodyInput" maxlength="2000" placeholder="Kontakty, odkaz na materiály, další školení…"></textarea>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-primary" id="saveOutroBtn">Uložit outro</button>
+            <a class="btn btn-ghost" id="previewOutroLink" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">Náhled ↗</a>
+          </div>
+        </div>
+
+        <div id="phaseAlert" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
         <h3 style="margin:0 0 12px;">Dotazy (live)</h3>
         <div class="question-list" id="adminList"></div>
         <div id="adminEmpty" class="empty hidden">Zatím žádné dotazy.</div>
@@ -547,6 +802,79 @@
       if (params.has('admin')) return 'admin';
       if (params.has('display')) return 'display';
       return 'participant';
+    }
+
+    // Vytáhne YouTube video ID z různých formátů — holé ID, watch URL, youtu.be,
+    // /embed/, /shorts/. Stejná logika jako v index.html admin sekci.
+    function extractYoutubeId(input) {
+      if (!input) return '';
+      const raw = String(input).trim();
+      if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+      const patterns = [
+        /[?&]v=([A-Za-z0-9_-]{11})/,
+        /youtu\.be\/([A-Za-z0-9_-]{11})/,
+        /\/embed\/([A-Za-z0-9_-]{11})/,
+        /\/shorts\/([A-Za-z0-9_-]{11})/
+      ];
+      for (const p of patterns) {
+        const m = raw.match(p);
+        if (m) return m[1];
+      }
+      return '';
+    }
+
+    // Naplní intro / outro screen z dat session. Volá se z participant i display módu.
+    function renderIntroOutroFromSession(session) {
+      // Intro
+      $('introTitle').textContent = (session.intro_text && session.intro_text.split('\n')[0]) || ('Vítej na školení: ' + session.title);
+      $('introLead').textContent = session.description || 'Brzy začínáme.';
+      const introBody = (session.intro_text || '').split('\n').slice(1).join('\n').trim();
+      $('introBody').textContent = introBody;
+      if (session.intro_video_id) {
+        $('introVideoFrame').src = 'https://www.youtube.com/embed/' + encodeURIComponent(session.intro_video_id) + '?rel=0&modestbranding=1';
+        $('introVideoWrap').classList.remove('hidden');
+      } else {
+        $('introVideoFrame').src = '';
+        $('introVideoWrap').classList.add('hidden');
+      }
+
+      // Outro
+      $('outroTitle').textContent = (session.outro_text && session.outro_text.split('\n')[0]) || 'Děkujeme za účast';
+      $('outroLead').textContent = 'Doufáme, že ti školení dalo, co si od něj sliboval/a.';
+      const outroBody = (session.outro_text || '').split('\n').slice(1).join('\n').trim();
+      $('outroBody').textContent = outroBody;
+      if (session.outro_video_id) {
+        $('outroVideoFrame').src = 'https://www.youtube.com/embed/' + encodeURIComponent(session.outro_video_id) + '?rel=0&modestbranding=1';
+        $('outroVideoWrap').classList.remove('hidden');
+      } else {
+        $('outroVideoFrame').src = '';
+        $('outroVideoWrap').classList.add('hidden');
+      }
+    }
+
+    // Hlavní dispatcher pro participant + display mód: rozhodne, který screen ukázat
+    // podle state.session.display_phase (intro / live / outro).
+    function showPhaseScreen(forParticipant) {
+      const phase = (state.session && state.session.display_phase) || 'live';
+      ['screen-intro-phase', 'screen-outro-phase', 'screen-participant', 'screen-display']
+        .forEach(id => $(id).classList.add('hidden'));
+
+      renderIntroOutroFromSession(state.session);
+
+      if (phase === 'intro') {
+        $('screen-intro-phase').classList.remove('hidden');
+        return;
+      }
+      if (phase === 'outro') {
+        $('screen-outro-phase').classList.remove('hidden');
+        return;
+      }
+      // 'live' — výchozí: ukáže buď participant feed, nebo display leaderboard
+      if (forParticipant) {
+        $('screen-participant').classList.remove('hidden');
+      } else {
+        $('screen-display').classList.remove('hidden');
+      }
     }
 
     // ====== Bootstrap ======
@@ -660,7 +988,7 @@
     function initParticipant() {
       $('modeSuffix').textContent = '— dotazy';
       $('subtitle').textContent = state.session.title + (state.session.description ? ' · ' + state.session.description : '');
-      $('screen-participant').classList.remove('hidden');
+      showPhaseScreen(true);
 
       if (state.session.closed) {
         showAlert('participantAlert', 'warn', 'Session je uzavřená. Nové dotazy nelze odesílat, ale dál vidíš ostatní.');
@@ -682,6 +1010,10 @@
 
       renderParticipantList();
       subscribeRealtime(state.session.id, async () => {
+        // Aktualizovat session, ať zachytíme změnu display_phase / intro / outro / closed
+        const fresh = await loadSessionBySlug(state.sessionSlug);
+        if (fresh) state.session = fresh;
+        showPhaseScreen(true);
         await loadMyVotes();
         await renderParticipantList();
       });
@@ -824,7 +1156,7 @@
     async function initDisplay() {
       $('modeSuffix').textContent = '— dotazy (projektor)';
       $('subtitle').textContent = state.session.title;
-      $('screen-display').classList.remove('hidden');
+      showPhaseScreen(false);
       $('qrWidget').classList.remove('hidden');
 
       // QR ukazuje účastnickou URL stejné session.
@@ -838,8 +1170,9 @@
 
       renderDisplayList();
       subscribeRealtime(state.session.id, async () => {
-        // Refresh session (aby zachytil změnu highlight_question_id) i questions.
+        // Refresh session (aby zachytil změnu highlight_question_id, display_phase, intro/outro) i questions.
         state.session = await loadSessionBySlug(state.sessionSlug) || state.session;
+        showPhaseScreen(false);
         await renderDisplayList();
       });
     }
@@ -1036,6 +1369,7 @@
       $('adminSessionTitle').textContent = state.session.title;
       $('adminSessionMeta').textContent =
         'slug: ' + state.session.slug
+        + ' · fáze: ' + (state.session.display_phase || 'live')
         + ' · ' + (state.session.moderation_mode === 'auto' ? 'auto-publikace' : 'manuální schvalování')
         + ' · ' + (state.session.allow_anonymous ? 'anonymně OK' : 'jen s jménem')
         + (state.session.closed ? ' · UZAVŘENÁ' : '');
@@ -1045,18 +1379,102 @@
       $('adminParticipantLink').href = participantUrl;
       $('adminDisplayLink').href = displayUrl;
       $('adminParticipantUrlLabel').textContent = participantUrl;
+      $('previewIntroLink').href = participantUrl;
+      $('previewOutroLink').href = participantUrl;
 
       QRCode.toCanvas($('adminQrCanvas'), participantUrl, {
         width: 140, margin: 1,
         color: { dark: '#0b0f1a', light: '#ffffff' }
       });
 
+      // Phase switch — aktivní tlačítko podle aktuální display_phase.
+      const currentPhase = state.session.display_phase || 'live';
+      $('phaseSwitch').querySelectorAll('button[data-phase]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.phase === currentPhase);
+        btn.onclick = () => setSessionPhase(btn.dataset.phase);
+      });
+
+      // Naplnit intro / outro editor: titulek = první řádek, body = zbytek.
+      const introLines = (state.session.intro_text || '').split('\n');
+      $('introTitleInput').value = introLines[0] || '';
+      $('introBodyInput').value = introLines.slice(1).join('\n').trim();
+      $('introVideoInput').value = state.session.intro_video_id || '';
+
+      const outroLines = (state.session.outro_text || '').split('\n');
+      $('outroTitleInput').value = outroLines[0] || '';
+      $('outroBodyInput').value = outroLines.slice(1).join('\n').trim();
+      $('outroVideoInput').value = state.session.outro_video_id || '';
+
+      $('saveIntroBtn').onclick = () => saveIntroOutro('intro');
+      $('saveOutroBtn').onclick = () => saveIntroOutro('outro');
+
       await renderAdminQuestionList();
       subscribeRealtime(state.session.id, async () => {
         state.session = await loadSessionBySlug(state.session.slug) || state.session;
         $('adminSessionTitle').textContent = state.session.title;
+        $('adminSessionMeta').textContent =
+          'slug: ' + state.session.slug
+          + ' · fáze: ' + (state.session.display_phase || 'live')
+          + ' · ' + (state.session.moderation_mode === 'auto' ? 'auto-publikace' : 'manuální schvalování')
+          + ' · ' + (state.session.allow_anonymous ? 'anonymně OK' : 'jen s jménem')
+          + (state.session.closed ? ' · UZAVŘENÁ' : '');
+        const phase = state.session.display_phase || 'live';
+        $('phaseSwitch').querySelectorAll('button[data-phase]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.phase === phase);
+        });
         await renderAdminQuestionList();
       });
+    }
+
+    async function setSessionPhase(phase) {
+      if (!state.session || !['intro', 'live', 'outro'].includes(phase)) return;
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ display_phase: phase })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Změna fáze selhala: ' + error.message);
+        return;
+      }
+      const labels = { intro: '🎬 Intro', live: '🎤 Live Q&A', outro: '👋 Outro' };
+      showAlert('phaseAlert', 'ok', 'Přepnuto na ' + labels[phase] + '. Účastníci i projektor se aktualizují automaticky.');
+    }
+
+    async function saveIntroOutro(kind) {
+      if (!state.session) return;
+      const title = $(kind + 'TitleInput').value.trim();
+      const body = $(kind + 'BodyInput').value.trim();
+      const videoRaw = $(kind + 'VideoInput').value.trim();
+
+      let videoId = null;
+      if (videoRaw) {
+        videoId = extractYoutubeId(videoRaw);
+        if (!videoId) {
+          showAlert('phaseAlert', 'error', 'YouTube ID v ' + kind.toUpperCase() + ' se nepodařilo rozpoznat. Vlož celou URL nebo 11znakové ID.');
+          return;
+        }
+      }
+
+      // Uložíme title + body sloučené přes \n do existujícího sloupce intro_text / outro_text.
+      const combined = title + (body ? '\n' + body : '');
+      const patch = kind === 'intro'
+        ? { intro_text: combined, intro_video_id: videoId }
+        : { outro_text: combined, outro_video_id: videoId };
+
+      const btn = $('save' + kind.charAt(0).toUpperCase() + kind.slice(1) + 'Btn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = 'Ukládám…';
+
+      const { error } = await supabaseClient.from('qa_sessions').update(patch).eq('id', state.session.id);
+
+      btn.disabled = false;
+      btn.textContent = orig;
+
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Uložení ' + kind + ' selhalo: ' + error.message);
+        return;
+      }
+      showAlert('phaseAlert', 'ok', kind === 'intro' ? 'Intro uloženo.' : 'Outro uloženo.');
     }
 
     async function renderAdminQuestionList() {
