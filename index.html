@@ -343,6 +343,40 @@
       .wrap { padding: 16px 12px 32px; }
       .full { grid-column: auto; }
     }
+
+    /* Anti-cheat: na kvízové obrazovce nelze text označit / zkopírovat / otevřít kontext.
+       Záměrné komplikace pro pokusy o copy-paste otázky do externí AI. */
+    #screen-quiz {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* Banner po přepnutí pryč a návratu — sděluje hráči, že čas běžel 1,5× rychleji. */
+    .away-banner {
+      position: fixed;
+      left: 50%;
+      top: 16px;
+      transform: translateX(-50%);
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.25);
+      z-index: 10000;
+      max-width: 90vw;
+      text-align: center;
+      animation: awaySlide 350ms ease-out;
+    }
+    @keyframes awaySlide {
+      0% { transform: translateX(-50%) translateY(-30px); opacity: 0; }
+      100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -574,7 +608,14 @@
       deletedQuestionIds: [],
       // Pending file uploady — mapa otázka ID → File objekt, který se má při
       // dalším save uploadnout do Storage.
-      pendingImageUploads: {}
+      pendingImageUploads: {},
+      // F6 anti-cheat: počet a doba přepnutí pryč ze stránky během kvízu.
+      // Penalizace: čas běží 1,5× rychleji, kdy je dokument hidden.
+      // Hodnoty se posílají do results.meta při finishQuiz pro audit.
+      awayCount: 0,
+      awayTotalMs: 0,
+      awayStartedAt: null,
+      awayBannerEl: null
     };
 
     const el = {
@@ -849,7 +890,8 @@
         school: data.school || null,
         score: Number(data.score) || 0,
         total: Number(data.total) || 0,
-        time_seconds: Number(data.elapsedSeconds) || 0
+        time_seconds: Number(data.elapsedSeconds) || 0,
+        meta: data.meta || {}
       });
 
       if (error) {
@@ -918,6 +960,9 @@
       state.uploadedFileName = '';
       el.photoUpload.value = '';
       el.timer.textContent = formatTime(state.timerSeconds);
+
+      // F6: vynulovat anti-cheat tracking pro nové sezení.
+      resetAntiCheatTracking();
 
       showScreen(el.quiz);
       renderQuestion();
@@ -1032,6 +1077,10 @@
         }))
       };
 
+      // F6: ukončit anti-cheat tracking a sebrat audit meta.
+      hideAwayBanner();
+      const submissionMeta = buildResultMeta();
+
       saveResultBackup(result);
       saveAttempt(state.participant.email, state.participant.phone);
 
@@ -1044,7 +1093,8 @@
         school: result.participant?.school || '',
         score: result.score,
         total: result.total,
-        elapsedSeconds: result.elapsedSeconds
+        elapsedSeconds: result.elapsedSeconds,
+        meta: submissionMeta
       }).catch(err => console.error('Submit failed:', err));
 
       // Respektuje toggle show_rank_to_player z challenge tabulky:
@@ -1472,7 +1522,7 @@
 
       const { data: results, error } = await supabaseClient
         .from('results')
-        .select('id, name, email, phone, school, score, total, time_seconds, finished_at')
+        .select('id, name, email, phone, school, score, total, time_seconds, finished_at, meta')
         .eq('challenge_id', state.config.id)
         .order('score', { ascending: false })
         .order('time_seconds', { ascending: true })
@@ -1488,23 +1538,34 @@
         return;
       }
 
-      const rows = results.map((r, i) => `
-        <tr>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${i + 1}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.name)}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.email || '-')}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.phone || '-')}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${r.score}/${r.total}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${(r.total ?? 0) - (r.score ?? 0)}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${formatTime(r.time_seconds || 0)}</td>
-          <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.school || '-')}</td>
-        </tr>
-      `).join('');
+      const rows = results.map((r, i) => {
+        const meta = r.meta || {};
+        const awayCount = Number(meta.away_count || 0);
+        const awaySec = Number(meta.away_total_seconds || 0);
+        // Vizuální signál: oranžová pro 1-2 přepnutí, červená pro 3+
+        const awayColor = awayCount >= 3 ? '#dc2626' : awayCount >= 1 ? '#d97706' : 'inherit';
+        const awayBadge = awayCount > 0
+          ? `<span style="color:${awayColor}; font-weight:700;">${awayCount}× / ${awaySec}s</span>`
+          : '<span style="color:#16a34a;">0×</span>';
+        return `
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${i + 1}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.name)}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.email || '-')}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.phone || '-')}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${r.score}/${r.total}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${(r.total ?? 0) - (r.score ?? 0)}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${formatTime(r.time_seconds || 0)}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.school || '-')}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);" title="Počet a sekundy přepnutí pryč ze stránky během kvízu (anti-cheat).">${awayBadge}</td>
+          </tr>
+        `;
+      }).join('');
 
       el.adminStats.innerHTML = `
         <strong>Počet výsledků:</strong> ${results.length}<br><br>
         <div style="overflow:auto;">
-          <table style="width:100%; border-collapse:collapse; min-width:760px;">
+          <table style="width:100%; border-collapse:collapse; min-width:860px;">
             <thead>
               <tr>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
@@ -1515,6 +1576,7 @@
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Chyby</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);" title="Anti-cheat: kolikrát hráč přepnul pryč ze stránky / celkové sekundy.">Mimo</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -1531,7 +1593,7 @@
 
       const { data: results, error } = await supabaseClient
         .from('results')
-        .select('id, name, email, phone, school, score, total, time_seconds, finished_at')
+        .select('id, name, email, phone, school, score, total, time_seconds, finished_at, meta')
         .eq('challenge_id', state.config.id)
         .order('score', { ascending: false })
         .order('time_seconds', { ascending: true });
@@ -1545,18 +1607,28 @@
         return;
       }
 
-      const header = ['finished_at','name','email','phone','school','score','total','time_seconds'];
+      const header = [
+        'finished_at','name','email','phone','school','score','total','time_seconds',
+        'away_count','away_total_seconds','user_agent','time_zone'
+      ];
 
-      const lines = results.map(r => [
-        r.finished_at,
-        r.name,
-        r.email || '',
-        r.phone || '',
-        r.school || '',
-        r.score,
-        r.total,
-        r.time_seconds
-      ].map(csvEscape).join(';'));
+      const lines = results.map(r => {
+        const m = r.meta || {};
+        return [
+          r.finished_at,
+          r.name,
+          r.email || '',
+          r.phone || '',
+          r.school || '',
+          r.score,
+          r.total,
+          r.time_seconds,
+          m.away_count ?? '',
+          m.away_total_seconds ?? '',
+          m.user_agent || '',
+          m.time_zone || ''
+        ].map(csvEscape).join(';');
+      });
 
       // BOM (﻿) zaručí, že Excel správně rozpozná UTF-8 (české znaky).
       const csv = '﻿' + [header.join(';'), ...lines].join('\n');
@@ -1614,7 +1686,101 @@
       return String(Date.now()) + Math.random().toString(16).slice(2);
     }
 
+    // ====== F6 anti-cheat ======
+
+    function isQuizActive() {
+      return !el.quiz.classList.contains('hidden');
+    }
+
+    function resetAntiCheatTracking() {
+      state.awayCount = 0;
+      state.awayTotalMs = 0;
+      state.awayStartedAt = null;
+      hideAwayBanner();
+    }
+
+    function showAwayBanner(awaySec, penaltySec) {
+      hideAwayBanner();
+      const banner = document.createElement('div');
+      banner.className = 'away-banner';
+      banner.textContent =
+        `Byl/a jsi pryč ${awaySec} s. Čas se zkrátil o ${penaltySec} s (penalty 1,5×). `
+        + `Celkem mimo: ${state.awayCount}× / ${Math.round(state.awayTotalMs / 1000)} s.`;
+      document.body.appendChild(banner);
+      state.awayBannerEl = banner;
+      setTimeout(hideAwayBanner, 6000);
+    }
+
+    function hideAwayBanner() {
+      if (state.awayBannerEl) {
+        state.awayBannerEl.remove();
+        state.awayBannerEl = null;
+      }
+    }
+
+    // Page Visibility API: hidden = uživatel přepl na jiný tab / app / zamkl obrazovku.
+    // Penalty: doba pryč × 0,5 navíc → čas běží 1,5× rychleji celkově.
+    function onVisibilityChangeForQuiz() {
+      if (!isQuizActive()) return;
+
+      if (document.hidden) {
+        state.awayStartedAt = Date.now();
+        return;
+      }
+
+      if (state.awayStartedAt === null) return;
+
+      const awayMs = Date.now() - state.awayStartedAt;
+      state.awayStartedAt = null;
+      state.awayCount += 1;
+      state.awayTotalMs += awayMs;
+
+      const penaltySec = Math.max(1, Math.round((awayMs * 0.5) / 1000));
+      state.timerSeconds = Math.max(0, state.timerSeconds - penaltySec);
+      el.timer.textContent = formatTime(state.timerSeconds);
+      showAwayBanner(Math.round(awayMs / 1000), penaltySec);
+
+      if (state.timerSeconds <= 0) {
+        clearInterval(state.timerInterval);
+        finishQuiz(true);
+      }
+    }
+
+    function blockEventInQuiz(e) {
+      if (isQuizActive()) e.preventDefault();
+    }
+
+    function setupAntiCheatListeners() {
+      document.addEventListener('visibilitychange', onVisibilityChangeForQuiz);
+      // Blokovat copy / cut / context menu jen během kvízu — admin a intro nechat.
+      document.addEventListener('copy', blockEventInQuiz);
+      document.addEventListener('cut', blockEventInQuiz);
+      document.addEventListener('contextmenu', blockEventInQuiz);
+      // Drag-and-drop obrázku otázky do ChatGPT.
+      document.addEventListener('dragstart', blockEventInQuiz);
+    }
+
+    function buildResultMeta() {
+      const m = {
+        user_agent: (navigator.userAgent || '').slice(0, 500),
+        away_count: state.awayCount,
+        away_total_seconds: Math.round(state.awayTotalMs / 1000),
+        screen_width: window.screen && window.screen.width || null,
+        screen_height: window.screen && window.screen.height || null,
+        viewport_width: window.innerWidth || null,
+        viewport_height: window.innerHeight || null,
+        time_zone: (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || null,
+        client_started_at: state.startedAt ? state.startedAt.toISOString() : null,
+        client_finished_at: new Date().toISOString()
+      };
+      return m;
+    }
+
     async function init() {
+      // F6: zaregistrovat anti-cheat listenery jednou při startu stránky.
+      // Sami se aktivují jen když je kvízová obrazovka viditelná.
+      setupAntiCheatListeners();
+
       try {
         showLoadingIntro(true);
         state.config = await loadConfigFromSupabase();
