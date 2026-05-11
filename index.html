@@ -4,6 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IC Office Challenge</title>
+  <meta name="description" content="Krátká soutěž pro studenty, mechaniky i mistry. Otestuj si znalosti o systému IC Office." />
+  <meta name="theme-color" content="#c81e1e" />
+
+  <!-- Open Graph: jak vypadá link sdílený na Facebooku, WhatsAppu, Slacku, LinkedIn… -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="IC Office Challenge" />
+  <meta property="og:title" content="IC Office Challenge" />
+  <meta property="og:description" content="Krátká soutěž pro studenty, mechaniky i mistry. Otestuj si znalosti o systému IC Office." />
+  <meta property="og:url" content="https://www.ic-office-challenge.eu/" />
+  <meta property="og:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:locale" content="cs_CZ" />
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="IC Office Challenge" />
+  <meta name="twitter:description" content="Krátká soutěž pro studenty, mechaniky i mistry." />
+  <meta name="twitter:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+
+  <link rel="manifest" href="site.webmanifest" />
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
 
   <style>
     :root {
@@ -462,6 +485,14 @@
       <p id="finalTime"></p>
       <p id="wrongCountText" style="font-size:20px; font-weight:700; margin:10px 0 0;"></p>
 
+      <div class="btn-row" style="margin-top:18px;">
+        <button class="btn-primary" id="shareResultBtn" type="button">Sdílet výsledek</button>
+        <a class="btn-secondary" id="openLeaderboardLink" href="leaderboard.html" target="_blank" rel="noopener"
+           style="text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+          Otevřít leaderboard ↗
+        </a>
+      </div>
+
       <div id="reviewBlock" class="result-list hidden" style="margin-top:22px; text-align:left;"></div>
     </section>
 
@@ -636,6 +667,8 @@
       finalScore: document.getElementById('finalScore'),
       finalTime: document.getElementById('finalTime'),
       wrongCountText: document.getElementById('wrongCountText'),
+      shareResultBtn: document.getElementById('shareResultBtn'),
+      openLeaderboardLink: document.getElementById('openLeaderboardLink'),
       reviewBlock: document.getElementById('reviewBlock'),
       practicalBlock: document.getElementById('practicalBlock'),
       photoUpload: document.getElementById('photoUpload'),
@@ -1080,6 +1113,14 @@
       // F6: ukončit anti-cheat tracking a sebrat audit meta.
       hideAwayBanner();
       const submissionMeta = buildResultMeta();
+
+      // F8: zachovat data o posledním výsledku pro Web Share API
+      state.lastResult = {
+        score: correctAnswers,
+        total: state.questions.length,
+        elapsedSeconds: elapsedSeconds,
+        timedOut: timeout
+      };
 
       saveResultBackup(result);
       saveAttempt(state.participant.email, state.participant.phone);
@@ -1760,6 +1801,44 @@
       document.addEventListener('dragstart', blockEventInQuiz);
     }
 
+    // ====== F8 Web Share API ======
+
+    async function shareResult() {
+      const r = state.lastResult;
+      if (!r) {
+        alert('Nejdřív dokonči soutěž.');
+        return;
+      }
+
+      const mm = String(Math.floor(r.elapsedSeconds / 60)).padStart(2, '0');
+      const ss = String(r.elapsedSeconds % 60).padStart(2, '0');
+      const title = state.config?.title || 'IC Office Challenge';
+      const url = 'https://www.ic-office-challenge.eu/';
+
+      const text = `${title}: ${r.score} / ${r.total} bodů za ${mm}:${ss}. Zkus to taky → ${url}`;
+
+      // Web Share API (mobil + Edge/Chrome na desktopu) — otevře nativní share dialog.
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url });
+          return;
+        } catch (e) {
+          // AbortError = uživatel zrušil share, není to chyba; jinak fallback.
+          if (e.name === 'AbortError') return;
+          console.warn('Native share failed, falling back to clipboard:', e);
+        }
+      }
+
+      // Fallback: zkopírovat text do clipboard.
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Výsledek zkopírován do schránky 📋\n\n' + text);
+      } catch (e) {
+        // Pokud i clipboard selže (např. starý prohlížeč, žádné HTTPS), ukázat text ručně.
+        prompt('Zkopíruj výsledek a sdílej, kde chceš:', text);
+      }
+    }
+
     function buildResultMeta() {
       const m = {
         user_agent: (navigator.userAgent || '').slice(0, 500),
@@ -1829,6 +1908,7 @@
     el.startBtn.addEventListener('click', startQuiz);
     el.nextBtn.addEventListener('click', nextQuestion);
     el.finishBtn.addEventListener('click', () => finishQuiz(false));
+    el.shareResultBtn.addEventListener('click', shareResult);
     el.exportBtn.addEventListener('click', exportResultsToCSV);
     el.clearBtn.addEventListener('click', clearResults);
     el.backBtn.addEventListener('click', () => showScreen(el.intro));

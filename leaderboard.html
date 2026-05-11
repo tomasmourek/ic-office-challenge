@@ -4,7 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IC Office Challenge — Výsledky</title>
+  <meta name="description" content="Živá tabulka výsledků IC Office Challenge — sleduj pořadí v reálném čase." />
+  <meta name="theme-color" content="#0b0f1a" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="IC Office Challenge" />
+  <meta property="og:title" content="IC Office Challenge — výsledky" />
+  <meta property="og:description" content="Živá tabulka výsledků v reálném čase." />
+  <meta property="og:url" content="https://www.ic-office-challenge.eu/leaderboard.html" />
+  <meta property="og:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+  <meta property="og:locale" content="cs_CZ" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="IC Office Challenge — výsledky" />
+  <meta name="twitter:description" content="Živá tabulka výsledků v reálném čase." />
+  <meta name="twitter:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+
   <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
 
   <style>
     :root {
@@ -244,13 +261,57 @@
       pointer-events: none;
       z-index: 9999;
     }
+
+    /* QR widget — fixed v pravém dolním rohu, jen na leaderboard módu.
+       Lidi v sále nascannují → otevřou si soutěž na vlastním telefonu. */
+    .qr-widget {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #ffffff;
+      padding: 14px 14px 10px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      z-index: 50;
+      text-align: center;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .qr-widget canvas { display: block; }
+    .qr-widget .qr-label {
+      color: #0b0f1a;
+      font-weight: 700;
+      font-size: 11px;
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+    .qr-widget .qr-cta {
+      color: #c81e1e;
+      font-weight: 800;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+    .qr-widget.hidden { display: none; }
+
+    @media (max-width: 700px) {
+      .qr-widget { display: none; } /* na mobilu by QR překážel a nedává smysl */
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 </head>
 <body>
   <canvas id="confetti-canvas"></canvas>
+
+  <!-- QR widget (jen pro leaderboard mód) — naskenováním se otevře soutěž na telefonu -->
+  <div class="qr-widget hidden" id="qrWidget">
+    <canvas id="qrCanvas" width="140" height="140"></canvas>
+    <div class="qr-cta">Soutěž zde</div>
+    <div class="qr-label" id="qrLabel">ic-office-challenge.eu</div>
+  </div>
 
   <div class="wrap">
     <header>
@@ -340,7 +401,10 @@
       screenYoutube: document.getElementById('screen-youtube'),
       screenClosed: document.getElementById('screen-closed'),
       youtubeFrame: document.getElementById('youtubeFrame'),
-      confettiCanvas: document.getElementById('confetti-canvas')
+      confettiCanvas: document.getElementById('confetti-canvas'),
+      qrWidget: document.getElementById('qrWidget'),
+      qrCanvas: document.getElementById('qrCanvas'),
+      qrLabel: document.getElementById('qrLabel')
     };
 
     const state = {
@@ -379,6 +443,8 @@
       el.screenLeaderboard.classList.add('hidden');
       el.screenYoutube.classList.add('hidden');
       el.screenClosed.classList.add('hidden');
+      // QR widget skryjeme defaultně — ukáže se jen v leaderboard módu.
+      el.qrWidget.classList.add('hidden');
 
       if (mode === 'youtube' && challenge.youtube_video_id) {
         const safeId = encodeURIComponent(challenge.youtube_video_id);
@@ -393,9 +459,27 @@
         return;
       }
 
-      // Default: leaderboard
+      // Default: leaderboard + QR widget pro vstup do soutěže.
       el.youtubeFrame.src = ''; // zastavit YouTube embed, ať nehraje na pozadí
       el.screenLeaderboard.classList.remove('hidden');
+      el.qrWidget.classList.remove('hidden');
+    }
+
+    // Vygeneruje QR kód mířící na hráčskou URL. Volá se jednou v init().
+    function renderEntryQR() {
+      if (!window.QRCode) return;
+      // Použijeme aktuální origin, ať QR funguje i při testu na localhost / preview.
+      // Pokud je doména `www.ic-office-challenge.eu`, QR míří přesně tam.
+      const url = window.location.origin + '/';
+      el.qrLabel.textContent = (window.location.host || 'ic-office-challenge.eu').replace(/^www\./, '');
+      QRCode.toCanvas(el.qrCanvas, url, {
+        width: 140,
+        margin: 1,
+        color: { dark: '#0b0f1a', light: '#ffffff' },
+        errorCorrectionLevel: 'M'
+      }, (err) => {
+        if (err) console.warn('QR render failed:', err);
+      });
     }
 
     function formatTime(totalSeconds) {
@@ -566,6 +650,7 @@
 
     async function init() {
       setLiveStatus(false);
+      renderEntryQR();
       const challenge = await loadChallenge();
       if (!challenge) return;
 
