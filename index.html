@@ -481,6 +481,48 @@
         </div>
       </div>
 
+      <div class="editor-card">
+        <h3>Veřejné zobrazení (leaderboard.html)</h3>
+        <p class="small" style="margin-top:-4px;">
+          Tato sekce řídí to, co se ukazuje na projektoru na adrese
+          <a href="leaderboard.html" target="_blank" rel="noopener">/leaderboard.html</a>.
+          Změny se projeví <strong>okamžitě</strong> u všech otevřených instancí leaderboardu
+          (real-time přes Supabase).
+        </p>
+
+        <div class="grid grid-2" style="margin-top:8px;">
+          <div>
+            <label for="configDisplayMode">Co se má teď zobrazit</label>
+            <select id="configDisplayMode">
+              <option value="leaderboard">📊 Leaderboard — průběžné výsledky</option>
+              <option value="youtube">▶️ YouTube video — promítat mezi koly</option>
+              <option value="closed">🔒 Zavřeno — vyhlášení proběhne živě</option>
+            </select>
+          </div>
+          <div id="configYoutubeIdWrap">
+            <label for="configYoutubeId">YouTube video ID nebo URL</label>
+            <input id="configYoutubeId" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+            <div class="small" style="margin-top:4px;">
+              Z URL <code>youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong></code> zkopíruj jen ID za <code>v=</code>.
+            </div>
+          </div>
+          <div class="full" style="display:flex; align-items:center; gap:10px;">
+            <input id="configPublicLeaderboard" type="checkbox" style="width:auto; transform:scale(1.3); margin:0;" />
+            <label for="configPublicLeaderboard" style="margin:0;">
+              Leaderboard je veřejně přístupný (vypnutí ho schová pro všechny mimo admina)
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" id="saveDisplayBtn">Uložit zobrazení</button>
+          <a href="leaderboard.html" target="_blank" rel="noopener" class="btn-secondary"
+             style="text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+            Otevřít leaderboard ↗
+          </a>
+        </div>
+      </div>
+
       <div id="questionEditors"></div>
 
       <div class="editor-card">
@@ -569,6 +611,11 @@
       configMinutes: document.getElementById('configMinutes'),
       configTitleText: document.getElementById('configTitleText'),
       configShowRank: document.getElementById('configShowRank'),
+      configDisplayMode: document.getElementById('configDisplayMode'),
+      configYoutubeId: document.getElementById('configYoutubeId'),
+      configYoutubeIdWrap: document.getElementById('configYoutubeIdWrap'),
+      configPublicLeaderboard: document.getElementById('configPublicLeaderboard'),
+      saveDisplayBtn: document.getElementById('saveDisplayBtn'),
       saveConfigBtn: document.getElementById('saveConfigBtn'),
       addQuestionBtn: document.getElementById('addQuestionBtn'),
       resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
@@ -649,6 +696,89 @@
       el.configMinutes.value = state.config.minutes;
       el.configTitleText.value = state.config.introText || '';
       el.configShowRank.checked = state.config.showRankToPlayer !== false;
+      el.configDisplayMode.value = state.config.displayMode || 'leaderboard';
+      el.configYoutubeId.value = state.config.youtubeVideoId || '';
+      el.configPublicLeaderboard.checked = state.config.isPublicLeaderboard !== false;
+      toggleYoutubeFieldVisibility();
+    }
+
+    function toggleYoutubeFieldVisibility() {
+      const isYoutube = el.configDisplayMode.value === 'youtube';
+      el.configYoutubeIdWrap.style.display = isYoutube ? '' : 'none';
+    }
+
+    // Vytáhne YouTube video ID z různých formátů, které admin pravděpodobně vloží:
+    //   - holé ID:          "dQw4w9WgXcQ"
+    //   - watch URL:        "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42"
+    //   - short URL:        "https://youtu.be/dQw4w9WgXcQ"
+    //   - embed URL:        "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    //   - shorts URL:       "https://www.youtube.com/shorts/dQw4w9WgXcQ"
+    function extractYoutubeId(input) {
+      if (!input) return '';
+      const raw = String(input).trim();
+      // 11znakové ID složené z [A-Za-z0-9_-]
+      if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+      const patterns = [
+        /[?&]v=([A-Za-z0-9_-]{11})/,
+        /youtu\.be\/([A-Za-z0-9_-]{11})/,
+        /\/embed\/([A-Za-z0-9_-]{11})/,
+        /\/shorts\/([A-Za-z0-9_-]{11})/
+      ];
+      for (const p of patterns) {
+        const m = raw.match(p);
+        if (m) return m[1];
+      }
+      return ''; // nerozpoznáno — admin uvidí alert
+    }
+
+    async function saveDisplaySettings() {
+      if (!state.config || !state.config.id) {
+        alert('Soutěž ještě není načtená.');
+        return;
+      }
+
+      const mode = el.configDisplayMode.value;
+      const isPublic = !!el.configPublicLeaderboard.checked;
+      let youtubeId = null;
+
+      if (mode === 'youtube') {
+        youtubeId = extractYoutubeId(el.configYoutubeId.value);
+        if (!youtubeId) {
+          alert('Nepodařilo se rozpoznat YouTube video ID. Vlož celou URL z youtube.com nebo jen 11znakové ID.');
+          return;
+        }
+      }
+
+      el.saveDisplayBtn.disabled = true;
+      const originalLabel = el.saveDisplayBtn.textContent;
+      el.saveDisplayBtn.textContent = 'Ukládám…';
+
+      try {
+        const { error } = await supabaseClient
+          .from('challenge')
+          .update({
+            display_mode: mode,
+            youtube_video_id: youtubeId,
+            is_public_leaderboard: isPublic
+          })
+          .eq('id', state.config.id);
+
+        if (error) throw new Error('Uložení zobrazení selhalo: ' + error.message);
+
+        // Refresh lokálního state, ať UI sedí s DB.
+        state.config.displayMode = mode;
+        state.config.youtubeVideoId = youtubeId;
+        state.config.isPublicLeaderboard = isPublic;
+        el.configYoutubeId.value = youtubeId || '';
+
+        alert('Zobrazení uloženo. Leaderboard na projektoru se aktualizuje sám (real-time).');
+      } catch (e) {
+        console.error(e);
+        alert(e.message || 'Uložení selhalo.');
+      } finally {
+        el.saveDisplayBtn.disabled = false;
+        el.saveDisplayBtn.textContent = originalLabel;
+      }
     }
 
     function shuffle(array) {
@@ -1545,6 +1675,8 @@
     el.saveConfigBtn.addEventListener('click', saveAdminConfig);
     el.addQuestionBtn.addEventListener('click', addQuestion);
     el.resetDefaultsBtn.addEventListener('click', resetDefaults);
+    el.saveDisplayBtn.addEventListener('click', saveDisplaySettings);
+    el.configDisplayMode.addEventListener('change', toggleYoutubeFieldVisibility);
 
     window.addEventListener('beforeunload', function (e) {
       if (!el.quiz.classList.contains('hidden')) {
