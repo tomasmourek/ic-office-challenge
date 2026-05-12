@@ -1,0 +1,4234 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IC Office školení — dotazy</title>
+  <meta name="description" content="Anonymní dotazy a hlasování během školení IC Office." />
+  <meta name="theme-color" content="#c81e1e" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="IC Office školení" />
+  <meta property="og:title" content="IC Office — dotazy na školení" />
+  <meta property="og:description" content="Polož dotaz anonymně nebo zveřejněně. Hlasuj pro nejzajímavější otázky." />
+  <meta property="og:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+  <meta property="og:locale" content="cs_CZ" />
+
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0b0f1a;
+      --muted: #64748b;
+      --accent: #c81e1e;
+      --accent-2: #ef4444;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --border: #e5e7eb;
+      --shadow: 0 10px 25px rgba(0,0,0,0.08);
+      --radius: 16px;
+    }
+
+    /* Tmavé téma pro projektor (display mode) */
+    body.display-mode {
+      --bg: #0b0f1a;
+      --panel: #11172a;
+      --text: #ffffff;
+      --muted: #94a3b8;
+      --border: #1e293b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, system-ui, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+    body.display-mode .wrap { max-width: 1280px; padding: 32px 24px; }
+    body.admin-mode .wrap { max-width: 980px; }
+
+    header {
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      margin: 0 0 4px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    body.display-mode h1 { font-size: clamp(36px, 5vw, 60px); }
+    h1 .ic { color: var(--accent); }
+    body.display-mode h1 .ic { color: var(--accent-2); }
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    textarea, input[type="text"], input[type="password"], input[type="email"], select {
+      width: 100%;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 16px;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .row-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 16px;
+      font-size: 14px;
+    }
+    .row-toggle input[type="checkbox"] {
+      width: auto;
+      transform: scale(1.25);
+      margin: 0;
+    }
+
+    .btn {
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: transform 120ms ease, opacity 150ms ease, background 150ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-secondary { background: #f1f5f9; color: var(--text); border-color: var(--border); }
+    .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+    .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .btn-row .btn { flex: 1; min-width: 120px; }
+
+    .char-counter {
+      text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .char-counter.over { color: var(--danger); font-weight: 700; }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .alert-info { background: #dbeafe; color: #1e40af; }
+    .alert-ok { background: #dcfce7; color: #166534; }
+    .alert-error { background: #fee2e2; color: #991b1b; }
+    .alert-warn { background: #fef3c7; color: #92400e; }
+
+    /* Feed dotazů */
+    .question-list { display: flex; flex-direction: column; gap: 10px; }
+    .question {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 12px;
+      transition: border-color 150ms ease, transform 150ms ease;
+    }
+    .question.pinned { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(200,30,30,0.08); }
+    .question.highlight { border-color: var(--warn); box-shadow: 0 0 0 2px rgba(217,119,6,0.15); }
+    .question .vote {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 150ms ease;
+    }
+    body.display-mode .question .vote { background: #1a2342; }
+    .question .vote:hover { background: #e2e8f0; }
+    body.display-mode .question .vote:hover { background: #2a3454; }
+    .question .vote.voted { background: var(--accent); color: #fff; }
+    .question .vote.voted:hover { background: var(--accent-2); }
+    .question .vote .count { font-weight: 800; font-size: 18px; }
+    .question .vote .arrow { font-size: 14px; line-height: 1; }
+    .question .body { font-size: 15px; line-height: 1.5; word-break: break-word; }
+    .question .meta {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .question .author { font-weight: 600; color: var(--text); }
+    .question .author.anon { color: var(--muted); font-weight: 400; font-style: italic; }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .tag-pending { background: #fef3c7; color: #92400e; }
+    .tag-published { background: #dcfce7; color: #166534; }
+    .tag-answered { background: #dbeafe; color: #1e40af; }
+    .tag-hidden { background: #fee2e2; color: #991b1b; }
+    .tag-pinned { background: var(--accent); color: #fff; }
+    .tag-highlight { background: var(--warn); color: #fff; }
+
+    .admin-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .admin-actions .btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Session selector na admin home */
+    .session-list { display: flex; flex-direction: column; gap: 8px; }
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .session-item .title { font-weight: 700; }
+    .session-item .small { color: var(--muted); font-size: 12px; }
+    .session-item .btn { padding: 6px 12px; font-size: 13px; }
+
+    /* Display mode: velký highlight uprostřed */
+    .display-highlight {
+      background: var(--panel);
+      border: 2px solid var(--warn);
+      border-radius: 22px;
+      padding: 36px 28px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .display-highlight .label {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--warn);
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .display-highlight .body { font-size: clamp(22px, 3.4vw, 42px); font-weight: 700; line-height: 1.4; }
+    .display-highlight .author { color: var(--muted); margin-top: 10px; font-size: 16px; }
+
+    .display-list .question {
+      background: var(--panel);
+      grid-template-columns: 80px 1fr;
+    }
+    .display-list .question .body { font-size: clamp(16px, 1.8vw, 22px); }
+    .display-list .question .vote .count { font-size: 24px; }
+
+    .qr-widget {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #fff;
+      padding: 14px 14px 10px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      z-index: 50;
+      text-align: center;
+    }
+    .qr-widget canvas { display: block; }
+    .qr-widget .qr-cta {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+    .qr-widget .qr-label {
+      color: #0b0f1a;
+      font-weight: 700;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    @media (max-width: 700px) {
+      .qr-widget { display: none; }
+    }
+
+    footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    footer a { color: var(--muted); }
+
+    /* ====== Branded IC Office video rámeček (intro / outro screens) ====== */
+    .ic-stage {
+      position: relative;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 36px 28px;
+      background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(200, 30, 30, 0.18);
+      border: 1px solid #fecaca;
+      overflow: hidden;
+    }
+    body.display-mode .ic-stage {
+      background: linear-gradient(180deg, #11172a 0%, #1c2440 100%);
+      border-color: #2a3454;
+      box-shadow: 0 40px 120px rgba(200, 30, 30, 0.25);
+    }
+
+    /* Červený pásek IC Office nahoře a dole */
+    .ic-stage::before,
+    .ic-stage::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+    }
+    .ic-stage::before { top: 0; }
+    .ic-stage::after { bottom: 0; }
+
+    .ic-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .ic-brand img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    .ic-brand-text {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-size: clamp(20px, 2.6vw, 28px);
+    }
+    .ic-brand-text .ic { color: var(--accent); }
+
+    .ic-stage h2 {
+      font-size: clamp(24px, 3.6vw, 38px);
+      margin: 0 0 8px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .ic-stage .lead {
+      font-size: clamp(15px, 1.8vw, 18px);
+      color: var(--muted);
+      margin: 0 0 22px;
+      line-height: 1.55;
+    }
+    .ic-stage .body-text {
+      font-size: clamp(15px, 1.8vw, 18px);
+      line-height: 1.6;
+      margin: 0 0 22px;
+      white-space: pre-wrap;
+    }
+    body.display-mode .ic-stage h2,
+    body.display-mode .ic-stage .body-text { color: #ffffff; }
+
+    /* Video rámeček uvnitř stage */
+    .ic-video-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 2px solid var(--accent);
+    }
+    .ic-video-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .ic-video-frame::before {
+      content: "IC OFFICE";
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      background: rgba(200, 30, 30, 0.9);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Slide frame — stejný styl jako video frame, jiný badge */
+    .ic-slides-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f8fafc;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 2px solid var(--accent);
+    }
+    .ic-slides-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .ic-slides-frame::before {
+      content: "SLIDY · IC OFFICE";
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      background: rgba(200, 30, 30, 0.9);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .ic-footer {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    body.display-mode .ic-footer { border-top-color: #2a3454; }
+    .ic-footer .ic-tag {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Velký font na projektoru */
+    body.display-mode .ic-stage { padding: 56px 48px; }
+    body.display-mode .ic-stage h2 { font-size: clamp(38px, 5.5vw, 64px); }
+    body.display-mode .ic-stage .lead,
+    body.display-mode .ic-stage .body-text { font-size: clamp(20px, 2.4vw, 28px); }
+    body.display-mode .ic-brand img { width: 56px; height: 56px; }
+    body.display-mode .ic-brand-text { font-size: clamp(26px, 3vw, 36px); }
+
+    /* ====== Agenda dne školení ====== */
+    .agenda-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .agenda-item {
+      display: grid;
+      grid-template-columns: 110px 24px 1fr;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      transition: background 200ms ease, transform 200ms ease;
+    }
+    .agenda-item .time {
+      font-family: ui-monospace, Consolas, monospace;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .agenda-item .icon { font-size: 18px; line-height: 1; text-align: center; }
+    .agenda-item .title { font-weight: 700; font-size: 15px; }
+    .agenda-item .desc { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+    .agenda-item.kind-break { border-color: #fde68a; background: #fef9c3; }
+    body.display-mode .agenda-item.kind-break { background: #422006; border-color: #d97706; }
+    .agenda-item.kind-lunch { border-color: #bbf7d0; background: #dcfce7; }
+    body.display-mode .agenda-item.kind-lunch { background: #14532d; border-color: #16a34a; }
+
+    .agenda-item.current {
+      border-color: var(--accent);
+      background: #fee2e2;
+      transform: translateX(3px);
+      box-shadow: 0 4px 16px rgba(200,30,30,0.18);
+    }
+    body.display-mode .agenda-item.current {
+      background: rgba(200,30,30,0.18);
+      border-color: var(--accent-2);
+    }
+    .agenda-item.current .time { color: var(--accent); }
+    .agenda-item.past { opacity: 0.45; }
+
+    body.display-mode .agenda-item { background: #1c2440; border-color: #2a3454; }
+    body.display-mode .agenda-item .title { color: #fff; }
+
+    /* Velký font na projektoru */
+    body.display-mode .agenda-item { padding: 14px 18px; }
+    body.display-mode .agenda-item .time { font-size: 18px; }
+    body.display-mode .agenda-item .title { font-size: 20px; }
+    body.display-mode .agenda-item .desc { font-size: 15px; }
+
+    /* ====== Pauza countdown banner ====== */
+    .break-banner {
+      position: fixed;
+      left: 0; right: 0;
+      top: 0;
+      z-index: 9000;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+      color: #fff;
+      padding: 14px 20px;
+      text-align: center;
+      box-shadow: 0 6px 24px rgba(220,38,38,0.35);
+      animation: breakSlide 350ms ease-out;
+    }
+    @keyframes breakSlide {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(0); }
+    }
+    .break-banner .label {
+      font-size: clamp(14px, 1.5vw, 18px);
+      font-weight: 700;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .break-banner .countdown {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: clamp(36px, 7vw, 80px);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    /* Velký countdown na projektoru — celá obrazovka místo banneru */
+    body.display-mode .break-banner {
+      position: relative;
+      top: auto;
+      padding: 64px 20px;
+      border-radius: 24px;
+      margin-bottom: 24px;
+    }
+    body.display-mode .break-banner .label { font-size: 28px; margin-bottom: 16px; }
+    body.display-mode .break-banner .countdown { font-size: clamp(80px, 14vw, 200px); }
+
+    /* ====== F18 Live polls ====== */
+
+    .poll-card {
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px rgba(200,30,30,0.12);
+    }
+    body.display-mode .poll-card { background: #1c2440; box-shadow: 0 24px 80px rgba(200,30,30,0.25); }
+
+    .poll-card .question {
+      font-weight: 800;
+      font-size: clamp(16px, 2.4vw, 22px);
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+    body.display-mode .poll-card .question { font-size: clamp(28px, 3.6vw, 44px); color: #fff; }
+
+    .poll-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .poll-option-btn {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--panel-2, #f1f5f9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease, transform 100ms ease;
+    }
+    .poll-option-btn:hover { background: #fee2e2; border-color: var(--accent); }
+    .poll-option-btn[disabled] { opacity: 0.6; cursor: default; }
+    .poll-option-btn.voted { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Rating hvězdy */
+    .poll-stars { display: flex; gap: 6px; flex-wrap: wrap; }
+    .poll-star-btn {
+      flex: 1;
+      min-width: 44px;
+      padding: 14px 0;
+      font-size: 28px;
+      line-height: 1;
+      background: var(--panel-2, #f1f5f9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 120ms ease, transform 120ms ease;
+    }
+    .poll-star-btn:hover { background: #fef3c7; }
+    .poll-star-btn:active { transform: scale(0.92); }
+    .poll-star-btn[disabled] { opacity: 0.4; cursor: wait; }
+
+    /* Bar chart na projektoru / v adminu */
+    .poll-bar-row {
+      margin-bottom: 10px;
+    }
+    .poll-bar-row .label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    body.display-mode .poll-bar-row .label { font-size: 22px; }
+    .poll-bar-row .label .pct { color: var(--accent); }
+    .poll-bar-track {
+      height: 22px;
+      background: var(--panel-2, #f1f5f9);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    body.display-mode .poll-bar-track { background: #1c2440; height: 32px; }
+    .poll-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Rating gauge — průměr číslem + hvězdičky */
+    .poll-rating-gauge {
+      text-align: center;
+      padding: 16px 0;
+    }
+    .poll-rating-gauge .avg {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--accent);
+    }
+    .poll-rating-gauge .scale { color: var(--muted); font-size: 14px; }
+    .poll-rating-gauge .count { color: var(--muted); font-size: 13px; margin-top: 6px; }
+    .poll-rating-distribution { margin-top: 14px; }
+
+    /* Word cloud */
+    .poll-word-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      justify-content: center;
+      align-items: baseline;
+      padding: 16px 8px;
+    }
+    .poll-word {
+      font-weight: 800;
+      transition: transform 250ms ease;
+      line-height: 1.1;
+    }
+    .poll-word:hover { transform: scale(1.08); }
+    .poll-word.tier-1 { font-size: clamp(40px, 6vw, 88px); color: var(--accent); }
+    .poll-word.tier-2 { font-size: clamp(28px, 4.5vw, 60px); color: var(--accent-2); }
+    .poll-word.tier-3 { font-size: clamp(22px, 3.5vw, 40px); color: #f59e0b; }
+    .poll-word.tier-4 { font-size: clamp(18px, 2.5vw, 28px); color: var(--text); }
+    .poll-word.tier-5 { font-size: clamp(14px, 2vw, 22px); color: var(--muted); }
+    body.display-mode .poll-word.tier-4 { color: #fff; }
+
+    .poll-status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .poll-status-draft  { background: #f1f5f9; color: var(--muted); }
+    .poll-status-active { background: var(--ok); color: #fff; }
+    .poll-status-closed { background: #fee2e2; color: var(--danger); }
+
+    /* ====== F20 Reactions / emoji storm ====== */
+
+    /* Tlačítka pro účastníka — krásná řada s emoji nad polem dotazu */
+    .reactions-row {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .reaction-btn {
+      flex: 1;
+      min-width: 50px;
+      padding: 10px 0;
+      font-size: 26px;
+      line-height: 1;
+      background: var(--panel-2, #f1f5f9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+    .reaction-btn:hover { background: #fee2e2; }
+    .reaction-btn:active { transform: scale(0.92); }
+    .reaction-btn[disabled] { opacity: 0.4; cursor: wait; }
+
+    /* Projektor — letící emoji odspodu nahoru */
+    #reactionsCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 8500;
+      overflow: hidden;
+    }
+    .flying-emoji {
+      position: absolute;
+      bottom: -60px;
+      font-size: 52px;
+      line-height: 1;
+      animation: flyUp 4s ease-in forwards;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+      will-change: transform, opacity;
+    }
+    @keyframes flyUp {
+      0%   { transform: translate(var(--dx-from, 0px), 0)   rotate(var(--rot-from, 0deg));  opacity: 0; }
+      10%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translate(var(--dx-to,   0px), -110vh) rotate(var(--rot-to,   0deg)); opacity: 0; }
+    }
+
+    /* ====== F16 Hudba na pozadí ====== */
+
+    /* Velké unlock tlačítko v projektoru — admin klikne jednou na začátku,
+       prohlížeč odemkne autoplay pro celou session.
+       Viditelné jen v display módu + dokud uživatel nekliknul. */
+    .audio-unlock {
+      position: fixed;
+      right: 24px;
+      top: 24px;
+      z-index: 9500;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 12px 36px rgba(220,38,38,0.4);
+      animation: audioUnlockPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes audioUnlockPulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.06); box-shadow: 0 16px 50px rgba(220,38,38,0.55); }
+    }
+
+    /* Diskrétní indikátor „hraje hudba" — malý dot vlevo dole, jen na projektoru */
+    .audio-now-playing {
+      position: fixed;
+      left: 24px;
+      bottom: 24px;
+      z-index: 50;
+      background: rgba(11,15,26,0.78);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    }
+    .audio-now-playing .icon { font-size: 14px; animation: audioNote 1.6s ease-in-out infinite; }
+    @keyframes audioNote {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-3px); }
+    }
+
+    /* Admin audio tracks list */
+    .audio-track-row {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    .audio-track-row .icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .audio-track-row .title { font-weight: 700; font-size: 14px; }
+    .audio-track-row .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .audio-track-row .kind-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 6px;
+    }
+    .audio-kind-intro  { background: #dbeafe; color: #1e40af; }
+    .audio-kind-break  { background: #fef3c7; color: #92400e; }
+    .audio-kind-outro  { background: #dcfce7; color: #166534; }
+    .audio-kind-custom { background: #f1f5f9; color: var(--muted); }
+
+    /* ====== Materiály ke stažení ====== */
+    .materials-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .material-card {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 150ms ease, transform 150ms ease, background 150ms ease;
+    }
+    .material-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      background: #fef2f2;
+    }
+    body.display-mode .material-card { background: #1c2440; border-color: #2a3454; }
+    body.display-mode .material-card:hover { background: #2a3454; border-color: var(--accent-2); }
+
+    .material-card .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .material-card .title { font-weight: 700; font-size: 15px; }
+    .material-card .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .material-card .download-cta {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    body.display-mode .material-card .title { color: #fff; }
+
+    .materials-empty {
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    /* Phase přepínač v adminu */
+    .phase-switch {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      margin-top: 6px;
+    }
+    .phase-switch button {
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--muted);
+      transition: background 150ms ease, color 150ms ease;
+    }
+    .phase-switch button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .phase-switch button:hover:not(.active) {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+</head>
+<body>
+  <!-- Pauza countdown banner — fixed top (participant/admin) nebo inline na projektoru -->
+  <div id="breakBanner" class="break-banner hidden" aria-live="polite">
+    <div class="label" id="breakBannerLabel">Pauza končí za</div>
+    <div class="countdown" id="breakBannerCountdown">00:00</div>
+  </div>
+
+  <!-- F16: unlock tlačítko (jen projektor + dokud admin neklikl), now-playing indikátor -->
+  <button id="audioUnlockBtn" class="audio-unlock hidden" type="button" aria-label="Odemknout zvuk pro projektor">
+    🔊 Spustit zvuk
+  </button>
+  <div id="audioNowPlaying" class="audio-now-playing hidden">
+    <span class="icon">🎵</span>
+    <span id="audioNowPlayingLabel">—</span>
+  </div>
+
+  <!-- Skryté audio elementy — jeden „active" v daný moment, řízeno JS -->
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <!-- F20: vrstva pro letící emoji — jen viditelná na projektoru -->
+  <div id="reactionsCanvas" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header>
+      <h1><span class="ic">IC Office</span> <span id="modeSuffix">— dotazy</span></h1>
+      <p class="subtitle" id="subtitle">Načítám…</p>
+    </header>
+
+    <!-- ============ REGISTRATION (účastník před vstupem do Q&A) ============ -->
+    <section id="screen-register" class="hidden">
+      <div class="card">
+        <h3 style="margin:0 0 6px;">Registrace na školení</h3>
+        <p class="subtitle" style="margin:0 0 16px;" id="registerSessionInfo">—</p>
+
+        <div style="display:grid; gap:10px;">
+          <div>
+            <label for="regCustomerNumber">Zákaznické číslo Intercars (<code>C</code> + 5 číslic)</label>
+            <input id="regCustomerNumber" type="text" maxlength="6" placeholder="C12345" autocomplete="off" />
+          </div>
+          <div>
+            <label for="regCompany">Firma nebo jméno <span style="color:var(--danger);">*</span></label>
+            <input id="regCompany" type="text" maxlength="160" placeholder="AutoServis Novák s.r.o. nebo Jan Novák" autocomplete="organization" />
+          </div>
+          <div>
+            <label for="regIco">IČ (8 cifer)</label>
+            <input id="regIco" type="text" inputmode="numeric" maxlength="8" placeholder="12345678" autocomplete="off" />
+          </div>
+          <div>
+            <label for="regEmail">E-mail <span style="color:var(--danger);">*</span></label>
+            <input id="regEmail" type="email" maxlength="160" placeholder="vy@firma.cz" autocomplete="email" />
+          </div>
+          <div>
+            <label for="regPhone">Telefon</label>
+            <input id="regPhone" type="tel" maxlength="40" placeholder="+420 …" autocomplete="tel" />
+          </div>
+          <div>
+            <label for="regNote">Poznámka (volitelné)</label>
+            <textarea id="regNote" maxlength="500" placeholder="Cokoli, co se hodí lektorovi vědět…" style="min-height:64px;"></textarea>
+          </div>
+        </div>
+
+        <div id="registerAlert" style="margin-top:10px;"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="registerSubmitBtn">Pokračovat na školení</button>
+        </div>
+        <p class="subtitle" style="font-size:12px; margin-top:14px;">
+          Údaje slouží pro registraci na IC Office a evidenci účastníka školení.
+          Hvězdičkou jsou označená povinná pole.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ INTRO PHASE (společný pro účastníka i projektor) ============ -->
+    <section id="screen-intro-phase" class="hidden">
+      <div class="ic-stage">
+        <div class="ic-brand">
+          <img src="favicon.png" alt="IC Office" />
+          <div class="ic-brand-text"><span class="ic">IC Office</span> · školení</div>
+        </div>
+        <h2 id="introTitle">Vítej na školení</h2>
+        <p class="lead" id="introLead">—</p>
+
+        <div id="introVideoWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-video-frame">
+            <iframe id="introVideoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div id="introSlidesWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-slides-frame">
+            <iframe id="introSlidesFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="body-text" id="introBody"></div>
+
+        <div id="materialsWidgetIntro" style="margin-top:20px;"></div>
+        <div id="agendaWidgetIntro" style="margin-top:20px;"></div>
+
+        <div class="ic-footer">
+          <span>Připravujeme se. Brzy začínáme 🎤</span>
+          <span class="ic-tag">www.ic-office.eu</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OUTRO PHASE (společný pro účastníka i projektor) ============ -->
+    <section id="screen-outro-phase" class="hidden">
+      <div class="ic-stage">
+        <div class="ic-brand">
+          <img src="favicon.png" alt="IC Office" />
+          <div class="ic-brand-text"><span class="ic">IC Office</span> · děkujeme</div>
+        </div>
+        <h2 id="outroTitle">Děkujeme za účast</h2>
+        <p class="lead" id="outroLead">Doufáme, že ti školení dalo, co si od něj sliboval/a.</p>
+
+        <div id="outroVideoWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-video-frame">
+            <iframe id="outroVideoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div id="outroSlidesWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-slides-frame">
+            <iframe id="outroSlidesFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="body-text" id="outroBody"></div>
+
+        <div id="materialsWidgetOutro" style="margin-top:20px;"></div>
+
+        <!-- F21: feedback formulář — viditelný v outro fázi pro účastníka (skryto v display módu) -->
+        <div id="feedbackWidget" class="hidden" style="margin-top:20px;">
+          <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px;">
+            <h3 style="margin:0 0 6px;">⭐ Tvoje zpětná vazba</h3>
+            <p class="small" style="margin:0 0 12px; color:var(--muted);">
+              Jak hodnotíš dnešní školení? Pomáhá nám to zlepšit další akce.
+            </p>
+            <label>Hodnocení (1–5 hvězd)</label>
+            <div class="poll-stars" id="feedbackStarsRow">
+              ${[1,2,3,4,5].map(v => `
+                <button class="poll-star-btn" type="button" data-fb-rating="${v}">☆</button>
+              `).join('')}
+            </div>
+            <div style="height:10px;"></div>
+            <label for="feedbackComment">Komentář (nepovinné)</label>
+            <textarea id="feedbackComment" maxlength="1000" placeholder="Co tě nejvíc bavilo, co bys zlepšil/a…" style="min-height:80px;"></textarea>
+            <div class="row-toggle" style="margin-top:10px;">
+              <input id="feedbackRecommend" type="checkbox" checked />
+              <label for="feedbackRecommend" style="margin:0; font-size:13px;">Doporučil/a bych kolegovi</label>
+            </div>
+            <div id="feedbackAlert" style="margin-top:8px;"></div>
+            <div class="btn-row" style="margin-top:10px;">
+              <button class="btn btn-primary" id="feedbackSubmitBtn">Odeslat zpětnou vazbu</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-footer">
+          <span>Najdi nás na <a href="https://www.ic-office.eu" target="_blank" rel="noopener">www.ic-office.eu</a></span>
+          <span class="ic-tag">IC Office</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PARTICIPANT MODE ============ -->
+    <section id="screen-participant" class="hidden">
+      <!-- F18: aktivní live poll (multiple choice / rating / word cloud) -->
+      <div id="participantPollWrap" class="hidden"></div>
+
+      <div class="card">
+        <label style="margin-bottom:4px;">Pošli reakci na projektor 👇</label>
+        <div class="reactions-row" id="reactionsRow">
+          <button class="reaction-btn" type="button" data-emoji="👏">👏</button>
+          <button class="reaction-btn" type="button" data-emoji="🎉">🎉</button>
+          <button class="reaction-btn" type="button" data-emoji="❤️">❤️</button>
+          <button class="reaction-btn" type="button" data-emoji="😀">😀</button>
+          <button class="reaction-btn" type="button" data-emoji="🤔">🤔</button>
+          <button class="reaction-btn" type="button" data-emoji="🔥">🔥</button>
+          <button class="reaction-btn" type="button" data-emoji="🙌">🙌</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <label for="qBody">Tvůj dotaz</label>
+        <textarea id="qBody" maxlength="1000" placeholder="Co tě zajímá? Napiš dotaz pro lektora…"></textarea>
+        <div class="char-counter" id="charCounter">0 / 1000</div>
+
+        <div class="row-toggle">
+          <input id="qAnonymous" type="checkbox" checked />
+          <label for="qAnonymous" style="margin:0;">Odeslat anonymně (bez jména)</label>
+        </div>
+
+        <div id="qNameWrap" class="hidden">
+          <label for="qName">Jméno (zobrazí se u dotazu)</label>
+          <input id="qName" type="text" maxlength="80" placeholder="Např. Jan Novák" />
+        </div>
+
+        <div id="participantAlert"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="qSubmitBtn">Odeslat dotaz</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 12px;">Dotazy ostatních</h3>
+        <div class="question-list" id="participantList"></div>
+        <div id="participantEmpty" class="empty hidden">Zatím tu nejsou žádné publikované dotazy. Buď první 🎤</div>
+      </div>
+    </section>
+
+    <!-- ============ ADMIN MODE ============ -->
+    <section id="screen-admin-login" class="hidden">
+      <div class="card">
+        <h3 style="margin:0 0 8px;">Přihlášení lektora</h3>
+        <p class="subtitle" style="margin-bottom:16px;">Pro správu dotazů a sessions.</p>
+        <label for="adminEmail">E-mail</label>
+        <input id="adminEmail" type="email" autocomplete="email" />
+        <div style="height:10px;"></div>
+        <label for="adminPassword">Heslo</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" />
+        <div class="btn-row">
+          <button class="btn btn-primary" id="adminLoginBtn">Přihlásit</button>
+          <a class="btn btn-ghost" href="/" style="text-align:center; text-decoration:none;">Zpět na soutěž</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-admin-home" class="hidden">
+      <div class="card">
+        <h3 style="margin:0 0 12px;">Sessions školení</h3>
+        <div class="session-list" id="adminSessionList"></div>
+        <div id="adminSessionsEmpty" class="empty hidden">Zatím žádná školicí session.</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="newSessionBtn">+ Nová session</button>
+          <button class="btn btn-ghost" id="adminLogoutBtn">Odhlásit</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-admin-new-session" class="hidden">
+      <div class="card">
+        <h3 style="margin:0 0 12px;">Nová školicí session</h3>
+        <label for="newTitle">Název (uvidí účastník)</label>
+        <input id="newTitle" type="text" maxlength="120" placeholder="Např. IC Office — Brno 12. 5. 2026" />
+        <div style="height:10px;"></div>
+        <label for="newSlug">Slug (do URL, jen ASCII + pomlčky)</label>
+        <input id="newSlug" type="text" maxlength="60" placeholder="brno-2026-05-12" />
+        <div style="height:10px;"></div>
+        <label for="newDescription">Popis (volitelné)</label>
+        <input id="newDescription" type="text" maxlength="500" placeholder="Co je tématem školení?" />
+        <div style="height:10px;"></div>
+        <label for="newModeration">Režim moderace</label>
+        <select id="newModeration">
+          <option value="manual">Manual — schvaluji každý dotaz</option>
+          <option value="auto">Auto — dotazy se publikují hned</option>
+        </select>
+        <div class="row-toggle" style="margin-top:14px;">
+          <input id="newAllowAnon" type="checkbox" checked />
+          <label for="newAllowAnon" style="margin:0;">Účastníci smí psát anonymně</label>
+        </div>
+        <div id="newSessionAlert"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="createSessionBtn">Vytvořit session</button>
+          <button class="btn btn-ghost" id="cancelSessionBtn">Zpět</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-admin-session" class="hidden">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+          <div>
+            <h3 style="margin:0;" id="adminSessionTitle">—</h3>
+            <p class="subtitle" id="adminSessionMeta" style="margin:4px 0 0;">—</p>
+          </div>
+          <div class="btn-row" style="margin-top:0;">
+            <a class="btn btn-secondary" id="adminParticipantLink" target="_blank" rel="noopener" style="text-decoration:none;">Otevřít účastnickou ↗</a>
+            <a class="btn btn-secondary" id="adminDisplayLink" target="_blank" rel="noopener" style="text-decoration:none;">Otevřít projektor ↗</a>
+            <button class="btn btn-ghost" id="adminBackBtn">Zpět</button>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center;">
+          <canvas id="adminQrCanvas" width="140" height="140" style="border-radius:10px;"></canvas>
+          <div style="font-size:13px; color:var(--muted);">
+            <strong style="color:var(--text); display:block; margin-bottom:4px;" id="adminParticipantUrlLabel">…</strong>
+            QR kód pro účastníky. Ukaž ho na projektoru nebo pošli odkaz.<br>
+            <button class="btn btn-ghost" id="copyParticipantUrlBtn" style="margin-top:8px; padding:6px 12px; font-size:12px;">Kopírovat odkaz</button>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="btn btn-secondary" id="toggleModerationBtn">Přepnout režim moderace</button>
+          <button class="btn btn-secondary" id="toggleClosedBtn">Zavřít / otevřít session</button>
+          <button class="btn btn-danger" id="deleteSessionBtn">Smazat session</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">Fáze školení</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Klikni na fázi — okamžitě se přepne, co vidí účastníci i projektor.
+          <strong>Intro</strong> = před školením, <strong>Live</strong> = otevřené Q&amp;A, <strong>Outro</strong> = závěr.
+        </p>
+        <div class="phase-switch" id="phaseSwitch">
+          <button data-phase="intro">🎬 Intro</button>
+          <button data-phase="live">🎤 Live Q&amp;A</button>
+          <button data-phase="outro">👋 Outro</button>
+        </div>
+
+        <div style="margin-top:18px;">
+          <h4 style="margin:0 0 8px; font-size:15px;">🎬 Intro — uvodní obrazovka</h4>
+          <label for="introTitleInput">Titulek</label>
+          <input id="introTitleInput" type="text" maxlength="120" placeholder="Např. Vítej na školení IC Office" />
+          <div style="height:8px;"></div>
+          <label for="introVideoInput">YouTube ID nebo URL (volitelné)</label>
+          <input id="introVideoInput" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+          <div style="height:8px;"></div>
+          <label for="introSlidesInput">Slidy IC Office / Intercars — embed URL (volitelné)</label>
+          <input id="introSlidesInput" type="text" placeholder="https://docs.google.com/presentation/d/.../embed nebo .../preview" />
+          <div class="small" style="margin-top:4px; color:var(--muted);">
+            <strong>Google Slides:</strong> File → Share → Publish to web → Embed → zkopíruj <code>src</code> z iframe.<br>
+            <strong>PDF z Google Drive:</strong> sdílej veřejně → použij <code>https://drive.google.com/file/d/&lt;ID&gt;/preview</code>.<br>
+            <strong>Canva:</strong> Share → More → Embed → zkopíruj URL.<br>
+            <strong>PowerPoint (.pptx):</strong> použij tlačítko níže — nahraje se a vygeneruje se URL automaticky.
+          </div>
+          <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px;">
+            <input id="introPptxFileInput" type="file" accept=".pptx,.ppt,.pdf" />
+            <button class="btn btn-secondary" id="introPptxUploadBtn" type="button">Nahrát .pptx</button>
+          </div>
+          <div style="height:8px;"></div>
+          <label for="introBodyInput">Doplňující text (volitelné)</label>
+          <textarea id="introBodyInput" maxlength="2000" placeholder="Co účastníky čeká, program, organizační info…"></textarea>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-primary" id="saveIntroBtn">Uložit intro</button>
+            <a class="btn btn-ghost" id="previewIntroLink" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">Náhled ↗</a>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;">
+          <h4 style="margin:0 0 8px; font-size:15px;">👋 Outro — závěrečná obrazovka</h4>
+          <label for="outroTitleInput">Titulek</label>
+          <input id="outroTitleInput" type="text" maxlength="120" placeholder="Např. Děkujeme za účast" />
+          <div style="height:8px;"></div>
+          <label for="outroVideoInput">YouTube ID nebo URL (volitelné)</label>
+          <input id="outroVideoInput" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+          <div style="height:8px;"></div>
+          <label for="outroSlidesInput">Slidy embed URL (volitelné)</label>
+          <input id="outroSlidesInput" type="text" placeholder="https://docs.google.com/presentation/d/.../embed" />
+          <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px;">
+            <input id="outroPptxFileInput" type="file" accept=".pptx,.ppt,.pdf" />
+            <button class="btn btn-secondary" id="outroPptxUploadBtn" type="button">Nahrát .pptx</button>
+          </div>
+          <div style="height:8px;"></div>
+          <div style="display:grid; grid-template-columns:1fr 90px; gap:10px; align-items:center; padding:10px 12px; background:var(--panel-2, #f1f5f9); border-radius:10px;">
+            <div>
+              <label for="slidesZoomInput" style="margin:0;">🔍 Zoom slidů na projektoru</label>
+              <div class="small" style="color:var(--muted); margin-top:2px;">Když má PowerPoint malý font nebo fotky, posuň slider. Účastnické mobily zoom neaplikují.</div>
+            </div>
+            <div style="text-align:right;">
+              <input id="slidesZoomInput" type="range" min="50" max="300" step="5" value="100" style="width:100%;" />
+              <div style="font-weight:800; font-size:14px;"><span id="slidesZoomValue">100</span> %</div>
+            </div>
+          </div>
+          <label for="outroBodyInput">Doplňující text (volitelné)</label>
+          <textarea id="outroBodyInput" maxlength="2000" placeholder="Kontakty, odkaz na materiály, další školení…"></textarea>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-primary" id="saveOutroBtn">Uložit outro</button>
+            <a class="btn btn-ghost" id="previewOutroLink" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">Náhled ↗</a>
+          </div>
+        </div>
+
+        <div id="phaseAlert" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">Agenda dne</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Časový rozvrh školení. Zobrazí se v intro fázi i na projektoru během Q&amp;A.
+          Aktuální blok se sám vyznačí podle reálného času.
+        </p>
+        <div id="agendaEditor"></div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-secondary" id="agendaAddBtn">+ Přidat blok</button>
+          <button class="btn btn-primary" id="agendaSaveBtn">Uložit agendu</button>
+        </div>
+
+        <h4 style="margin:18px 0 6px; font-size:14px;">⏱️ Pauza / odpočet</h4>
+        <p class="small" style="margin:0 0 8px; color:var(--muted);">
+          Spusť veřejný countdown — účastníci i projektor uvidí velkou časomíru.
+        </p>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-secondary" data-break-min="5">Pauza 5 min</button>
+          <button class="btn btn-secondary" data-break-min="10">Pauza 10 min</button>
+          <button class="btn btn-secondary" data-break-min="15">Pauza 15 min</button>
+          <button class="btn btn-secondary" data-break-min="30">Pauza 30 min</button>
+          <button class="btn btn-ghost" id="breakCustomBtn">Vlastní…</button>
+          <button class="btn btn-danger hidden" id="breakStopBtn">Ukončit pauzu</button>
+        </div>
+        <div class="row-toggle" style="margin-top:10px; font-size:13px;">
+          <label for="breakLabelInput" style="margin:0; flex-shrink:0;">Popisek:</label>
+          <input id="breakLabelInput" type="text" maxlength="60" placeholder="Pauza končí za" style="flex:1; min-width:0;" />
+          <button class="btn btn-ghost" id="breakLabelSaveBtn" style="padding:6px 10px; font-size:12px;">Uložit</button>
+        </div>
+
+        <div id="agendaAlert" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">Materiály ke stažení</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Slidy, fotky, PDF s manuálem… Soubory uvidí účastníci v intro a outro
+          fázi a mohou si je stáhnout.
+        </p>
+        <div style="display:grid; grid-template-columns:1fr 200px; gap:10px; margin-bottom:10px;">
+          <input id="materialTitleInput" type="text" maxlength="160" placeholder="Název materiálu (např. „Slidy IC Office")" />
+          <input id="materialFileInput" type="file" accept="*/*" />
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-primary" id="materialUploadBtn">Nahrát materiál</button>
+        </div>
+        <div id="materialUploadAlert" style="margin-top:8px;"></div>
+        <div id="materialsAdminList" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">🏆 Top hráči Q&A (gamifikace)</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Body za interakci: <strong>5</strong> za dotaz, <strong>1</strong> za hlas pro cizí dotaz,
+          <strong>0,5</strong> za reakci, <strong>2</strong> za poll odpověď, <strong>5</strong> za feedback v outro.
+          Pomáhá při vyhlášení nejaktivnějšího účastníka školení.
+        </p>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-ghost" id="qaLeaderboardRefreshBtn" style="padding:6px 12px; font-size:12px;">Aktualizovat</button>
+        </div>
+        <div id="qaLeaderboardList" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">⭐ Feedback ze školení</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Účastníci v outro fázi vyplní hodnocení (1–5 ⭐) + nepovinný komentář.
+          Tady vidíš souhrn a můžeš stáhnout CSV pro vedení Intercars / IC Office.
+        </p>
+        <div id="feedbackAdminSummary" style="margin-bottom:10px;">—</div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-secondary" id="feedbackExportBtn">Export do CSV</button>
+          <button class="btn btn-ghost" id="feedbackToggleListBtn">Zobrazit komentáře ↓</button>
+        </div>
+        <div id="feedbackAdminList" class="hidden" style="margin-top:14px; max-height:420px; overflow:auto;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">📊 Live polls (hlasování)</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Účastníci hlasují tlačítky, projektor zobrazí výsledky live. Jeden aktivní
+          poll v jeden moment — předchozí se sám uzavře, když aktivuješ jiný.
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 160px; gap:10px;">
+          <div>
+            <label for="pollQuestionInput">Otázka</label>
+            <input id="pollQuestionInput" type="text" maxlength="280" placeholder="Např. Co tě v IC Office nejvíc překvapilo?" />
+          </div>
+          <div>
+            <label for="pollKindInput">Typ</label>
+            <select id="pollKindInput">
+              <option value="choice">📊 Multiple choice</option>
+              <option value="rating">⭐ Rating 1–5</option>
+              <option value="word_cloud">☁️ Word cloud</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pollOptionsWrap" style="margin-top:10px;">
+          <label>Možnosti (Multiple choice)</label>
+          <div id="pollOptionsList"></div>
+          <button class="btn btn-ghost" id="pollAddOptionBtn" type="button" style="padding:6px 12px; font-size:12px; margin-top:6px;">+ Přidat možnost</button>
+        </div>
+
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-primary" id="pollCreateBtn">Vytvořit poll</button>
+        </div>
+        <div id="pollAdminAlert" style="margin-top:8px;"></div>
+
+        <div id="pollsAdminList" style="margin-top:18px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">🎵 Hudba na pozadí (projektor)</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          mp3 / mp4 podtext, který se sám pustí na projektoru podle fáze:
+          <strong>intro</strong>, <strong>pauza</strong> (break_until) a <strong>outro</strong>.
+          Hraje výhradně projektor (<code>?display=1</code>) — účastnické mobily zůstávají potichu.
+          Admin na projektoru musí jednou kliknout „🔊 Spustit zvuk" kvůli autoplay policy.
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 130px 90px 90px; gap:10px; margin-bottom:10px; align-items:end;">
+          <div>
+            <label for="audioTitleInput">Název stopy</label>
+            <input id="audioTitleInput" type="text" maxlength="120" placeholder="Např. Intro IC Office tune" />
+          </div>
+          <div>
+            <label for="audioKindSelect">Použít pro</label>
+            <select id="audioKindSelect">
+              <option value="intro">🎬 Intro</option>
+              <option value="break">☕ Pauza</option>
+              <option value="outro">👋 Outro</option>
+              <option value="custom">📌 Vlastní</option>
+            </select>
+          </div>
+          <div>
+            <label for="audioVolumeInput">Hlasitost</label>
+            <input id="audioVolumeInput" type="range" min="0" max="1" step="0.05" value="0.6" />
+          </div>
+          <div class="row-toggle" style="margin:0;">
+            <input id="audioLoopInput" type="checkbox" checked />
+            <label for="audioLoopInput" style="margin:0; font-size:13px;">Smyčka</label>
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label for="audioFileInput">Soubor (mp3, mp4, m4a, ogg, wav)</label>
+          <input id="audioFileInput" type="file" accept="audio/*,video/mp4" />
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-primary" id="audioUploadBtn">Nahrát stopu</button>
+        </div>
+        <div id="audioUploadAlert" style="margin-top:8px;"></div>
+        <div id="audioTracksAdminList" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h3 style="margin:0;">Účastníci školení</h3>
+          <div class="row-toggle" style="margin:0;">
+            <input id="adminRequireRegistration" type="checkbox" />
+            <label for="adminRequireRegistration" style="margin:0; font-size:13px;">Vyžadovat registraci před přístupem k Q&amp;A</label>
+          </div>
+        </div>
+        <p class="subtitle" style="margin:6px 0 12px; font-size:13px;">
+          Když je zapnuto, účastník musí před vstupem do Q&amp;A vyplnit formulář
+          (zákaznické číslo Intercars, e-mail, IČ, telefon, firma).
+        </p>
+        <div id="attendeesCount" style="font-size:14px; margin-bottom:8px;">—</div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-secondary" id="exportAttendeesBtn">Export do CSV</button>
+          <button class="btn btn-ghost" id="toggleAttendeesListBtn">Zobrazit seznam ↓</button>
+        </div>
+        <div id="attendeesList" class="hidden" style="margin-top:14px; max-height:420px; overflow:auto;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 12px;">Dotazy (live)</h3>
+        <div class="question-list" id="adminList"></div>
+        <div id="adminEmpty" class="empty hidden">Zatím žádné dotazy.</div>
+      </div>
+    </section>
+
+    <!-- ============ DISPLAY MODE (projektor) ============ -->
+    <section id="screen-display" class="hidden">
+      <!-- F18: aktivní live poll s živými výsledky -->
+      <div id="displayPollWrap" class="hidden"></div>
+
+      <div id="displayHighlightWrap" class="hidden">
+        <div class="display-highlight">
+          <div class="label">Aktuální dotaz</div>
+          <div class="body" id="displayHighlightBody">—</div>
+          <div class="author" id="displayHighlightAuthor">—</div>
+        </div>
+      </div>
+      <h3 style="margin:0 0 12px; opacity:0.8;">Top dotazy</h3>
+      <div class="question-list display-list" id="displayList"></div>
+      <div id="displayEmpty" class="empty hidden">Zatím žádné dotazy. Naskenuj QR kód v rohu a pošli svůj 🎤</div>
+
+      <div id="agendaWidgetDisplay" style="margin-top:28px;"></div>
+    </section>
+
+    <footer>
+      <a href="/">← Zpět na hlavní stránku soutěže</a>
+    </footer>
+  </div>
+
+  <!-- QR widget jen pro display mode -->
+  <div class="qr-widget hidden" id="qrWidget">
+    <canvas id="qrCanvas" width="140" height="140"></canvas>
+    <div class="qr-cta">Pošli dotaz</div>
+    <div class="qr-label" id="qrLabel">ic-office-challenge.eu/qa.html</div>
+  </div>
+
+  <script>
+    // ====== Konfigurace ======
+    const SUPABASE_URL = 'https://bnugrmehciespyemszwt.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_nxsaqPvIjNuUpxKq-MzChg_-Tjp1uQ4';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    const VOTER_TOKEN_KEY = 'qa_voter_token_v1';
+    const RATE_LIMIT_KEY = 'qa_last_submit_ts';
+    const RATE_LIMIT_MS = 30000; // 30 s mezi dotazy
+    const ATTENDEE_KEY_PREFIX = 'qa_attendee_'; // + session slug
+    const ATTENDEE_NAME_KEY = 'qa_attendee_name_v1';
+    const MATERIALS_BUCKET = 'session-materials';
+    const AUDIO_BUCKET = 'session-audio';
+    const PRESENTATIONS_BUCKET = 'session-presentations';
+
+    // ====== Stav ======
+    const state = {
+      mode: 'participant',       // 'participant' | 'admin' | 'display'
+      sessionSlug: null,
+      session: null,
+      questions: [],
+      myVotes: new Set(),        // ID otázek, kterým jsem dal +1 (z localStorage)
+      voterToken: null,
+      channels: [],
+      // F13 agenda
+      agenda: [],                // pole agenda items (start_time, end_time, title, kind, position)
+      deletedAgendaIds: [],      // ID původních DB řádků smazaných v editoru
+      // F13 pauza countdown
+      breakInterval: null,       // setInterval handle pro tick countdownu
+      adminAgendaSeq: 0          // counter pro temp ID nových řádků v editoru
+    };
+
+    // ====== Helpers ======
+    function $(id) { return document.getElementById(id); }
+
+    function getOrCreateVoterToken() {
+      let t = localStorage.getItem(VOTER_TOKEN_KEY);
+      if (!t) {
+        t = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('v_' + Date.now() + '_' + Math.random().toString(36).slice(2));
+        localStorage.setItem(VOTER_TOKEN_KEY, t);
+      }
+      return t;
+    }
+
+    function escapeHtml(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showAlert(containerId, type, msg) {
+      const c = $(containerId);
+      if (!c) return;
+      c.innerHTML = `<div class="alert alert-${type}">${escapeHtml(msg)}</div>`;
+      setTimeout(() => { if (c.firstChild && c.firstChild.textContent === msg) c.innerHTML = ''; }, 5000);
+    }
+
+    function detectMode() {
+      const params = new URLSearchParams(window.location.search);
+      state.sessionSlug = params.get('session') || null;
+      if (params.has('admin')) return 'admin';
+      if (params.has('display')) return 'display';
+      return 'participant';
+    }
+
+    // Vytáhne YouTube video ID z různých formátů — holé ID, watch URL, youtu.be,
+    // /embed/, /shorts/. Stejná logika jako v index.html admin sekci.
+    function extractYoutubeId(input) {
+      if (!input) return '';
+      const raw = String(input).trim();
+      if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+      const patterns = [
+        /[?&]v=([A-Za-z0-9_-]{11})/,
+        /youtu\.be\/([A-Za-z0-9_-]{11})/,
+        /\/embed\/([A-Za-z0-9_-]{11})/,
+        /\/shorts\/([A-Za-z0-9_-]{11})/
+      ];
+      for (const p of patterns) {
+        const m = raw.match(p);
+        if (m) return m[1];
+      }
+      return '';
+    }
+
+    // Naplní intro / outro screen z dat session. Volá se z participant i display módu.
+    function renderIntroOutroFromSession(session) {
+      // Intro
+      $('introTitle').textContent = (session.intro_text && session.intro_text.split('\n')[0]) || ('Vítej na školení: ' + session.title);
+      $('introLead').textContent = session.description || 'Brzy začínáme.';
+      const introBody = (session.intro_text || '').split('\n').slice(1).join('\n').trim();
+      $('introBody').textContent = introBody;
+      if (session.intro_video_id) {
+        $('introVideoFrame').src = 'https://www.youtube.com/embed/' + encodeURIComponent(session.intro_video_id) + '?rel=0&modestbranding=1';
+        $('introVideoWrap').classList.remove('hidden');
+      } else {
+        $('introVideoFrame').src = '';
+        $('introVideoWrap').classList.add('hidden');
+      }
+      if (session.intro_slides_url) {
+        $('introSlidesFrame').src = session.intro_slides_url;
+        $('introSlidesWrap').classList.remove('hidden');
+      } else {
+        $('introSlidesFrame').src = '';
+        $('introSlidesWrap').classList.add('hidden');
+      }
+
+      // Outro
+      $('outroTitle').textContent = (session.outro_text && session.outro_text.split('\n')[0]) || 'Děkujeme za účast';
+      $('outroLead').textContent = 'Doufáme, že ti školení dalo, co si od něj sliboval/a.';
+      const outroBody = (session.outro_text || '').split('\n').slice(1).join('\n').trim();
+      $('outroBody').textContent = outroBody;
+      if (session.outro_video_id) {
+        $('outroVideoFrame').src = 'https://www.youtube.com/embed/' + encodeURIComponent(session.outro_video_id) + '?rel=0&modestbranding=1';
+        $('outroVideoWrap').classList.remove('hidden');
+      } else {
+        $('outroVideoFrame').src = '';
+        $('outroVideoWrap').classList.add('hidden');
+      }
+      if (session.outro_slides_url) {
+        $('outroSlidesFrame').src = session.outro_slides_url;
+        $('outroSlidesWrap').classList.remove('hidden');
+      } else {
+        $('outroSlidesFrame').src = '';
+        $('outroSlidesWrap').classList.add('hidden');
+      }
+
+      // F17 — aplikuj projektorový zoom na slide iframe.
+      applySlidesZoomToProjector();
+    }
+
+    // ====== F13 Agenda — fetch + render ======
+
+    async function loadAgenda(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_agenda_items')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('position', { ascending: true });
+      if (error) {
+        console.warn('loadAgenda failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    // "HH:MM" → minutes since midnight (pro detekci aktuálního bloku)
+    function timeToMinutes(hhmm) {
+      if (!hhmm) return -1;
+      const m = String(hhmm).match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return -1;
+      return Number(m[1]) * 60 + Number(m[2]);
+    }
+
+    function currentLocalMinutes() {
+      const d = new Date();
+      return d.getHours() * 60 + d.getMinutes();
+    }
+
+    function kindIcon(kind) {
+      switch (kind) {
+        case 'break': return '☕';
+        case 'lunch': return '🍽️';
+        case 'other': return '📌';
+        default:      return '🎤';
+      }
+    }
+
+    function renderAgendaInto(containerId, items) {
+      const el = $(containerId);
+      if (!el) return;
+      if (!items || !items.length) { el.innerHTML = ''; return; }
+
+      const nowMin = currentLocalMinutes();
+      const html = items.map(it => {
+        const start = timeToMinutes(it.start_time);
+        const end = timeToMinutes(it.end_time);
+        let cls = 'agenda-item kind-' + (it.kind || 'session');
+        if (start >= 0 && end >= 0) {
+          if (nowMin >= start && nowMin < end) cls += ' current';
+          else if (end <= nowMin) cls += ' past';
+        }
+        return `
+          <div class="${cls}">
+            <div class="time">${escapeHtml(it.start_time)}–${escapeHtml(it.end_time)}</div>
+            <div class="icon">${kindIcon(it.kind)}</div>
+            <div>
+              <div class="title">${escapeHtml(it.title)}</div>
+              ${it.description ? `<div class="desc">${escapeHtml(it.description)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      el.innerHTML = `<div class="agenda-list">${html}</div>`;
+    }
+
+    async function refreshAgendaForView() {
+      if (!state.session) return;
+      state.agenda = await loadAgenda(state.session.id);
+      renderAgendaInto('agendaWidgetIntro', state.agenda);
+      renderAgendaInto('agendaWidgetDisplay', state.agenda);
+    }
+
+    // Refresh agenda highlight každou minutu (aby se „current" sám posunul s časem)
+    let agendaRefreshInterval = null;
+    function startAgendaAutoHighlight() {
+      if (agendaRefreshInterval) return;
+      agendaRefreshInterval = setInterval(() => {
+        renderAgendaInto('agendaWidgetIntro', state.agenda);
+        renderAgendaInto('agendaWidgetDisplay', state.agenda);
+      }, 30 * 1000);
+    }
+
+    // ====== F13 Pauza / countdown ======
+
+    function clearBreakInterval() {
+      if (state.breakInterval) {
+        clearInterval(state.breakInterval);
+        state.breakInterval = null;
+      }
+    }
+
+    function updateBreakBanner() {
+      const banner = $('breakBanner');
+      const session = state.session;
+      const until = session && session.break_until ? new Date(session.break_until).getTime() : null;
+      if (!until) {
+        banner.classList.add('hidden');
+        clearBreakInterval();
+        return;
+      }
+
+      const diffMs = until - Date.now();
+      if (diffMs <= 0) {
+        // Pauza skončila — vyčistit lokálně i v DB (jen admin smí UPDATE, ale obyčejný
+        // klient prostě nechá banner zmizet; admin při dalším otevření vidí null).
+        banner.classList.add('hidden');
+        clearBreakInterval();
+        if (state.mode === 'admin') {
+          supabaseClient.from('qa_sessions').update({ break_until: null }).eq('id', session.id);
+        }
+        return;
+      }
+
+      const totalSec = Math.ceil(diffMs / 1000);
+      const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const ss = String(totalSec % 60).padStart(2, '0');
+      $('breakBannerLabel').textContent = session.break_label || 'Pauza končí za';
+      $('breakBannerCountdown').textContent = `${mm}:${ss}`;
+      banner.classList.remove('hidden');
+
+      if (!state.breakInterval) {
+        state.breakInterval = setInterval(updateBreakBanner, 1000);
+      }
+    }
+
+    // Hlavní dispatcher pro participant + display mód: rozhodne, který screen ukázat
+    // podle state.session.display_phase (intro / live / outro) a podle toho,
+    // jestli musí účastník ještě projít registračním formulářem.
+    function showPhaseScreen(forParticipant) {
+      const phase = (state.session && state.session.display_phase) || 'live';
+      ['screen-register', 'screen-intro-phase', 'screen-outro-phase',
+       'screen-participant', 'screen-display']
+        .forEach(id => $(id).classList.add('hidden'));
+
+      // Registrace má přednost před fázemi (jen pro participant mode):
+      // projektor sám sebe nikdy neregistruje, vždy zobrazuje obsah.
+      if (forParticipant && needsRegistration()) {
+        renderRegisterScreen();
+        $('screen-register').classList.remove('hidden');
+        return;
+      }
+
+      renderIntroOutroFromSession(state.session);
+
+      if (phase === 'intro') {
+        $('screen-intro-phase').classList.remove('hidden');
+        return;
+      }
+      if (phase === 'outro') {
+        $('screen-outro-phase').classList.remove('hidden');
+        return;
+      }
+      // 'live' — výchozí: ukáže buď participant feed, nebo display leaderboard
+      if (forParticipant) {
+        $('screen-participant').classList.remove('hidden');
+      } else {
+        $('screen-display').classList.remove('hidden');
+      }
+    }
+
+    // ====== Registrace účastníka ======
+
+    function needsRegistration() {
+      if (!state.session || !state.session.require_registration) return false;
+      const key = ATTENDEE_KEY_PREFIX + state.session.slug;
+      return !localStorage.getItem(key);
+    }
+
+    function renderRegisterScreen() {
+      $('registerSessionInfo').textContent =
+        state.session.title + (state.session.description ? ' · ' + state.session.description : '');
+    }
+
+    // Validace: CXXXXX (písmeno C + 5 cifer). Case-insensitive.
+    function validateCustomerNumber(v) {
+      if (!v) return true; // nepovinné
+      return /^[Cc]\d{5}$/.test(v.trim());
+    }
+    function validateIco(v) {
+      if (!v) return true; // nepovinné
+      return /^\d{8}$/.test(v.trim());
+    }
+    function validateEmail(v) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+    }
+
+    async function submitRegistration() {
+      const customer = $('regCustomerNumber').value.trim();
+      const company = $('regCompany').value.trim();
+      const ico = $('regIco').value.trim();
+      const email = $('regEmail').value.trim();
+      const phone = $('regPhone').value.trim();
+      const note = $('regNote').value.trim();
+
+      // Validace
+      if (!company) { showAlert('registerAlert', 'error', 'Vyplň firmu nebo jméno.'); return; }
+      if (!email || !validateEmail(email)) { showAlert('registerAlert', 'error', 'Vyplň platný e-mail.'); return; }
+      if (!validateCustomerNumber(customer)) { showAlert('registerAlert', 'error', 'Zákaznické číslo musí být ve formátu C + 5 cifer (např. C12345).'); return; }
+      if (!validateIco(ico)) { showAlert('registerAlert', 'error', 'IČ musí být 8 cifer.'); return; }
+
+      $('registerSubmitBtn').disabled = true;
+      const orig = $('registerSubmitBtn').textContent;
+      $('registerSubmitBtn').textContent = 'Registruji…';
+
+      const payload = {
+        session_id: state.session.id,
+        customer_number: customer ? customer.toUpperCase() : null,
+        company_or_name: company,
+        ico: ico || null,
+        email: email,
+        phone: phone || null,
+        note: note || null,
+        voter_token: state.voterToken
+      };
+
+      const { data, error } = await supabaseClient
+        .from('attendees')
+        .insert(payload)
+        .select()
+        .single();
+
+      $('registerSubmitBtn').disabled = false;
+      $('registerSubmitBtn').textContent = orig;
+
+      if (error) {
+        showAlert('registerAlert', 'error', 'Registrace selhala: ' + error.message);
+        return;
+      }
+
+      // Uložit lokálně — kombinace ID + jméno pro auto-fill v Q&A.
+      const key = ATTENDEE_KEY_PREFIX + state.session.slug;
+      localStorage.setItem(key, data.id);
+      localStorage.setItem(ATTENDEE_NAME_KEY, company);
+
+      // Pokračovat na další screen — buď intro/outro fáze, nebo přímo dotazy.
+      showPhaseScreen(true);
+    }
+
+    // ====== Bootstrap ======
+
+    async function init() {
+      state.mode = detectMode();
+      state.voterToken = getOrCreateVoterToken();
+      document.body.classList.toggle('display-mode', state.mode === 'display');
+      document.body.classList.toggle('admin-mode', state.mode === 'admin');
+
+      // Bootstrap myVotes z DB (pro consistency napříč zařízeními tohoto browseru).
+      await loadMyVotes();
+
+      if (state.mode === 'admin') {
+        await initAdmin();
+        return;
+      }
+
+      if (!state.sessionSlug) {
+        $('subtitle').textContent = 'Chybí session v URL. Použij odkaz, který ti dal lektor.';
+        return;
+      }
+
+      const session = await loadSessionBySlug(state.sessionSlug);
+      if (!session) {
+        $('subtitle').textContent = 'Session nenalezena. Zkontroluj odkaz.';
+        return;
+      }
+      state.session = session;
+
+      if (state.mode === 'display') {
+        initDisplay();
+      } else {
+        initParticipant();
+      }
+    }
+
+    async function loadMyVotes() {
+      const { data, error } = await supabaseClient
+        .from('qa_votes')
+        .select('question_id')
+        .eq('voter_token', state.voterToken);
+      if (error) {
+        console.warn('loadMyVotes failed:', error);
+        return;
+      }
+      state.myVotes = new Set((data || []).map(v => v.question_id));
+    }
+
+    async function loadSessionBySlug(slug) {
+      const { data, error } = await supabaseClient
+        .from('qa_sessions')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      if (error || !data) {
+        console.error('loadSession failed:', error);
+        return null;
+      }
+      return data;
+    }
+
+    async function loadQuestionsForSession(sessionId, includeAll) {
+      // Účastník a display vidí jen published+answered (RLS to stejně vynucuje).
+      // Admin vidí všechno.
+      const query = supabaseClient
+        .from('qa_questions')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('pinned', { ascending: false })
+        .order('votes_count', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (!includeAll) query.in('status', ['published', 'answered']);
+
+      const { data, error } = await query;
+      if (error) {
+        console.error('loadQuestions failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    function subscribeRealtime(sessionId, onChange) {
+      state.channels.forEach(ch => supabaseClient.removeChannel(ch));
+      state.channels = [];
+
+      const ch = supabaseClient
+        .channel('qa-session-' + sessionId)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_questions',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'qa_sessions',
+            filter: `id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_votes' },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'attendees',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_agenda_items',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_materials',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_audio_tracks',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_polls',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_poll_answers' },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_feedback',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .subscribe();
+
+      state.channels.push(ch);
+    }
+
+    // ====== PARTICIPANT MODE ======
+
+    function initParticipant() {
+      $('modeSuffix').textContent = '— dotazy';
+      $('subtitle').textContent = state.session.title + (state.session.description ? ' · ' + state.session.description : '');
+      showPhaseScreen(true);
+
+      if (state.session.closed) {
+        showAlert('participantAlert', 'warn', 'Session je uzavřená. Nové dotazy nelze odesílat, ale dál vidíš ostatní.');
+        $('qSubmitBtn').disabled = true;
+        $('qBody').disabled = true;
+      }
+
+      if (!state.session.allow_anonymous) {
+        $('qAnonymous').checked = false;
+        $('qAnonymous').disabled = true;
+        $('qNameWrap').classList.remove('hidden');
+      }
+
+      // Auto-fill jména v Q&A formuláři z registrace (jestli proběhla).
+      const savedName = localStorage.getItem(ATTENDEE_NAME_KEY);
+      if (savedName) $('qName').value = savedName;
+
+      $('qBody').addEventListener('input', updateCharCounter);
+      $('qAnonymous').addEventListener('change', () => {
+        $('qNameWrap').classList.toggle('hidden', $('qAnonymous').checked);
+      });
+      $('qSubmitBtn').addEventListener('click', submitQuestion);
+      $('registerSubmitBtn').addEventListener('click', submitRegistration);
+      bindParticipantReactions();
+      subscribeReactions(state.session.id);
+
+      // F21: feedback v outro fázi
+      $('feedbackSubmitBtn').addEventListener('click', submitFeedback);
+      await refreshFeedbackUI();
+
+      renderParticipantList();
+      await refreshAgendaForView();
+      await refreshMaterialsForView();
+      await refreshParticipantPoll();
+      updateBreakBanner();
+      startAgendaAutoHighlight();
+      subscribeRealtime(state.session.id, async () => {
+        // Aktualizovat session, ať zachytíme změnu display_phase / intro / outro / closed / break_until
+        const fresh = await loadSessionBySlug(state.sessionSlug);
+        if (fresh) state.session = fresh;
+        showPhaseScreen(true);
+        await loadMyVotes();
+        await renderParticipantList();
+        await refreshAgendaForView();
+        await refreshMaterialsForView();
+        await refreshParticipantPoll();
+        await refreshFeedbackUI();
+        updateBreakBanner();
+      });
+    }
+
+    function updateCharCounter() {
+      const v = $('qBody').value;
+      const c = $('charCounter');
+      c.textContent = v.length + ' / 1000';
+      c.classList.toggle('over', v.length > 1000);
+    }
+
+    async function submitQuestion() {
+      const body = $('qBody').value.trim();
+      if (!body) { showAlert('participantAlert', 'error', 'Napiš nějaký dotaz.'); return; }
+      if (body.length > 1000) { showAlert('participantAlert', 'error', 'Dotaz je moc dlouhý (max 1000 znaků).'); return; }
+
+      // Rate limit (client-side): 30 s mezi odeslání.
+      const last = Number(localStorage.getItem(RATE_LIMIT_KEY) || 0);
+      const elapsed = Date.now() - last;
+      if (elapsed < RATE_LIMIT_MS) {
+        const wait = Math.ceil((RATE_LIMIT_MS - elapsed) / 1000);
+        showAlert('participantAlert', 'warn', `Počkej ještě ${wait} s před dalším dotazem.`);
+        return;
+      }
+
+      const anonymous = $('qAnonymous').checked;
+      const author_name = anonymous ? null : ($('qName').value.trim() || null);
+
+      $('qSubmitBtn').disabled = true;
+      const orig = $('qSubmitBtn').textContent;
+      $('qSubmitBtn').textContent = 'Odesílám…';
+
+      const { error } = await supabaseClient.from('qa_questions').insert({
+        session_id: state.session.id,
+        body,
+        author_name,
+        voter_token: state.voterToken   // F22 — pro gamifikační body
+      });
+
+      $('qSubmitBtn').disabled = false;
+      $('qSubmitBtn').textContent = orig;
+
+      if (error) {
+        showAlert('participantAlert', 'error', 'Odeslání selhalo: ' + error.message);
+        return;
+      }
+
+      localStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
+      $('qBody').value = '';
+      updateCharCounter();
+
+      const msg = state.session.moderation_mode === 'manual'
+        ? 'Dotaz odeslán. Po schválení lektorem se objeví ve feedu.'
+        : 'Dotaz odeslán a publikován.';
+      showAlert('participantAlert', 'ok', msg);
+    }
+
+    async function renderParticipantList() {
+      state.questions = await loadQuestionsForSession(state.session.id, false);
+      const list = $('participantList');
+      const empty = $('participantEmpty');
+      if (!state.questions.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = state.questions.map(renderQuestionParticipant).join('');
+      // Bind vote buttons
+      list.querySelectorAll('[data-vote-id]').forEach(btn => {
+        btn.addEventListener('click', () => toggleVote(btn.dataset.voteId));
+      });
+    }
+
+    function renderQuestionParticipant(q) {
+      const voted = state.myVotes.has(q.id);
+      const authorHtml = q.author_name
+        ? `<span class="author">${escapeHtml(q.author_name)}</span>`
+        : `<span class="author anon">anonymně</span>`;
+      const tagHtml = q.pinned ? '<span class="tag tag-pinned">📌 Připnuto</span>' :
+        q.status === 'answered' ? '<span class="tag tag-answered">✓ Vyřízeno</span>' : '';
+      const classes = ['question'];
+      if (q.pinned) classes.push('pinned');
+      return `
+        <div class="${classes.join(' ')}">
+          <div class="vote ${voted ? 'voted' : ''}" data-vote-id="${q.id}" role="button" aria-label="Hlasovat pro tento dotaz">
+            <div class="arrow">▲</div>
+            <div class="count">${q.votes_count}</div>
+          </div>
+          <div>
+            <div class="body">${escapeHtml(q.body)}</div>
+            <div class="meta">
+              ${authorHtml}
+              <span>· ${formatRelativeTime(q.created_at)}</span>
+              ${tagHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function formatRelativeTime(iso) {
+      const t = new Date(iso).getTime();
+      const diff = (Date.now() - t) / 1000;
+      if (diff < 60) return 'právě teď';
+      if (diff < 3600) return Math.floor(diff / 60) + ' min';
+      if (diff < 86400) return Math.floor(diff / 3600) + ' h';
+      return new Date(iso).toLocaleDateString('cs-CZ');
+    }
+
+    async function toggleVote(questionId) {
+      const already = state.myVotes.has(questionId);
+      if (already) {
+        // Odhlasovat — DELETE moje vote.
+        state.myVotes.delete(questionId);  // optimistic
+        const { error } = await supabaseClient
+          .from('qa_votes')
+          .delete()
+          .eq('question_id', questionId)
+          .eq('voter_token', state.voterToken);
+        if (error) {
+          state.myVotes.add(questionId); // revert
+          console.warn(error);
+        }
+      } else {
+        state.myVotes.add(questionId);
+        const { error } = await supabaseClient
+          .from('qa_votes')
+          .insert({ question_id: questionId, voter_token: state.voterToken });
+        if (error && !String(error.message).includes('duplicate')) {
+          state.myVotes.delete(questionId);
+          console.warn(error);
+        }
+      }
+      await renderParticipantList();
+    }
+
+    // ====== DISPLAY MODE (projektor) ======
+
+    async function initDisplay() {
+      $('modeSuffix').textContent = '— dotazy (projektor)';
+      $('subtitle').textContent = state.session.title;
+      showPhaseScreen(false);
+      $('qrWidget').classList.remove('hidden');
+
+      // QR ukazuje účastnickou URL stejné session.
+      const participantUrl = window.location.origin + '/qa.html?session=' + encodeURIComponent(state.sessionSlug);
+      $('qrLabel').textContent = (window.location.host || 'ic-office-challenge.eu') + '/qa.html';
+      QRCode.toCanvas($('qrCanvas'), participantUrl, {
+        width: 140, margin: 1,
+        color: { dark: '#0b0f1a', light: '#ffffff' },
+        errorCorrectionLevel: 'M'
+      });
+
+      renderDisplayList();
+      await refreshAgendaForView();
+      await refreshMaterialsForView();
+      await refreshAudioForDisplay();
+      await refreshDisplayPoll();
+      updateBreakBanner();
+      startAgendaAutoHighlight();
+
+      // F16: ukázat unlock tlačítko jen na projektoru, dokud admin neklikl.
+      $('audioUnlockBtn').classList.remove('hidden');
+      $('audioUnlockBtn').addEventListener('click', unlockAudio);
+
+      // F20: subscribe na reakce — letící emoji animace.
+      subscribeReactions(state.session.id);
+
+      subscribeRealtime(state.session.id, async () => {
+        // Refresh session (aby zachytil změnu highlight_question_id, display_phase, intro/outro, break_until) i questions.
+        state.session = await loadSessionBySlug(state.sessionSlug) || state.session;
+        showPhaseScreen(false);
+        await renderDisplayList();
+        await refreshAgendaForView();
+        await refreshMaterialsForView();
+        await refreshAudioForDisplay();
+        await refreshDisplayPoll();
+        updateBreakBanner();
+      });
+    }
+
+    async function renderDisplayList() {
+      state.questions = await loadQuestionsForSession(state.session.id, false);
+      const highlightId = state.session.highlight_question_id;
+      const highlighted = state.questions.find(q => q.id === highlightId);
+
+      const wrap = $('displayHighlightWrap');
+      if (highlighted) {
+        wrap.classList.remove('hidden');
+        $('displayHighlightBody').textContent = highlighted.body;
+        $('displayHighlightAuthor').textContent = highlighted.author_name ? '— ' + highlighted.author_name : 'anonymně';
+      } else {
+        wrap.classList.add('hidden');
+      }
+
+      const rest = state.questions.filter(q => q.id !== highlightId).slice(0, 8);
+      const list = $('displayList');
+      const empty = $('displayEmpty');
+      if (!rest.length && !highlighted) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      list.innerHTML = rest.map(q => {
+        const author = q.author_name ? `<span class="author">${escapeHtml(q.author_name)}</span>` : `<span class="author anon">anonymně</span>`;
+        const tag = q.pinned ? '<span class="tag tag-pinned">📌</span>' :
+          q.status === 'answered' ? '<span class="tag tag-answered">✓ Vyřízeno</span>' : '';
+        return `
+          <div class="question ${q.pinned ? 'pinned' : ''}">
+            <div class="vote">
+              <div class="arrow">▲</div>
+              <div class="count">${q.votes_count}</div>
+            </div>
+            <div>
+              <div class="body">${escapeHtml(q.body)}</div>
+              <div class="meta">${author} ${tag}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ====== ADMIN MODE ======
+
+    async function initAdmin() {
+      $('modeSuffix').textContent = '— admin';
+      $('subtitle').textContent = 'Správa dotazů na školení.';
+
+      // Pokud už je session token v Supabase Auth, skoč rovnou do admin home / session detailu.
+      const { data: { session: authSession } } = await supabaseClient.auth.getSession();
+      if (!authSession) {
+        $('screen-admin-login').classList.remove('hidden');
+        $('adminLoginBtn').addEventListener('click', handleAdminLogin);
+        $('adminPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAdminLogin(); });
+        return;
+      }
+
+      // Bind admin home akce
+      $('newSessionBtn').addEventListener('click', () => {
+        showAdminScreen('new-session');
+        $('newTitle').value = '';
+        $('newSlug').value = '';
+        $('newDescription').value = '';
+        $('newModeration').value = 'manual';
+        $('newAllowAnon').checked = true;
+      });
+      $('createSessionBtn').addEventListener('click', createSession);
+      $('cancelSessionBtn').addEventListener('click', () => showAdminScreen('home'));
+      $('adminLogoutBtn').addEventListener('click', adminLogout);
+      $('adminBackBtn').addEventListener('click', () => { state.session = null; showAdminScreen('home'); refreshAdminSessions(); });
+      $('copyParticipantUrlBtn').addEventListener('click', copyParticipantUrl);
+      $('toggleModerationBtn').addEventListener('click', toggleModeration);
+      $('toggleClosedBtn').addEventListener('click', toggleClosed);
+      $('deleteSessionBtn').addEventListener('click', deleteSession);
+
+      // Pokud URL obsahuje ?session=<slug>, otevři rovnou detail.
+      if (state.sessionSlug) {
+        const s = await loadSessionBySlug(state.sessionSlug);
+        if (s) {
+          state.session = s;
+          showAdminScreen('session');
+          await renderAdminSession();
+          return;
+        }
+      }
+
+      await refreshAdminSessions();
+      showAdminScreen('home');
+    }
+
+    async function handleAdminLogin() {
+      const email = $('adminEmail').value.trim();
+      const password = $('adminPassword').value;
+      if (!email || !password) { alert('Vyplň e-mail i heslo.'); return; }
+
+      $('adminLoginBtn').disabled = true;
+      const orig = $('adminLoginBtn').textContent;
+      $('adminLoginBtn').textContent = 'Přihlašuji…';
+
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      $('adminLoginBtn').disabled = false;
+      $('adminLoginBtn').textContent = orig;
+
+      if (error) { alert('Přihlášení selhalo: ' + error.message); return; }
+      $('adminPassword').value = '';
+      $('screen-admin-login').classList.add('hidden');
+      await initAdmin();
+    }
+
+    async function adminLogout() {
+      if (!confirm('Odhlásit?')) return;
+      await supabaseClient.auth.signOut();
+      window.location.reload();
+    }
+
+    function showAdminScreen(name) {
+      ['admin-login', 'admin-home', 'admin-new-session', 'admin-session'].forEach(s => {
+        $('screen-' + s).classList.add('hidden');
+      });
+      $('screen-admin-' + name).classList.remove('hidden');
+    }
+
+    async function refreshAdminSessions() {
+      const { data, error } = await supabaseClient
+        .from('qa_sessions')
+        .select('id, slug, title, description, moderation_mode, allow_anonymous, closed, created_at')
+        .order('created_at', { ascending: false });
+
+      const list = $('adminSessionList');
+      const empty = $('adminSessionsEmpty');
+      if (error) {
+        list.innerHTML = `<div class="alert alert-error">Načtení selhalo: ${escapeHtml(error.message)}</div>`;
+        empty.classList.add('hidden');
+        return;
+      }
+      if (!data || !data.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = data.map(s => `
+        <div class="session-item">
+          <div>
+            <div class="title">${escapeHtml(s.title)} ${s.closed ? '<span class="tag tag-hidden">uzavřená</span>' : ''}</div>
+            <div class="small">slug: <code>${escapeHtml(s.slug)}</code> · ${s.moderation_mode === 'auto' ? 'auto-publikace' : 'manuální schvalování'} · ${s.allow_anonymous ? 'anonymně OK' : 'jen s jménem'}</div>
+          </div>
+          <button class="btn btn-primary" data-open-slug="${escapeHtml(s.slug)}">Otevřít</button>
+        </div>
+      `).join('');
+      list.querySelectorAll('[data-open-slug]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const slug = btn.dataset.openSlug;
+          state.sessionSlug = slug;
+          state.session = await loadSessionBySlug(slug);
+          if (!state.session) return;
+          showAdminScreen('session');
+          await renderAdminSession();
+        });
+      });
+    }
+
+    async function createSession() {
+      const title = $('newTitle').value.trim();
+      const slug = $('newSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const description = $('newDescription').value.trim();
+      const moderation = $('newModeration').value;
+      const allowAnon = $('newAllowAnon').checked;
+
+      if (!title) { showAlert('newSessionAlert', 'error', 'Vyplň název.'); return; }
+      if (!slug) { showAlert('newSessionAlert', 'error', 'Vyplň slug (jen ASCII + pomlčky).'); return; }
+
+      const { error } = await supabaseClient.from('qa_sessions').insert({
+        slug, title, description, moderation_mode: moderation, allow_anonymous: allowAnon
+      });
+      if (error) {
+        showAlert('newSessionAlert', 'error', 'Vytvoření selhalo: ' + error.message);
+        return;
+      }
+      state.sessionSlug = slug;
+      state.session = await loadSessionBySlug(slug);
+      showAdminScreen('session');
+      await renderAdminSession();
+    }
+
+    async function renderAdminSession() {
+      if (!state.session) return;
+      $('adminSessionTitle').textContent = state.session.title;
+      $('adminSessionMeta').textContent =
+        'slug: ' + state.session.slug
+        + ' · fáze: ' + (state.session.display_phase || 'live')
+        + ' · ' + (state.session.moderation_mode === 'auto' ? 'auto-publikace' : 'manuální schvalování')
+        + ' · ' + (state.session.allow_anonymous ? 'anonymně OK' : 'jen s jménem')
+        + (state.session.closed ? ' · UZAVŘENÁ' : '');
+
+      const participantUrl = window.location.origin + '/qa.html?session=' + encodeURIComponent(state.session.slug);
+      const displayUrl = participantUrl + '&display=1';
+      $('adminParticipantLink').href = participantUrl;
+      $('adminDisplayLink').href = displayUrl;
+      $('adminParticipantUrlLabel').textContent = participantUrl;
+      $('previewIntroLink').href = participantUrl;
+      $('previewOutroLink').href = participantUrl;
+
+      QRCode.toCanvas($('adminQrCanvas'), participantUrl, {
+        width: 140, margin: 1,
+        color: { dark: '#0b0f1a', light: '#ffffff' }
+      });
+
+      // Phase switch — aktivní tlačítko podle aktuální display_phase.
+      const currentPhase = state.session.display_phase || 'live';
+      $('phaseSwitch').querySelectorAll('button[data-phase]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.phase === currentPhase);
+        btn.onclick = () => setSessionPhase(btn.dataset.phase);
+      });
+
+      // Naplnit intro / outro editor: titulek = první řádek, body = zbytek.
+      const introLines = (state.session.intro_text || '').split('\n');
+      $('introTitleInput').value = introLines[0] || '';
+      $('introBodyInput').value = introLines.slice(1).join('\n').trim();
+      $('introVideoInput').value = state.session.intro_video_id || '';
+      $('introSlidesInput').value = state.session.intro_slides_url || '';
+
+      const outroLines = (state.session.outro_text || '').split('\n');
+      $('outroTitleInput').value = outroLines[0] || '';
+      $('outroBodyInput').value = outroLines.slice(1).join('\n').trim();
+      $('outroVideoInput').value = state.session.outro_video_id || '';
+      $('outroSlidesInput').value = state.session.outro_slides_url || '';
+
+      $('saveIntroBtn').onclick = () => saveIntroOutro('intro');
+      $('saveOutroBtn').onclick = () => saveIntroOutro('outro');
+
+      // F17: pptx upload + zoom slider
+      $('introPptxUploadBtn').onclick = () => uploadPresentationFile('intro');
+      $('outroPptxUploadBtn').onclick = () => uploadPresentationFile('outro');
+
+      const zoom = state.session.slides_zoom || 100;
+      $('slidesZoomInput').value = zoom;
+      $('slidesZoomValue').textContent = zoom;
+      let zoomDebounce = null;
+      $('slidesZoomInput').oninput = () => {
+        const v = $('slidesZoomInput').value;
+        $('slidesZoomValue').textContent = v;
+        clearTimeout(zoomDebounce);
+        zoomDebounce = setTimeout(() => saveSlidesZoom(Number(v)), 250);
+      };
+
+      // Sekce účastníci
+      $('adminRequireRegistration').checked = !!state.session.require_registration;
+      $('adminRequireRegistration').onchange = () => toggleRequireRegistration($('adminRequireRegistration').checked);
+      $('exportAttendeesBtn').onclick = exportAttendeesCsv;
+      $('toggleAttendeesListBtn').onclick = () => {
+        const list = $('attendeesList');
+        const wasHidden = list.classList.contains('hidden');
+        list.classList.toggle('hidden', !wasHidden);
+        $('toggleAttendeesListBtn').textContent = wasHidden ? 'Skrýt seznam ↑' : 'Zobrazit seznam ↓';
+      };
+      await renderAttendees();
+
+      // Sekce agenda + pauza
+      const agendaItems = await loadAgenda(state.session.id);
+      state.agenda = agendaItems.map(i => ({ ...i, uiId: i.id, _persistedId: i.id }));
+      state.deletedAgendaIds = [];
+      renderAgendaEditor();
+      $('agendaAddBtn').onclick = addAgendaRow;
+      $('agendaSaveBtn').onclick = saveAgenda;
+
+      // Sekce materiály
+      $('materialUploadBtn').onclick = uploadMaterial;
+      await renderMaterialsAdmin();
+
+      // Sekce hudba (F16)
+      $('audioUploadBtn').onclick = uploadAudioTrack;
+      await renderAudioTracksAdmin();
+
+      // Sekce polls (F18)
+      togglePollOptionsVisibility();
+      $('pollKindInput').onchange = togglePollOptionsVisibility;
+      resetPollOptionsList();
+      $('pollAddOptionBtn').onclick = () => {
+        const current = $('pollOptionsList').querySelectorAll('input').length;
+        renderAdminPollOptionInputs(current + 1);
+      };
+      $('pollCreateBtn').onclick = createPoll;
+      await renderPollsAdmin();
+
+      // Sekce feedback (F21)
+      $('feedbackExportBtn').onclick = exportFeedbackCsv;
+      $('feedbackToggleListBtn').onclick = () => {
+        const list = $('feedbackAdminList');
+        const wasHidden = list.classList.contains('hidden');
+        list.classList.toggle('hidden', !wasHidden);
+        $('feedbackToggleListBtn').textContent = wasHidden ? 'Skrýt komentáře ↑' : 'Zobrazit komentáře ↓';
+      };
+      await renderFeedbackAdmin();
+
+      // Sekce gamifikace (F22)
+      $('qaLeaderboardRefreshBtn').onclick = renderQaLeaderboardAdmin;
+      await renderQaLeaderboardAdmin();
+
+      $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
+      $('breakLabelSaveBtn').onclick = saveBreakLabel;
+      $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
+      $('breakStopBtn').onclick = stopBreak;
+      document.querySelectorAll('[data-break-min]').forEach(btn => {
+        btn.onclick = () => startBreak(Number(btn.dataset.breakMin));
+      });
+      $('breakCustomBtn').onclick = () => {
+        const ans = prompt('Pauza na kolik minut?', '15');
+        const n = Number(ans);
+        if (!isNaN(n) && n > 0 && n <= 240) startBreak(n);
+      };
+      updateBreakBanner();
+
+      await renderAdminQuestionList();
+      subscribeRealtime(state.session.id, async () => {
+        state.session = await loadSessionBySlug(state.session.slug) || state.session;
+        $('adminSessionTitle').textContent = state.session.title;
+        $('adminSessionMeta').textContent =
+          'slug: ' + state.session.slug
+          + ' · fáze: ' + (state.session.display_phase || 'live')
+          + ' · ' + (state.session.moderation_mode === 'auto' ? 'auto-publikace' : 'manuální schvalování')
+          + ' · ' + (state.session.allow_anonymous ? 'anonymně OK' : 'jen s jménem')
+          + (state.session.closed ? ' · UZAVŘENÁ' : '');
+        const phase = state.session.display_phase || 'live';
+        $('phaseSwitch').querySelectorAll('button[data-phase]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.phase === phase);
+        });
+        $('adminRequireRegistration').checked = !!state.session.require_registration;
+        $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
+        updateBreakBanner();
+        await renderAdminQuestionList();
+        await renderAttendees();
+        await renderMaterialsAdmin();
+        await renderAudioTracksAdmin();
+        await renderPollsAdmin();
+        await renderFeedbackAdmin();
+        await renderQaLeaderboardAdmin();
+      });
+    }
+
+    async function setSessionPhase(phase) {
+      if (!state.session || !['intro', 'live', 'outro'].includes(phase)) return;
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ display_phase: phase })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Změna fáze selhala: ' + error.message);
+        return;
+      }
+      const labels = { intro: '🎬 Intro', live: '🎤 Live Q&A', outro: '👋 Outro' };
+      showAlert('phaseAlert', 'ok', 'Přepnuto na ' + labels[phase] + '. Účastníci i projektor se aktualizují automaticky.');
+    }
+
+    // ====== Admin: Účastníci ======
+
+    async function renderAttendees() {
+      if (!state.session) return;
+      const { data, error, count } = await supabaseClient
+        .from('attendees')
+        .select('id, customer_number, company_or_name, ico, email, phone, note, registered_at', { count: 'exact' })
+        .eq('session_id', state.session.id)
+        .order('registered_at', { ascending: false });
+
+      if (error) {
+        $('attendeesCount').innerHTML = `<span style="color:var(--danger);">Načtení selhalo: ${escapeHtml(error.message)}</span>`;
+        return;
+      }
+
+      const rows = data || [];
+      $('attendeesCount').innerHTML = `<strong>${count != null ? count : rows.length}</strong> registrovaných účastníků`;
+
+      if (!rows.length) {
+        $('attendeesList').innerHTML = '<div class="empty">Zatím žádné registrace.</div>';
+        return;
+      }
+
+      $('attendeesList').innerHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="text-align:left; color:var(--muted); border-bottom:1px solid var(--border);">
+              <th style="padding:6px 8px;">Čas</th>
+              <th style="padding:6px 8px;">Zákazník</th>
+              <th style="padding:6px 8px;">Firma / jméno</th>
+              <th style="padding:6px 8px;">IČ</th>
+              <th style="padding:6px 8px;">E-mail</th>
+              <th style="padding:6px 8px;">Telefon</th>
+              <th style="padding:6px 8px;">Poznámka</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(a => `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:6px 8px; white-space:nowrap;">${new Date(a.registered_at).toLocaleString('cs-CZ')}</td>
+                <td style="padding:6px 8px; font-family:ui-monospace,Consolas,monospace;">${escapeHtml(a.customer_number || '—')}</td>
+                <td style="padding:6px 8px;"><strong>${escapeHtml(a.company_or_name || '—')}</strong></td>
+                <td style="padding:6px 8px; font-variant-numeric:tabular-nums;">${escapeHtml(a.ico || '—')}</td>
+                <td style="padding:6px 8px;">${escapeHtml(a.email || '—')}</td>
+                <td style="padding:6px 8px;">${escapeHtml(a.phone || '—')}</td>
+                <td style="padding:6px 8px; color:var(--muted);">${escapeHtml(a.note || '')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function toggleRequireRegistration(value) {
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ require_registration: value })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Změna selhala: ' + error.message);
+        $('adminRequireRegistration').checked = !value; // revert
+        return;
+      }
+      state.session.require_registration = value;
+      showAlert('phaseAlert', 'ok',
+        value ? 'Registrace je teď povinná. Účastníci uvidí formulář.'
+              : 'Registrace je vypnutá. Účastníci jdou rovnou do Q&A.');
+    }
+
+    async function exportAttendeesCsv() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient
+        .from('attendees')
+        .select('registered_at, customer_number, company_or_name, ico, email, phone, note')
+        .eq('session_id', state.session.id)
+        .order('registered_at', { ascending: false });
+
+      if (error) { alert('Načtení selhalo: ' + error.message); return; }
+      if (!data || !data.length) { alert('Žádné registrace k exportu.'); return; }
+
+      const csvEscape = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const header = ['registered_at', 'customer_number', 'company_or_name', 'ico', 'email', 'phone', 'note'];
+      const lines = data.map(a => header.map(k => csvEscape(a[k])).join(';'));
+      // BOM kvůli českým znakům v Excelu
+      const csv = '﻿' + [header.join(';'), ...lines].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ic-office-attendees-${state.session.slug}-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ====== F22 Q&A gamifikace ======
+
+    async function renderQaLeaderboardAdmin() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient.rpc('get_qa_leaderboard', {
+        p_session_id: state.session.id
+      });
+      const list = $('qaLeaderboardList');
+      if (error) {
+        list.innerHTML = `<div class="alert alert-error">Načtení selhalo: ${escapeHtml(error.message)}</div>`;
+        return;
+      }
+      const rows = data || [];
+      if (!rows.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné interakce — body se objeví, jakmile budou hráči klást dotazy, hlasovat, reagovat…</div>';
+        return;
+      }
+      list.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="text-align:left; color:var(--muted); border-bottom:1px solid var(--border);">
+              <th style="padding:6px 8px; width:40px;">#</th>
+              <th style="padding:6px 8px;">Účastník</th>
+              <th style="padding:6px 8px; text-align:right;" title="dotazy × 5">❓</th>
+              <th style="padding:6px 8px; text-align:right;" title="hlasy × 1">▲</th>
+              <th style="padding:6px 8px; text-align:right;" title="reakce × 0,5">👏</th>
+              <th style="padding:6px 8px; text-align:right;" title="polls × 2">📊</th>
+              <th style="padding:6px 8px; text-align:right;" title="feedback × 5">⭐</th>
+              <th style="padding:6px 8px; text-align:right;">Celkem</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => {
+              const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+              return `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:6px 8px; font-weight:800;">${medal}${i + 1}.</td>
+                  <td style="padding:6px 8px;"><strong>${escapeHtml(r.display_name)}</strong></td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.question_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.vote_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.reaction_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.poll_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.feedback_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums;">${r.total_pts}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ====== F21 Feedback v outro ======
+
+    const FEEDBACK_KEY_PREFIX = 'qa_feedback_'; // + slug → 'submitted'
+
+    function setStarsUI(value) {
+      // Zvýrazní hvězdičky do hodnoty value (1..5)
+      const stars = document.querySelectorAll('[data-fb-rating]');
+      stars.forEach(btn => {
+        const v = Number(btn.dataset.fbRating);
+        btn.textContent = (v <= value) ? '⭐' : '☆';
+      });
+    }
+
+    function bindFeedbackStars() {
+      const row = $('feedbackStarsRow');
+      if (!row || row.__bound) return;
+      row.__bound = true;
+      let chosen = 0;
+      row.querySelectorAll('[data-fb-rating]').forEach(btn => {
+        btn.addEventListener('mouseenter', () => setStarsUI(Number(btn.dataset.fbRating)));
+        btn.addEventListener('mouseleave', () => setStarsUI(chosen));
+        btn.addEventListener('click', () => {
+          chosen = Number(btn.dataset.fbRating);
+          setStarsUI(chosen);
+          row.dataset.chosen = String(chosen);
+        });
+      });
+    }
+
+    async function loadMyFeedback() {
+      if (!state.session) return null;
+      const { data, error } = await supabaseClient
+        .from('qa_feedback')
+        .select('*')
+        .eq('session_id', state.session.id)
+        .eq('voter_token', state.voterToken)
+        .limit(1);
+      if (error) return null;
+      return (data && data[0]) || null;
+    }
+
+    function shouldShowFeedback() {
+      if (state.mode !== 'participant' || !state.session) return false;
+      const phase = state.session.display_phase || 'live';
+      return phase === 'outro';
+    }
+
+    async function refreshFeedbackUI() {
+      const widget = $('feedbackWidget');
+      if (!widget) return;
+      if (!shouldShowFeedback()) { widget.classList.add('hidden'); return; }
+      widget.classList.remove('hidden');
+
+      bindFeedbackStars();
+
+      const my = await loadMyFeedback();
+      if (my) {
+        // Už odesláno — readonly verze
+        widget.innerHTML = `
+          <div style="background:var(--panel); border:1px solid var(--ok); border-radius:14px; padding:18px;">
+            <h3 style="margin:0 0 6px;">✓ Děkujeme za zpětnou vazbu</h3>
+            <div style="font-size:32px; margin:8px 0;">${'⭐'.repeat(my.rating)}${'☆'.repeat(5 - my.rating)}</div>
+            ${my.comment ? `<div class="small" style="font-style:italic;">„${escapeHtml(my.comment)}"</div>` : ''}
+          </div>
+        `;
+        return;
+      }
+    }
+
+    async function submitFeedback() {
+      const row = $('feedbackStarsRow');
+      const rating = Number(row && row.dataset.chosen);
+      const comment = $('feedbackComment').value.trim();
+      const recommend = !!$('feedbackRecommend').checked;
+      if (!rating || rating < 1 || rating > 5) {
+        showAlert('feedbackAlert', 'error', 'Zvol hodnocení 1–5 hvězd.');
+        return;
+      }
+      $('feedbackSubmitBtn').disabled = true;
+      const orig = $('feedbackSubmitBtn').textContent;
+      $('feedbackSubmitBtn').textContent = 'Odesílám…';
+
+      const { error } = await supabaseClient.from('qa_feedback').insert({
+        session_id: state.session.id,
+        voter_token: state.voterToken,
+        rating,
+        comment,
+        recommend_yes: recommend
+      });
+
+      $('feedbackSubmitBtn').disabled = false;
+      $('feedbackSubmitBtn').textContent = orig;
+
+      if (error && !String(error.message).toLowerCase().includes('duplicate')) {
+        showAlert('feedbackAlert', 'error', 'Odeslání selhalo: ' + error.message);
+        return;
+      }
+      localStorage.setItem(FEEDBACK_KEY_PREFIX + state.session.slug, 'submitted');
+      await refreshFeedbackUI();
+    }
+
+    // ====== Admin: feedback výpis + CSV ======
+
+    async function renderFeedbackAdmin() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient
+        .from('qa_feedback')
+        .select('rating, comment, recommend_yes, created_at')
+        .eq('session_id', state.session.id)
+        .order('created_at', { ascending: false });
+
+      const summary = $('feedbackAdminSummary');
+      const list = $('feedbackAdminList');
+      if (error) {
+        summary.innerHTML = `<span style="color:var(--danger);">Načtení selhalo: ${escapeHtml(error.message)}</span>`;
+        return;
+      }
+      const rows = data || [];
+      if (!rows.length) {
+        summary.innerHTML = '<em>Zatím žádné odezvy.</em>';
+        list.innerHTML = '';
+        return;
+      }
+      const avg = rows.reduce((s, r) => s + r.rating, 0) / rows.length;
+      const recYes = rows.filter(r => r.recommend_yes).length;
+      summary.innerHTML = `
+        <strong>${rows.length}</strong> odezv ·
+        průměr <strong>${avg.toFixed(2)} / 5</strong> ${'⭐'.repeat(Math.round(avg))} ·
+        doporučilo by ${recYes} / ${rows.length}
+      `;
+
+      list.innerHTML = rows.map(r => `
+        <div class="audio-track-row" style="grid-template-columns: 80px 1fr auto;">
+          <div style="font-size:22px; font-weight:800; color:var(--accent);">${r.rating}/5</div>
+          <div>
+            <div class="title">${'⭐'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} ${r.recommend_yes ? '<span style="color:var(--ok); font-size:11px;">✓ doporučí</span>' : ''}</div>
+            <div class="meta">${r.comment ? '„' + escapeHtml(r.comment) + '"' : '<em>bez komentáře</em>'}</div>
+          </div>
+          <div class="meta" style="font-size:11px; white-space:nowrap;">${new Date(r.created_at).toLocaleString('cs-CZ')}</div>
+        </div>
+      `).join('');
+    }
+
+    async function exportFeedbackCsv() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient
+        .from('qa_feedback')
+        .select('created_at, rating, recommend_yes, comment')
+        .eq('session_id', state.session.id)
+        .order('created_at', { ascending: false });
+      if (error) { alert('Načtení selhalo: ' + error.message); return; }
+      if (!data || !data.length) { alert('Žádná zpětná vazba k exportu.'); return; }
+
+      const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const header = ['created_at', 'rating', 'recommend_yes', 'comment'];
+      const lines = data.map(r => header.map(k => esc(r[k])).join(';'));
+      const csv = '﻿' + [header.join(';'), ...lines].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ic-office-feedback-${state.session.slug}-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ====== F18 Live polls ======
+
+    const POLL_VOTE_KEY_PREFIX = 'qa_poll_vote_'; // + poll.id → option_idx | rating | text
+
+    async function loadActivePoll(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_polls')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('status', 'active')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      if (error) { console.warn('loadActivePoll failed:', error); return null; }
+      return (data && data[0]) || null;
+    }
+
+    async function loadAllPolls(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_polls')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false });
+      if (error) return [];
+      return data || [];
+    }
+
+    async function loadPollAnswers(pollId) {
+      const { data, error } = await supabaseClient
+        .from('qa_poll_answers')
+        .select('id, option_idx, rating_value, text_value, voter_token, created_at')
+        .eq('poll_id', pollId);
+      if (error) return [];
+      return data || [];
+    }
+
+    function getMyPollVote(pollId) {
+      const v = localStorage.getItem(POLL_VOTE_KEY_PREFIX + pollId);
+      if (!v) return null;
+      try { return JSON.parse(v); } catch { return null; }
+    }
+
+    function setMyPollVote(pollId, vote) {
+      localStorage.setItem(POLL_VOTE_KEY_PREFIX + pollId, JSON.stringify(vote));
+    }
+
+    // Render aktivního pollu pro účastníka (s tlačítky / hvězdy / text inputem)
+    async function refreshParticipantPoll() {
+      if (state.mode !== 'participant' || !state.session) return;
+      const poll = await loadActivePoll(state.session.id);
+      const wrap = $('participantPollWrap');
+      if (!poll) { wrap.classList.add('hidden'); wrap.innerHTML = ''; return; }
+
+      const myVote = getMyPollVote(poll.id);
+      wrap.classList.remove('hidden');
+
+      if (poll.kind === 'choice') {
+        const options = Array.isArray(poll.options) ? poll.options : [];
+        wrap.innerHTML = `
+          <div class="poll-card">
+            <div class="question">📊 ${escapeHtml(poll.question)}</div>
+            <div class="poll-options" id="pollOptionButtons">
+              ${options.map((opt, idx) => `
+                <button class="poll-option-btn ${myVote && myVote.option_idx === idx ? 'voted' : ''}"
+                        data-option-idx="${idx}"
+                        ${myVote ? 'disabled' : ''}>${escapeHtml(opt)}</button>
+              `).join('')}
+            </div>
+            ${myVote ? '<div class="small" style="margin-top:8px; color:var(--ok); font-weight:700;">✓ Tvůj hlas zaznamenán.</div>' : ''}
+          </div>
+        `;
+        if (!myVote) {
+          $('pollOptionButtons').querySelectorAll('[data-option-idx]').forEach(btn => {
+            btn.addEventListener('click', () => submitPollVote(poll, { option_idx: Number(btn.dataset.optionIdx) }));
+          });
+        }
+      } else if (poll.kind === 'rating') {
+        const max = poll.rating_max || 5;
+        wrap.innerHTML = `
+          <div class="poll-card">
+            <div class="question">⭐ ${escapeHtml(poll.question)}</div>
+            <div class="poll-stars" id="pollStarsRow">
+              ${Array.from({ length: max }, (_, i) => i + 1).map(v => `
+                <button class="poll-star-btn" data-rating="${v}" ${myVote ? 'disabled' : ''}>
+                  ${myVote && myVote.rating_value >= v ? '⭐' : '☆'}
+                </button>
+              `).join('')}
+            </div>
+            ${myVote ? `<div class="small" style="margin-top:8px; color:var(--ok); font-weight:700;">✓ Hlasoval/a jsi ${myVote.rating_value}/${max}.</div>` : ''}
+          </div>
+        `;
+        if (!myVote) {
+          $('pollStarsRow').querySelectorAll('[data-rating]').forEach(btn => {
+            btn.addEventListener('click', () => submitPollVote(poll, { rating_value: Number(btn.dataset.rating) }));
+          });
+        }
+      } else if (poll.kind === 'word_cloud') {
+        wrap.innerHTML = `
+          <div class="poll-card">
+            <div class="question">☁️ ${escapeHtml(poll.question)}</div>
+            <input id="pollWordInput" type="text" maxlength="40" placeholder="Jedno slovo (max 40 znaků)" ${myVote ? 'disabled' : ''} value="${escapeHtml(myVote ? myVote.text_value || '' : '')}" />
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn btn-primary" id="pollWordSubmitBtn" ${myVote ? 'disabled' : ''}>${myVote ? '✓ Odesláno' : 'Odeslat'}</button>
+            </div>
+          </div>
+        `;
+        if (!myVote) {
+          $('pollWordSubmitBtn').addEventListener('click', () => {
+            const v = $('pollWordInput').value.trim();
+            if (!v) return;
+            submitPollVote(poll, { text_value: v.slice(0, 40) });
+          });
+        }
+      }
+    }
+
+    async function submitPollVote(poll, vote) {
+      const payload = {
+        poll_id: poll.id,
+        voter_token: state.voterToken,
+        option_idx: vote.option_idx != null ? vote.option_idx : null,
+        rating_value: vote.rating_value != null ? vote.rating_value : null,
+        text_value: vote.text_value || null
+      };
+      const { error } = await supabaseClient.from('qa_poll_answers').insert(payload);
+      if (error && !String(error.message).toLowerCase().includes('duplicate')) {
+        alert('Hlas se nepodařilo zaznamenat: ' + error.message);
+        return;
+      }
+      setMyPollVote(poll.id, vote);
+      await refreshParticipantPoll();
+    }
+
+    // Render aktivního pollu na projektoru — bar chart / gauge / word cloud
+    async function refreshDisplayPoll() {
+      if (state.mode !== 'display' || !state.session) return;
+      const wrap = $('displayPollWrap');
+      const poll = await loadActivePoll(state.session.id);
+      if (!poll) { wrap.classList.add('hidden'); wrap.innerHTML = ''; return; }
+      const answers = await loadPollAnswers(poll.id);
+      wrap.classList.remove('hidden');
+      wrap.innerHTML = renderPollResults(poll, answers);
+    }
+
+    function renderPollResults(poll, answers) {
+      const total = answers.length;
+      if (poll.kind === 'choice') {
+        const options = Array.isArray(poll.options) ? poll.options : [];
+        const counts = options.map((_, i) => answers.filter(a => a.option_idx === i).length);
+        return `
+          <div class="poll-card">
+            <div class="question">📊 ${escapeHtml(poll.question)}</div>
+            ${options.map((opt, i) => {
+              const n = counts[i];
+              const pct = total ? Math.round((n / total) * 100) : 0;
+              return `
+                <div class="poll-bar-row">
+                  <div class="label"><span>${escapeHtml(opt)}</span><span><span class="pct">${pct} %</span> · ${n}</span></div>
+                  <div class="poll-bar-track"><div class="poll-bar-fill" style="width:${pct}%;"></div></div>
+                </div>
+              `;
+            }).join('')}
+            <div class="small" style="text-align:center; margin-top:10px; opacity:0.7;">Celkem hlasů: ${total}</div>
+          </div>
+        `;
+      }
+      if (poll.kind === 'rating') {
+        const ratings = answers.map(a => a.rating_value).filter(v => v != null);
+        const avg = ratings.length ? (ratings.reduce((s, v) => s + v, 0) / ratings.length) : 0;
+        const max = poll.rating_max || 5;
+        const dist = Array.from({ length: max }, (_, i) => i + 1).map(v => ratings.filter(r => r === v).length);
+        return `
+          <div class="poll-card">
+            <div class="question">⭐ ${escapeHtml(poll.question)}</div>
+            <div class="poll-rating-gauge">
+              <div class="avg">${avg.toFixed(1)}</div>
+              <div class="scale">z ${max} (${ratings.length} hlasů)</div>
+            </div>
+            <div class="poll-rating-distribution">
+              ${dist.map((n, i) => {
+                const pct = ratings.length ? Math.round((n / ratings.length) * 100) : 0;
+                return `
+                  <div class="poll-bar-row">
+                    <div class="label"><span>${i + 1} ⭐</span><span><span class="pct">${pct} %</span> · ${n}</span></div>
+                    <div class="poll-bar-track"><div class="poll-bar-fill" style="width:${pct}%;"></div></div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+      // word_cloud
+      const freq = {};
+      answers.forEach(a => {
+        const w = (a.text_value || '').trim().toLowerCase();
+        if (!w) return;
+        freq[w] = (freq[w] || 0) + 1;
+      });
+      const entries = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+      const maxFreq = entries.length ? entries[0][1] : 1;
+      const tierFor = (n) => {
+        const r = n / maxFreq;
+        if (r > 0.8) return 1;
+        if (r > 0.55) return 2;
+        if (r > 0.3) return 3;
+        if (r > 0.15) return 4;
+        return 5;
+      };
+      return `
+        <div class="poll-card">
+          <div class="question">☁️ ${escapeHtml(poll.question)}</div>
+          <div class="poll-word-cloud">
+            ${entries.length === 0 ? '<div class="small">Zatím žádná slova.</div>' :
+              entries.map(([w, n]) => `<span class="poll-word tier-${tierFor(n)}" title="${n}×">${escapeHtml(w)}</span>`).join('')}
+          </div>
+          <div class="small" style="text-align:center; margin-top:10px; opacity:0.7;">Celkem slov: ${entries.length} · ${answers.length} hlasů</div>
+        </div>
+      `;
+    }
+
+    // ====== Admin: polls CRUD ======
+
+    function renderAdminPollOptionInputs(count) {
+      // Render N input řádků pro multiple-choice options
+      const wrap = $('pollOptionsList');
+      const existing = wrap.querySelectorAll('input').length;
+      let html = '';
+      const start = existing;
+      for (let i = existing; i < count; i++) {
+        html += `<input class="poll-admin-option-input" type="text" maxlength="160" placeholder="Možnost ${i + 1}" style="margin-bottom:6px;" />`;
+      }
+      wrap.insertAdjacentHTML('beforeend', html);
+    }
+
+    function resetPollOptionsList() {
+      $('pollOptionsList').innerHTML = '';
+      renderAdminPollOptionInputs(2); // start se 2 prázdnými poli
+    }
+
+    function togglePollOptionsVisibility() {
+      const kind = $('pollKindInput').value;
+      $('pollOptionsWrap').classList.toggle('hidden', kind !== 'choice');
+    }
+
+    async function createPoll() {
+      if (!state.session) return;
+      const question = $('pollQuestionInput').value.trim();
+      const kind = $('pollKindInput').value;
+      if (!question) { showAlert('pollAdminAlert', 'error', 'Vyplň otázku.'); return; }
+
+      let options = null;
+      if (kind === 'choice') {
+        options = [...$('pollOptionsList').querySelectorAll('input')]
+          .map(i => i.value.trim()).filter(v => v);
+        if (options.length < 2) {
+          showAlert('pollAdminAlert', 'error', 'Multiple choice musí mít aspoň 2 možnosti.');
+          return;
+        }
+      }
+
+      const { error } = await supabaseClient.from('qa_polls').insert({
+        session_id: state.session.id,
+        kind,
+        question,
+        options,
+        status: 'draft'
+      });
+      if (error) { showAlert('pollAdminAlert', 'error', 'Vytvoření selhalo: ' + error.message); return; }
+
+      $('pollQuestionInput').value = '';
+      resetPollOptionsList();
+      showAlert('pollAdminAlert', 'ok', 'Poll vytvořen. Klikni „Aktivovat" v seznamu níže.');
+      await renderPollsAdmin();
+    }
+
+    async function activatePoll(pollId) {
+      if (!state.session) return;
+      // Uzavřít předchozí aktivní polls v této session
+      const r1 = await supabaseClient.from('qa_polls')
+        .update({ status: 'closed' })
+        .eq('session_id', state.session.id)
+        .eq('status', 'active');
+      if (r1.error) console.warn(r1.error);
+      const r2 = await supabaseClient.from('qa_polls')
+        .update({ status: 'active' })
+        .eq('id', pollId);
+      if (r2.error) { alert('Aktivace selhala: ' + r2.error.message); return; }
+      await renderPollsAdmin();
+    }
+
+    async function closePoll(pollId) {
+      const { error } = await supabaseClient.from('qa_polls')
+        .update({ status: 'closed' })
+        .eq('id', pollId);
+      if (error) alert('Uzavření selhalo: ' + error.message);
+      await renderPollsAdmin();
+    }
+
+    async function deletePoll(pollId) {
+      if (!confirm('Smazat poll včetně všech hlasů?')) return;
+      const { error } = await supabaseClient.from('qa_polls').delete().eq('id', pollId);
+      if (error) alert('Smazání selhalo: ' + error.message);
+      await renderPollsAdmin();
+    }
+
+    async function renderPollsAdmin() {
+      if (!state.session) return;
+      const polls = await loadAllPolls(state.session.id);
+      const list = $('pollsAdminList');
+      if (!polls.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné polls.</div>';
+        return;
+      }
+      list.innerHTML = polls.map(p => `
+        <div class="audio-track-row" style="grid-template-columns: 44px 1fr auto;">
+          <div class="icon" style="background:linear-gradient(135deg, ${p.kind === 'choice' ? '#3b82f6, #1e40af' : p.kind === 'rating' ? '#f59e0b, #d97706' : '#8b5cf6, #6d28d9'});">
+            ${p.kind === 'choice' ? '📊' : p.kind === 'rating' ? '⭐' : '☁️'}
+          </div>
+          <div>
+            <div class="title">
+              <span class="poll-status-badge poll-status-${p.kind === 'choice' ? 'choice' : ''} poll-status-${p.status}">${p.status}</span>
+              ${escapeHtml(p.question)}
+            </div>
+            <div class="meta">
+              ${p.kind === 'choice' ? (p.options || []).length + ' možností' : p.kind === 'rating' ? '1–' + p.rating_max + '⭐' : 'word cloud'}
+              · vytvořeno ${new Date(p.created_at).toLocaleString('cs-CZ')}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${p.status !== 'active' ? `<button class="btn btn-ok" data-poll-activate="${p.id}" style="padding:6px 10px; font-size:12px;">▶ Aktivovat</button>` : ''}
+            ${p.status === 'active' ? `<button class="btn btn-secondary" data-poll-close="${p.id}" style="padding:6px 10px; font-size:12px;">⏹ Uzavřít</button>` : ''}
+            <button class="btn btn-danger" data-poll-delete="${p.id}" style="padding:6px 10px; font-size:12px;">Smazat</button>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('[data-poll-activate]').forEach(b => b.addEventListener('click', () => activatePoll(b.dataset.pollActivate)));
+      list.querySelectorAll('[data-poll-close]').forEach(b => b.addEventListener('click', () => closePoll(b.dataset.pollClose)));
+      list.querySelectorAll('[data-poll-delete]').forEach(b => b.addEventListener('click', () => deletePoll(b.dataset.pollDelete)));
+    }
+
+    // ====== F20 Reactions / emoji storm ======
+
+    let lastReactionTs = 0;
+    const REACTION_THROTTLE_MS = 400; // anti-spam: max 1 reakce / 400 ms per browser
+
+    async function sendReaction(emoji) {
+      const now = Date.now();
+      if (now - lastReactionTs < REACTION_THROTTLE_MS) return;
+      lastReactionTs = now;
+
+      // Optimistická lokální animace pro účastníka — ať vidí okamžitou
+      // odezvu i kdyby DB INSERT trval pár stovek ms.
+      // Skutečnou animaci na projektoru spustí realtime subscription.
+
+      const { error } = await supabaseClient.from('qa_reactions').insert({
+        session_id: state.session.id,
+        emoji,
+        voter_token: state.voterToken
+      });
+      if (error) console.warn('Reaction insert failed:', error);
+    }
+
+    function spawnFlyingEmoji(emoji) {
+      const canvas = $('reactionsCanvas');
+      if (!canvas) return;
+      const node = document.createElement('div');
+      node.className = 'flying-emoji';
+      node.textContent = emoji;
+
+      // Náhodná startovní pozice (po celé šířce projektoru) a drobné odchýlení
+      // při letu — efekt „roje", ne sloupce.
+      const startX = Math.random() * 90 + 5; // 5–95 %
+      const dxFrom = (Math.random() * 40 - 20) + 'px';
+      const dxTo   = (Math.random() * 200 - 100) + 'px';
+      const rotFrom = (Math.random() * 30 - 15) + 'deg';
+      const rotTo   = (Math.random() * 60 - 30) + 'deg';
+      const duration = 3500 + Math.random() * 2000; // 3,5–5,5 s
+
+      node.style.left = startX + '%';
+      node.style.setProperty('--dx-from', dxFrom);
+      node.style.setProperty('--dx-to', dxTo);
+      node.style.setProperty('--rot-from', rotFrom);
+      node.style.setProperty('--rot-to', rotTo);
+      node.style.animationDuration = duration + 'ms';
+
+      canvas.appendChild(node);
+      setTimeout(() => node.remove(), duration + 200);
+    }
+
+    function bindParticipantReactions() {
+      const row = $('reactionsRow');
+      if (!row) return;
+      row.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const emoji = btn.dataset.emoji;
+          if (!emoji) return;
+          btn.disabled = true;
+          setTimeout(() => btn.disabled = false, REACTION_THROTTLE_MS);
+          sendReaction(emoji);
+          // Lokální mini-feedback: emoji "vyskočí" z tlačítka (CSS scale animace)
+          btn.style.transform = 'scale(1.4)';
+          setTimeout(() => { btn.style.transform = ''; }, 200);
+        });
+      });
+    }
+
+    // Subscribe na nové reakce — na projektoru spawne flying emoji animace.
+    // Účastník i admin reakce ignorují (zobrazuje se jen na projektoru).
+    let reactionsChannel = null;
+    function subscribeReactions(sessionId) {
+      if (reactionsChannel) {
+        try { supabaseClient.removeChannel(reactionsChannel); } catch (_) {}
+        reactionsChannel = null;
+      }
+      reactionsChannel = supabaseClient
+        .channel('qa-reactions-' + sessionId)
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'qa_reactions',
+            filter: `session_id=eq.${sessionId}` },
+          (payload) => {
+            if (state.mode !== 'display') return;
+            const r = payload.new;
+            if (r && r.emoji) spawnFlyingEmoji(r.emoji);
+          }
+        )
+        .subscribe();
+    }
+
+    // ====== F17 PowerPoint upload + zoom ======
+
+    // Nahraje .pptx (nebo .ppt / .pdf) do Storage a vyplní příslušný „slides URL"
+    // input s odkazem na Office Web Viewer, který umí .pptx renderovat 1:1.
+    async function uploadPresentationFile(kind) {
+      // kind: 'intro' | 'outro'
+      const fileInput = $(kind + 'PptxFileInput');
+      const urlInput  = $(kind + 'SlidesInput');
+      const file = fileInput.files[0];
+      if (!file) {
+        showAlert('phaseAlert', 'error', 'Vyber .pptx, .ppt nebo .pdf soubor.');
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        showAlert('phaseAlert', 'error', 'Soubor je větší než 50 MB. Zmenši nebo zkomprimuj prezentaci.');
+        return;
+      }
+
+      const btn = $(kind + 'PptxUploadBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = 'Nahrávám…';
+
+      try {
+        const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'pptx';
+        const path = `${state.session.id}/${safeId}.${ext}`;
+
+        const up = await supabaseClient.storage
+          .from(PRESENTATIONS_BUCKET)
+          .upload(path, file, {
+            upsert: false,
+            contentType: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+          });
+        if (up.error) throw new Error('Upload selhal: ' + up.error.message);
+
+        const { data: pub } = supabaseClient.storage.from(PRESENTATIONS_BUCKET).getPublicUrl(path);
+        const publicUrl = pub && pub.publicUrl;
+        if (!publicUrl) throw new Error('Storage nevrátil veřejnou URL — zkontroluj, že je bucket Public.');
+
+        // PDF se v Office Web Vieweru nezobrazí — pro PDF použijeme Google Drive viewer.
+        let embedUrl;
+        if (ext === 'pdf') {
+          embedUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(publicUrl) + '&embedded=true';
+        } else {
+          embedUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(publicUrl);
+        }
+
+        urlInput.value = embedUrl;
+        fileInput.value = '';
+        showAlert('phaseAlert', 'ok', 'Prezentace nahrána. URL vyplněná v poli — klikni „Uložit ' + kind + '".');
+      } catch (e) {
+        showAlert('phaseAlert', 'error', e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
+    }
+
+    async function saveSlidesZoom(percent) {
+      if (!state.session) return;
+      const z = Math.max(50, Math.min(300, Math.round(percent)));
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ slides_zoom: z })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Změna zoomu selhala: ' + error.message);
+      }
+    }
+
+    // Aplikuje zoom % na iframe ve slide rámečcích (jen projektor).
+    function applySlidesZoomToProjector() {
+      if (state.mode !== 'display') return;
+      const z = (state.session && state.session.slides_zoom) || 100;
+      const scale = z / 100;
+      [$('introSlidesFrame'), $('outroSlidesFrame')].forEach(frame => {
+        if (!frame) return;
+        if (scale === 1) {
+          frame.style.transform = '';
+          frame.style.transformOrigin = '';
+          frame.style.width = '';
+          frame.style.height = '';
+        } else {
+          // CSS scale + kompenzace velikosti aby iframe nezmenšil svůj viewport
+          frame.style.transformOrigin = 'top left';
+          frame.style.transform = `scale(${scale})`;
+          frame.style.width = (100 / scale) + '%';
+          frame.style.height = (100 / scale) + '%';
+        }
+      });
+    }
+
+    // ====== F16 Hudba na pozadí ======
+
+    const audioState = {
+      unlocked: false,            // admin už klikl „Spustit zvuk"?
+      currentKind: null,          // jaký kind hraje (intro/break/outro), null = ticho
+      currentTrackId: null,       // ID právě hrající stopy
+      tracks: []                  // všechny tracky aktuální session
+    };
+
+    async function loadAudioTracks(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_audio_tracks')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.warn('loadAudioTracks failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    function audioPublicUrl(path) {
+      if (!path) return '';
+      const { data } = supabaseClient.storage.from(AUDIO_BUCKET).getPublicUrl(path);
+      return (data && data.publicUrl) || '';
+    }
+
+    function pickActiveTrack(kind) {
+      // Pro daný kind vrátí nejnovější aktivní track. Pokud žádný neexistuje, null.
+      return audioState.tracks.find(t => t.kind === kind && t.active !== false) || null;
+    }
+
+    function effectivePhaseKind() {
+      if (!state.session) return null;
+      // Pauza má prioritu před fází — když je break_until aktivní, hraje break audio.
+      if (state.session.break_until) {
+        const until = new Date(state.session.break_until).getTime();
+        if (until > Date.now()) return 'break';
+      }
+      const phase = state.session.display_phase || 'live';
+      if (phase === 'intro') return 'intro';
+      if (phase === 'outro') return 'outro';
+      return null; // 'live' → ticho
+    }
+
+    function applyAudioForPhase() {
+      // Volá se jen v display módu (projektor).
+      if (state.mode !== 'display') return;
+      const player = $('audioPlayer');
+      const npLabel = $('audioNowPlayingLabel');
+      const np = $('audioNowPlaying');
+      const desiredKind = effectivePhaseKind();
+      const track = desiredKind ? pickActiveTrack(desiredKind) : null;
+
+      // Žádná stopa pro aktuální fázi → stop
+      if (!track) {
+        if (audioState.currentTrackId) {
+          player.pause();
+          player.removeAttribute('src');
+          player.load();
+        }
+        audioState.currentKind = null;
+        audioState.currentTrackId = null;
+        np.classList.add('hidden');
+        return;
+      }
+
+      // Stejná stopa pořád hraje → nedělat nic
+      if (audioState.currentTrackId === track.id && !player.paused) return;
+
+      // Přehrát novou
+      player.src = audioPublicUrl(track.file_path);
+      player.loop = !!track.loop_track;
+      player.volume = Math.max(0, Math.min(1, Number(track.volume) || 0.6));
+      audioState.currentKind = desiredKind;
+      audioState.currentTrackId = track.id;
+
+      // Pokud admin ještě nekliknul unlock, autoplay selže. Po unlock pak voláme znovu.
+      const playPromise = player.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(() => {
+          npLabel.textContent = ({
+            intro: '🎬 ' + track.title,
+            break: '☕ ' + track.title,
+            outro: '👋 ' + track.title
+          })[desiredKind] || track.title;
+          np.classList.remove('hidden');
+        }).catch(err => {
+          console.warn('Autoplay blocked (admin must click „Spustit zvuk"):', err && err.name);
+          // Necháme unlock tlačítko vidět — uživatel viděl ho na startu, případně refresh.
+          if (!audioState.unlocked) $('audioUnlockBtn').classList.remove('hidden');
+        });
+      }
+    }
+
+    function unlockAudio() {
+      audioState.unlocked = true;
+      $('audioUnlockBtn').classList.add('hidden');
+      // Po unlock zkusíme přehrát aktuální fázi.
+      applyAudioForPhase();
+    }
+
+    async function refreshAudioForDisplay() {
+      if (!state.session) return;
+      audioState.tracks = await loadAudioTracks(state.session.id);
+      applyAudioForPhase();
+    }
+
+    // ====== Admin: hudba upload + list ======
+
+    async function uploadAudioTrack() {
+      const title = $('audioTitleInput').value.trim();
+      const file = $('audioFileInput').files[0];
+      const kind = $('audioKindSelect').value;
+      const volume = Number($('audioVolumeInput').value) || 0.6;
+      const loopTrack = $('audioLoopInput').checked;
+
+      if (!title) { showAlert('audioUploadAlert', 'error', 'Vyplň název stopy.'); return; }
+      if (!file)  { showAlert('audioUploadAlert', 'error', 'Vyber audio soubor.'); return; }
+
+      $('audioUploadBtn').disabled = true;
+      const orig = $('audioUploadBtn').textContent;
+      $('audioUploadBtn').textContent = 'Nahrávám…';
+
+      try {
+        const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'mp3';
+        const path = `${state.session.id}/${safeId}.${ext}`;
+
+        const up = await supabaseClient.storage
+          .from(AUDIO_BUCKET)
+          .upload(path, file, { upsert: false, contentType: file.type || 'audio/mpeg' });
+        if (up.error) throw new Error('Upload selhal: ' + up.error.message);
+
+        const ins = await supabaseClient.from('qa_audio_tracks').insert({
+          session_id: state.session.id,
+          title,
+          file_path: path,
+          mime_type: file.type || null,
+          file_size: file.size,
+          kind,
+          loop_track: loopTrack,
+          volume
+        });
+        if (ins.error) throw new Error('Zápis do DB selhal: ' + ins.error.message);
+
+        $('audioTitleInput').value = '';
+        $('audioFileInput').value = '';
+        showAlert('audioUploadAlert', 'ok', 'Stopa nahrána.');
+        await renderAudioTracksAdmin();
+      } catch (e) {
+        showAlert('audioUploadAlert', 'error', e.message);
+      } finally {
+        $('audioUploadBtn').disabled = false;
+        $('audioUploadBtn').textContent = orig;
+      }
+    }
+
+    async function renderAudioTracksAdmin() {
+      if (!state.session) return;
+      const tracks = await loadAudioTracks(state.session.id);
+      const list = $('audioTracksAdminList');
+      if (!tracks.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné audio stopy.</div>';
+        return;
+      }
+      const kindLabel = { intro: '🎬 Intro', break: '☕ Pauza', outro: '👋 Outro', custom: '📌 Vlastní' };
+      list.innerHTML = tracks.map(t => `
+        <div class="audio-track-row">
+          <div class="icon">🎵</div>
+          <div>
+            <div class="title">
+              <span class="kind-badge audio-kind-${escapeHtml(t.kind)}">${escapeHtml(kindLabel[t.kind] || t.kind)}</span>
+              ${escapeHtml(t.title)}
+            </div>
+            <div class="meta">
+              ${formatFileSize(t.file_size)} ·
+              hlasitost ${Math.round((Number(t.volume) || 0) * 100)} % ·
+              ${t.loop_track ? 'smyčka ON' : 'jednorázově'} ·
+              ${t.active === false ? '<span style="color:var(--danger);">vypnuto</span>' : 'aktivní'}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <a class="btn btn-ghost" href="${escapeHtml(audioPublicUrl(t.file_path))}" target="_blank" rel="noopener" style="padding:6px 10px; font-size:12px; text-decoration:none;">Poslechnout</a>
+            <button class="btn btn-ghost" data-toggle-audio="${escapeHtml(t.id)}" data-active="${t.active === false ? 'false' : 'true'}" style="padding:6px 10px; font-size:12px;">${t.active === false ? 'Zapnout' : 'Vypnout'}</button>
+            <button class="btn btn-danger" data-delete-audio="${escapeHtml(t.id)}" data-delete-path="${escapeHtml(t.file_path)}" style="padding:6px 10px; font-size:12px;">Smazat</button>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('[data-delete-audio]').forEach(btn => {
+        btn.addEventListener('click', () => deleteAudioTrack(btn.dataset.deleteAudio, btn.dataset.deletePath));
+      });
+      list.querySelectorAll('[data-toggle-audio]').forEach(btn => {
+        btn.addEventListener('click', () => toggleAudioTrack(btn.dataset.toggleAudio, btn.dataset.active === 'false'));
+      });
+    }
+
+    async function deleteAudioTrack(id, filePath) {
+      if (!confirm('Smazat audio stopu nadobro?')) return;
+      const r1 = await supabaseClient.from('qa_audio_tracks').delete().eq('id', id);
+      if (r1.error) { alert('Smazání selhalo: ' + r1.error.message); return; }
+      try { await supabaseClient.storage.from(AUDIO_BUCKET).remove([filePath]); }
+      catch (e) { console.warn('Storage delete failed (ignored):', e); }
+      await renderAudioTracksAdmin();
+    }
+
+    async function toggleAudioTrack(id, newActive) {
+      const { error } = await supabaseClient
+        .from('qa_audio_tracks')
+        .update({ active: newActive })
+        .eq('id', id);
+      if (error) { alert('Změna selhala: ' + error.message); return; }
+      await renderAudioTracksAdmin();
+    }
+
+    // ====== F12 Materiály ke stažení ======
+
+    async function loadMaterials(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_materials')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.warn('loadMaterials failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    function materialPublicUrl(path) {
+      if (!path) return '';
+      const { data } = supabaseClient.storage.from(MATERIALS_BUCKET).getPublicUrl(path);
+      return (data && data.publicUrl) || '';
+    }
+
+    function formatFileSize(bytes) {
+      const n = Number(bytes || 0);
+      if (n < 1024) return n + ' B';
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' kB';
+      return (n / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    function iconForMime(mime) {
+      if (!mime) return '📎';
+      if (mime.startsWith('image/')) return '🖼️';
+      if (mime === 'application/pdf') return '📄';
+      if (mime.startsWith('video/')) return '🎬';
+      if (mime.startsWith('audio/')) return '🎵';
+      if (mime.includes('presentation') || mime.includes('powerpoint')) return '📊';
+      if (mime.includes('spreadsheet') || mime.includes('excel')) return '📈';
+      if (mime.includes('word') || mime.includes('document')) return '📝';
+      if (mime.includes('zip') || mime.includes('compressed')) return '🗜️';
+      return '📎';
+    }
+
+    function renderMaterialsInto(containerId, items) {
+      const el = $(containerId);
+      if (!el) return;
+      if (!items || !items.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `
+        <h4 style="margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:0.05em; opacity:0.8;">
+          Materiály ke stažení
+        </h4>
+        <div class="materials-list">
+          ${items.map(m => `
+            <a class="material-card" href="${escapeHtml(materialPublicUrl(m.file_path))}" target="_blank" rel="noopener" download>
+              <div class="icon">${iconForMime(m.mime_type)}</div>
+              <div>
+                <div class="title">${escapeHtml(m.title)}</div>
+                <div class="meta">${formatFileSize(m.file_size)}${m.mime_type ? ' · ' + escapeHtml(m.mime_type.split('/').pop()) : ''}</div>
+              </div>
+              <div class="download-cta">Stáhnout ↓</div>
+            </a>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function refreshMaterialsForView() {
+      if (!state.session) return;
+      const items = await loadMaterials(state.session.id);
+      renderMaterialsInto('materialsWidgetIntro', items);
+      renderMaterialsInto('materialsWidgetOutro', items);
+    }
+
+    // ====== Admin: materiály upload + delete ======
+
+    async function renderMaterialsAdmin() {
+      if (!state.session) return;
+      const items = await loadMaterials(state.session.id);
+      const list = $('materialsAdminList');
+      if (!items.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné materiály.</div>';
+        return;
+      }
+      list.innerHTML = `
+        <div class="materials-list">
+          ${items.map(m => `
+            <div class="material-card" style="cursor:default;">
+              <div class="icon">${iconForMime(m.mime_type)}</div>
+              <div>
+                <div class="title">${escapeHtml(m.title)}</div>
+                <div class="meta">${formatFileSize(m.file_size)}${m.mime_type ? ' · ' + escapeHtml(m.mime_type) : ''} · ${new Date(m.created_at).toLocaleString('cs-CZ')}</div>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <a class="btn btn-ghost" href="${escapeHtml(materialPublicUrl(m.file_path))}" target="_blank" rel="noopener" style="padding:6px 12px; font-size:12px; text-decoration:none;">Otevřít</a>
+                <button class="btn btn-danger" data-delete-material="${escapeHtml(m.id)}" data-delete-path="${escapeHtml(m.file_path)}" style="padding:6px 12px; font-size:12px;">Smazat</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      list.querySelectorAll('[data-delete-material]').forEach(btn => {
+        btn.addEventListener('click', () => deleteMaterial(btn.dataset.deleteMaterial, btn.dataset.deletePath));
+      });
+    }
+
+    async function uploadMaterial() {
+      const title = $('materialTitleInput').value.trim();
+      const file = $('materialFileInput').files[0];
+      if (!title) { showAlert('materialUploadAlert', 'error', 'Vyplň název materiálu.'); return; }
+      if (!file)  { showAlert('materialUploadAlert', 'error', 'Vyber soubor.'); return; }
+
+      $('materialUploadBtn').disabled = true;
+      const orig = $('materialUploadBtn').textContent;
+      $('materialUploadBtn').textContent = 'Nahrávám…';
+
+      try {
+        const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'bin';
+        const path = `${state.session.id}/${safeId}.${ext}`;
+
+        const up = await supabaseClient.storage
+          .from(MATERIALS_BUCKET)
+          .upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+        if (up.error) throw new Error('Upload do Storage selhal: ' + up.error.message);
+
+        const ins = await supabaseClient.from('qa_materials').insert({
+          session_id: state.session.id,
+          title,
+          file_path: path,
+          file_size: file.size,
+          mime_type: file.type || null,
+          position: 0
+        });
+        if (ins.error) throw new Error('Zápis do DB selhal: ' + ins.error.message);
+
+        $('materialTitleInput').value = '';
+        $('materialFileInput').value = '';
+        showAlert('materialUploadAlert', 'ok', 'Materiál nahrán.');
+        await renderMaterialsAdmin();
+      } catch (e) {
+        showAlert('materialUploadAlert', 'error', e.message);
+      } finally {
+        $('materialUploadBtn').disabled = false;
+        $('materialUploadBtn').textContent = orig;
+      }
+    }
+
+    async function deleteMaterial(id, filePath) {
+      if (!confirm('Smazat materiál nadobro?')) return;
+      const r1 = await supabaseClient.from('qa_materials').delete().eq('id', id);
+      if (r1.error) { alert('Smazání DB záznamu selhalo: ' + r1.error.message); return; }
+      // Soubor v Storage smažeme best-effort — i kdyby selhalo, DB záznam je pryč.
+      try {
+        await supabaseClient.storage.from(MATERIALS_BUCKET).remove([filePath]);
+      } catch (e) { console.warn('Storage delete failed (ignored):', e); }
+      await renderMaterialsAdmin();
+    }
+
+    // ====== Admin: agenda editor ======
+
+    function renderAgendaEditor() {
+      const container = $('agendaEditor');
+      if (!state.agenda.length) {
+        container.innerHTML = '<div class="empty" style="padding:18px;">Žádné položky. Klikni „+ Přidat blok".</div>';
+        return;
+      }
+      container.innerHTML = state.agenda.map((it, idx) => `
+        <div class="card" style="padding:10px; margin-bottom:8px;" data-agenda-ui-id="${escapeHtml(String(it.uiId))}">
+          <div style="display:grid; grid-template-columns: 80px 80px 1fr 130px 60px; gap:8px; align-items:end;">
+            <div>
+              <label style="font-size:11px;">Od</label>
+              <input type="text" data-field="start_time" value="${escapeHtml(it.start_time || '')}" placeholder="9:30" maxlength="5" />
+            </div>
+            <div>
+              <label style="font-size:11px;">Do</label>
+              <input type="text" data-field="end_time" value="${escapeHtml(it.end_time || '')}" placeholder="10:30" maxlength="5" />
+            </div>
+            <div>
+              <label style="font-size:11px;">Název bloku</label>
+              <input type="text" data-field="title" value="${escapeHtml(it.title || '')}" placeholder="Např. Prezentace IC Office" maxlength="160" />
+            </div>
+            <div>
+              <label style="font-size:11px;">Typ</label>
+              <select data-field="kind">
+                <option value="session" ${it.kind === 'session' ? 'selected' : ''}>🎤 Blok</option>
+                <option value="break"   ${it.kind === 'break'   ? 'selected' : ''}>☕ Pauza</option>
+                <option value="lunch"   ${it.kind === 'lunch'   ? 'selected' : ''}>🍽️ Oběd</option>
+                <option value="other"   ${it.kind === 'other'   ? 'selected' : ''}>📌 Jiné</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-danger" data-remove-agenda="${escapeHtml(String(it.uiId))}" style="padding:8px; font-size:12px;">Smazat</button>
+            </div>
+          </div>
+          <input type="text" data-field="description" value="${escapeHtml(it.description || '')}" placeholder="Popis (volitelné)" style="margin-top:6px;" />
+        </div>
+      `).join('');
+
+      container.querySelectorAll('[data-remove-agenda]').forEach(btn => {
+        btn.addEventListener('click', () => removeAgendaRow(btn.dataset.removeAgenda));
+      });
+    }
+
+    function addAgendaRow() {
+      state.adminAgendaSeq += 1;
+      const uiId = 'new-' + state.adminAgendaSeq;
+      state.agenda.push({
+        uiId,
+        // Pokud nějaká položka existuje, navrhneme čas po její end_time, jinak prázdné.
+        start_time: state.agenda.length ? (state.agenda[state.agenda.length - 1].end_time || '') : '',
+        end_time: '',
+        title: '',
+        description: '',
+        kind: 'session',
+        _persistedId: null
+      });
+      renderAgendaEditor();
+    }
+
+    function removeAgendaRow(uiId) {
+      const it = state.agenda.find(x => String(x.uiId) === String(uiId));
+      if (it && it._persistedId) state.deletedAgendaIds.push(it._persistedId);
+      state.agenda = state.agenda.filter(x => String(x.uiId) !== String(uiId));
+      renderAgendaEditor();
+    }
+
+    // Z UI cards sebere aktuální stav (pro save) — nečte přímo state, jde přes DOM.
+    function collectAgendaFromEditor() {
+      const cards = [...$('agendaEditor').querySelectorAll('[data-agenda-ui-id]')];
+      return cards.map((card, idx) => {
+        const uiId = card.dataset.agendaUiId;
+        const existing = state.agenda.find(x => String(x.uiId) === uiId);
+        return {
+          uiId,
+          _persistedId: existing && existing._persistedId,
+          position: idx + 1,
+          start_time: card.querySelector('[data-field="start_time"]').value.trim(),
+          end_time: card.querySelector('[data-field="end_time"]').value.trim(),
+          title: card.querySelector('[data-field="title"]').value.trim(),
+          description: card.querySelector('[data-field="description"]').value.trim(),
+          kind: card.querySelector('[data-field="kind"]').value
+        };
+      });
+    }
+
+    function validateAgendaTime(t) {
+      // Akceptuje 9:30, 09:30, 23:59. Vrací normalizovaný "HH:MM" nebo null.
+      const m = String(t || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return null;
+      const h = Number(m[1]); const mm = Number(m[2]);
+      if (h < 0 || h > 23 || mm < 0 || mm > 59) return null;
+      return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+
+    async function saveAgenda() {
+      if (!state.session) return;
+      const drafted = collectAgendaFromEditor();
+
+      // Validace
+      for (let i = 0; i < drafted.length; i++) {
+        const it = drafted[i];
+        if (!it.title) { showAlert('agendaAlert', 'error', `Blok #${i+1} nemá název.`); return; }
+        const s = validateAgendaTime(it.start_time);
+        const e = validateAgendaTime(it.end_time);
+        if (!s || !e) { showAlert('agendaAlert', 'error', `Blok #${i+1} má neplatný čas (formát HH:MM, např. 9:30).`); return; }
+        it.start_time = s; it.end_time = e;
+      }
+
+      $('agendaSaveBtn').disabled = true;
+      const orig = $('agendaSaveBtn').textContent;
+      $('agendaSaveBtn').textContent = 'Ukládám…';
+
+      try {
+        // 1. Smazat zaháknuté
+        if (state.deletedAgendaIds.length) {
+          const { error } = await supabaseClient
+            .from('qa_agenda_items').delete()
+            .in('id', state.deletedAgendaIds);
+          if (error) throw new Error('Smazání selhalo: ' + error.message);
+          state.deletedAgendaIds = [];
+        }
+
+        // 2. UPSERT — existující řádky mají _persistedId; nové (bez něho) nechají DB vygenerovat.
+        //    Stejně jako u questions, kvůli unique (session_id, position) posuneme
+        //    existující do offsetu 1000+, pak zpět.
+        const rows = drafted.map(d => {
+          const row = {
+            session_id: state.session.id,
+            position: d.position,
+            start_time: d.start_time,
+            end_time: d.end_time,
+            title: d.title,
+            description: d.description,
+            kind: d.kind
+          };
+          if (d._persistedId) row.id = d._persistedId;
+          return row;
+        });
+        const existing = rows.filter(r => r.id);
+        const fresh    = rows.filter(r => !r.id);
+
+        if (existing.length) {
+          const offset = existing.map(r => ({ ...r, position: r.position + 1000 }));
+          const r1 = await supabaseClient.from('qa_agenda_items').upsert(offset, { onConflict: 'id' });
+          if (r1.error) throw new Error('Reorder selhal: ' + r1.error.message);
+          const r2 = await supabaseClient.from('qa_agenda_items').upsert(existing, { onConflict: 'id' });
+          if (r2.error) throw new Error('Save existujících selhal: ' + r2.error.message);
+        }
+        if (fresh.length) {
+          const r3 = await supabaseClient.from('qa_agenda_items').insert(fresh);
+          if (r3.error) throw new Error('Vložení nových selhalo: ' + r3.error.message);
+        }
+
+        // 3. Reload state z DB
+        const items = await loadAgenda(state.session.id);
+        state.agenda = items.map(i => ({ ...i, uiId: i.id, _persistedId: i.id }));
+        renderAgendaEditor();
+        showAlert('agendaAlert', 'ok', 'Agenda uložena.');
+      } catch (e) {
+        showAlert('agendaAlert', 'error', e.message);
+      } finally {
+        $('agendaSaveBtn').disabled = false;
+        $('agendaSaveBtn').textContent = orig;
+      }
+    }
+
+    // ====== Admin: pauza ovládání ======
+
+    async function startBreak(minutes) {
+      if (!state.session) return;
+      const until = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ break_until: until })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('agendaAlert', 'error', 'Spuštění pauzy selhalo: ' + error.message);
+        return;
+      }
+      showAlert('agendaAlert', 'ok', `Pauza spuštěna na ${minutes} min. Účastníci i projektor vidí countdown.`);
+    }
+
+    async function stopBreak() {
+      if (!state.session) return;
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ break_until: null })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('agendaAlert', 'error', 'Ukončení pauzy selhalo: ' + error.message);
+        return;
+      }
+      showAlert('agendaAlert', 'ok', 'Pauza ukončena.');
+    }
+
+    async function saveBreakLabel() {
+      if (!state.session) return;
+      const label = $('breakLabelInput').value.trim() || 'Pauza končí za';
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ break_label: label })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('agendaAlert', 'error', 'Uložení popisku selhalo: ' + error.message);
+        return;
+      }
+      showAlert('agendaAlert', 'ok', 'Popisek uložen.');
+    }
+
+    async function saveIntroOutro(kind) {
+      if (!state.session) return;
+      const title = $(kind + 'TitleInput').value.trim();
+      const body = $(kind + 'BodyInput').value.trim();
+      const videoRaw = $(kind + 'VideoInput').value.trim();
+      const slidesUrl = $(kind + 'SlidesInput').value.trim() || null;
+
+      let videoId = null;
+      if (videoRaw) {
+        videoId = extractYoutubeId(videoRaw);
+        if (!videoId) {
+          showAlert('phaseAlert', 'error', 'YouTube ID v ' + kind.toUpperCase() + ' se nepodařilo rozpoznat. Vlož celou URL nebo 11znakové ID.');
+          return;
+        }
+      }
+
+      // Základní sanitization URL — musí být http(s).
+      if (slidesUrl && !/^https?:\/\//i.test(slidesUrl)) {
+        showAlert('phaseAlert', 'error', 'Slidy URL musí začínat http(s)://.');
+        return;
+      }
+
+      // Uložíme title + body sloučené přes \n do existujícího sloupce intro_text / outro_text.
+      const combined = title + (body ? '\n' + body : '');
+      const patch = kind === 'intro'
+        ? { intro_text: combined, intro_video_id: videoId, intro_slides_url: slidesUrl }
+        : { outro_text: combined, outro_video_id: videoId, outro_slides_url: slidesUrl };
+
+      const btn = $('save' + kind.charAt(0).toUpperCase() + kind.slice(1) + 'Btn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = 'Ukládám…';
+
+      const { error } = await supabaseClient.from('qa_sessions').update(patch).eq('id', state.session.id);
+
+      btn.disabled = false;
+      btn.textContent = orig;
+
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Uložení ' + kind + ' selhalo: ' + error.message);
+        return;
+      }
+      showAlert('phaseAlert', 'ok', kind === 'intro' ? 'Intro uloženo.' : 'Outro uloženo.');
+    }
+
+    async function renderAdminQuestionList() {
+      state.questions = await loadQuestionsForSession(state.session.id, true);
+      const list = $('adminList');
+      const empty = $('adminEmpty');
+      if (!state.questions.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      const highlightId = state.session.highlight_question_id;
+      list.innerHTML = state.questions.map(q => {
+        const isHL = q.id === highlightId;
+        const author = q.author_name ? `<span class="author">${escapeHtml(q.author_name)}</span>` : `<span class="author anon">anonymně</span>`;
+        const tags = [];
+        if (q.pinned) tags.push('<span class="tag tag-pinned">📌 Připnuto</span>');
+        if (isHL) tags.push('<span class="tag tag-highlight">🔥 Na projektoru</span>');
+        tags.push(`<span class="tag tag-${q.status}">${q.status}</span>`);
+        const classes = ['question'];
+        if (q.pinned) classes.push('pinned');
+        if (isHL) classes.push('highlight');
+        return `
+          <div class="${classes.join(' ')}">
+            <div class="vote">
+              <div class="arrow">▲</div>
+              <div class="count">${q.votes_count}</div>
+            </div>
+            <div>
+              <div class="body">${escapeHtml(q.body)}</div>
+              <div class="meta">${author} · ${formatRelativeTime(q.created_at)} ${tags.join(' ')}</div>
+              <div class="admin-actions">
+                ${q.status === 'pending' ? `<button class="btn btn-ok" data-action="publish" data-id="${q.id}">Schválit</button>` : ''}
+                ${q.status !== 'answered' ? `<button class="btn btn-secondary" data-action="answer" data-id="${q.id}">Označit jako vyřízeno</button>` : ''}
+                ${q.status !== 'hidden' ? `<button class="btn btn-ghost" data-action="hide" data-id="${q.id}">Skrýt</button>` : `<button class="btn btn-ghost" data-action="unhide" data-id="${q.id}">Vrátit</button>`}
+                <button class="btn btn-ghost" data-action="pin" data-id="${q.id}">${q.pinned ? 'Odepnout' : 'Připnout'}</button>
+                <button class="btn ${isHL ? 'btn-danger' : 'btn-primary'}" data-action="highlight" data-id="${q.id}">${isHL ? 'Sundat z projektoru' : '🔥 Na projektor'}</button>
+                <button class="btn btn-danger" data-action="delete" data-id="${q.id}">Smazat</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      list.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => adminQuestionAction(btn.dataset.action, btn.dataset.id));
+      });
+    }
+
+    async function adminQuestionAction(action, id) {
+      let patch = null;
+      switch (action) {
+        case 'publish':  patch = { status: 'published' }; break;
+        case 'answer':   patch = { status: 'answered' }; break;
+        case 'hide':     patch = { status: 'hidden' }; break;
+        case 'unhide':   patch = { status: 'published' }; break;
+        case 'pin': {
+          const q = state.questions.find(x => x.id === id);
+          patch = { pinned: !(q && q.pinned) };
+          break;
+        }
+        case 'highlight': {
+          const current = state.session.highlight_question_id;
+          const newId = current === id ? null : id;
+          const { error } = await supabaseClient
+            .from('qa_sessions')
+            .update({ highlight_question_id: newId })
+            .eq('id', state.session.id);
+          if (error) alert('Highlight selhal: ' + error.message);
+          return;
+        }
+        case 'delete':
+          if (!confirm('Smazat tento dotaz nadobro?')) return;
+          await supabaseClient.from('qa_questions').delete().eq('id', id);
+          return;
+      }
+      if (patch) {
+        const { error } = await supabaseClient.from('qa_questions').update(patch).eq('id', id);
+        if (error) alert('Změna selhala: ' + error.message);
+      }
+    }
+
+    async function toggleModeration() {
+      const next = state.session.moderation_mode === 'auto' ? 'manual' : 'auto';
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ moderation_mode: next })
+        .eq('id', state.session.id);
+      if (error) alert('Změna moderace selhala: ' + error.message);
+    }
+
+    async function toggleClosed() {
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ closed: !state.session.closed })
+        .eq('id', state.session.id);
+      if (error) alert('Změna stavu session selhala: ' + error.message);
+    }
+
+    async function deleteSession() {
+      if (!confirm('Opravdu smazat session včetně všech dotazů a hlasů? Tato akce je nevratná.')) return;
+      const { error } = await supabaseClient.from('qa_sessions').delete().eq('id', state.session.id);
+      if (error) { alert('Smazání selhalo: ' + error.message); return; }
+      state.session = null;
+      state.sessionSlug = null;
+      await refreshAdminSessions();
+      showAdminScreen('home');
+    }
+
+    async function copyParticipantUrl() {
+      const url = $('adminParticipantLink').href;
+      try {
+        await navigator.clipboard.writeText(url);
+        alert('Odkaz zkopírován do schránky.');
+      } catch (e) {
+        prompt('Zkopíruj odkaz:', url);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

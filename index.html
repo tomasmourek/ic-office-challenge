@@ -4,6 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IC Office Challenge</title>
+  <meta name="description" content="Krátká soutěž pro studenty, mechaniky i mistry. Otestuj si znalosti o systému IC Office." />
+  <meta name="theme-color" content="#c81e1e" />
+
+  <!-- Open Graph: jak vypadá link sdílený na Facebooku, WhatsAppu, Slacku, LinkedIn… -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="IC Office Challenge" />
+  <meta property="og:title" content="IC Office Challenge" />
+  <meta property="og:description" content="Krátká soutěž pro studenty, mechaniky i mistry. Otestuj si znalosti o systému IC Office." />
+  <meta property="og:url" content="https://www.ic-office-challenge.eu/" />
+  <meta property="og:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:locale" content="cs_CZ" />
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="IC Office Challenge" />
+  <meta name="twitter:description" content="Krátká soutěž pro studenty, mechaniky i mistry." />
+  <meta name="twitter:image" content="https://www.ic-office-challenge.eu/favicon.png" />
+
+  <link rel="manifest" href="site.webmanifest" />
+  <link rel="icon" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <!-- PWA: iOS / standalone app capable -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="IC Office Challenge" />
+  <meta name="mobile-web-app-capable" content="yes" />
 
   <style>
     :root {
@@ -343,7 +371,65 @@
       .wrap { padding: 16px 12px 32px; }
       .full { grid-column: auto; }
     }
+
+    /* F10 — drag-and-drop reorder otázek v admin editoru.
+       Drag handle je nadpis „Otázka N", aby se nedalo omylem chytit pole. */
+    #questionEditors .editor-card h3 {
+      cursor: grab;
+      user-select: none;
+    }
+    #questionEditors .editor-card h3::before {
+      content: "⋮⋮ ";
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: -2px;
+    }
+    .sortable-ghost {
+      opacity: 0.35;
+      background: #fee2e2;
+    }
+    .sortable-chosen {
+      cursor: grabbing;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.18);
+    }
+
+    /* Anti-cheat: na kvízové obrazovce nelze text označit / zkopírovat / otevřít kontext.
+       Záměrné komplikace pro pokusy o copy-paste otázky do externí AI. */
+    #screen-quiz {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* Banner po přepnutí pryč a návratu — sděluje hráči, že čas běžel 1,5× rychleji. */
+    .away-banner {
+      position: fixed;
+      left: 50%;
+      top: 16px;
+      transform: translateX(-50%);
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.25);
+      z-index: 10000;
+      max-width: 90vw;
+      text-align: center;
+      animation: awaySlide 350ms ease-out;
+    }
+    @keyframes awaySlide {
+      0% { transform: translateX(-50%) translateY(-30px); opacity: 0; }
+      100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -410,7 +496,7 @@
         <label for="photoUpload">Praktická úloha: nahraj fotografii VIN nebo SPZ</label>
         <input id="photoUpload" type="file" accept="image/*" />
         <div class="small" style="margin-top:8px;">
-          Aktuálně se do Google Sheets ukládá jen název vybraného souboru, ne samotná fotka.
+          Vyber fotografii VIN nebo SPZ. Po dokončení testu se uloží s tvým výsledkem.
         </div>
       </div>
 
@@ -427,14 +513,25 @@
       <p id="finalTime"></p>
       <p id="wrongCountText" style="font-size:20px; font-weight:700; margin:10px 0 0;"></p>
 
+      <div class="btn-row" style="margin-top:18px;">
+        <button class="btn-primary" id="shareResultBtn" type="button">Sdílet výsledek</button>
+        <button class="btn-secondary" id="downloadCertificateBtn" type="button">📜 Stáhnout certifikát</button>
+        <a class="btn-secondary" id="openLeaderboardLink" href="leaderboard.html" target="_blank" rel="noopener"
+           style="text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+          Otevřít leaderboard ↗
+        </a>
+      </div>
+
       <div id="reviewBlock" class="result-list hidden" style="margin-top:22px; text-align:left;"></div>
     </section>
 
     <section id="screen-admin-login" class="card hidden">
       <h2>Admin přihlášení</h2>
-      <p>Zadej heslo pro správu výsledků a nastavení soutěže.</p>
+      <p>Zadej e-mail a heslo správce pro úpravu soutěže a výsledků.</p>
+      <label for="adminEmail">E-mail</label>
+      <input id="adminEmail" type="email" placeholder="admin@example.com" autocomplete="email" />
       <label for="adminPassword">Heslo</label>
-      <input id="adminPassword" type="password" placeholder="Heslo správce" />
+      <input id="adminPassword" type="password" placeholder="Heslo správce" autocomplete="current-password" />
 
       <div class="btn-row">
         <button class="btn-primary" id="adminLoginBtn">Přihlásit</button>
@@ -447,8 +544,34 @@
       <p>V administraci můžeš upravovat počet otázek, jejich znění, odpovědi, správné odpovědi, celkový čas i obrázky k otázkám.</p>
 
       <div class="editor-card">
+        <h3>Soutěže (challenges)</h3>
+        <p class="small" style="margin-top:-4px;">
+          Pro každou událost (např. „IC Office Challenge — Brno 2026") můžeš mít samostatnou soutěž s vlastními otázkami a leaderboardem.
+          Aktuální URL hráčů: <code id="currentChallengeUrl">/</code>
+        </p>
+        <div class="grid grid-2" style="margin-top:8px;">
+          <div>
+            <label for="challengeSelector">Aktivně upravuješ</label>
+            <select id="challengeSelector"></select>
+          </div>
+          <div style="display:flex; align-items:end; gap:8px;">
+            <button class="btn-secondary" id="newChallengeBtn" type="button" style="flex:1;">+ Nová soutěž</button>
+            <button class="btn-danger" id="deleteChallengeBtn" type="button" style="flex:1;">Smazat tuto</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-card">
         <h3>Nastavení soutěže</h3>
-        <div class="grid grid-3">
+        <div class="grid grid-2">
+          <div class="full">
+            <label for="configTitle">Název soutěže</label>
+            <input id="configTitle" type="text" maxlength="120" />
+          </div>
+          <div class="full">
+            <label for="configTitleText">Úvodní text (zobrazí se hráčům na intro obrazovce)</label>
+            <input id="configTitleText" type="text" maxlength="500" />
+          </div>
           <div>
             <label for="configQuestionCount">Počet otázek</label>
             <input id="configQuestionCount" type="number" min="1" max="100" />
@@ -457,16 +580,73 @@
             <label for="configMinutes">Čas testu (minuty)</label>
             <input id="configMinutes" type="number" min="1" max="180" />
           </div>
-          <div>
-            <label for="configTitleText">Úvodní text</label>
-            <input id="configTitleText" type="text" />
+          <div class="full" style="display:flex; align-items:center; gap:10px;">
+            <input id="configShowRank" type="checkbox" style="width:auto; transform:scale(1.3); margin:0;" />
+            <label for="configShowRank" style="margin:0;">Hráč vidí výsledek a pořadí hned po dokončení (pokud vypnuto, ukáže se jen „Děkujeme")</label>
           </div>
         </div>
 
         <div class="btn-row">
-          <button class="btn-primary" id="saveConfigBtn">Uložit nastavení</button>
+          <button class="btn-primary" id="saveConfigBtn">Uložit nastavení a otázky</button>
           <button class="btn-secondary" id="addQuestionBtn">Přidat otázku</button>
-          <button class="btn-danger" id="resetDefaultsBtn">Obnovit výchozí</button>
+          <button class="btn-secondary" id="resetDefaultsBtn">Načíst znovu z databáze</button>
+        </div>
+      </div>
+
+      <div class="editor-card">
+        <h3>Q&amp;A na školení</h3>
+        <p class="small" style="margin-top:-4px;">
+          Samostatný systém pro <strong>anonymní dotazy během školení IC Office</strong>.
+          Účastníci přicházejí přes QR kód nebo odkaz; sem do soutěže o nich nevědí.
+          Otevři správu, založ session a sdílej odkaz / QR s posluchači.
+        </p>
+        <div class="btn-row">
+          <a class="btn-primary" href="qa.html?admin=1" target="_blank" rel="noopener"
+             style="text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+            Otevřít správu Q&amp;A ↗
+          </a>
+        </div>
+      </div>
+
+      <div class="editor-card">
+        <h3>Veřejné zobrazení (leaderboard.html)</h3>
+        <p class="small" style="margin-top:-4px;">
+          Tato sekce řídí to, co se ukazuje na projektoru na adrese
+          <a href="leaderboard.html" target="_blank" rel="noopener">/leaderboard.html</a>.
+          Změny se projeví <strong>okamžitě</strong> u všech otevřených instancí leaderboardu
+          (real-time přes Supabase).
+        </p>
+
+        <div class="grid grid-2" style="margin-top:8px;">
+          <div>
+            <label for="configDisplayMode">Co se má teď zobrazit</label>
+            <select id="configDisplayMode">
+              <option value="leaderboard">📊 Leaderboard — průběžné výsledky</option>
+              <option value="youtube">▶️ YouTube video — promítat mezi koly</option>
+              <option value="closed">🔒 Zavřeno — vyhlášení proběhne živě</option>
+            </select>
+          </div>
+          <div id="configYoutubeIdWrap">
+            <label for="configYoutubeId">YouTube video ID nebo URL</label>
+            <input id="configYoutubeId" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+            <div class="small" style="margin-top:4px;">
+              Z URL <code>youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong></code> zkopíruj jen ID za <code>v=</code>.
+            </div>
+          </div>
+          <div class="full" style="display:flex; align-items:center; gap:10px;">
+            <input id="configPublicLeaderboard" type="checkbox" style="width:auto; transform:scale(1.3); margin:0;" />
+            <label for="configPublicLeaderboard" style="margin:0;">
+              Leaderboard je veřejně přístupný (vypnutí ho schová pro všechny mimo admina)
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" id="saveDisplayBtn">Uložit zobrazení</button>
+          <a href="leaderboard.html" target="_blank" rel="noopener" class="btn-secondary"
+             style="text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+            Otevřít leaderboard ↗
+          </a>
         </div>
       </div>
 
@@ -476,7 +656,7 @@
         <h3>Výsledky</h3>
         <div class="admin-actions">
           <button class="btn-primary" id="exportBtn">Export výsledků do CSV</button>
-          <button class="btn-secondary" id="clearBtn">Smazat lokální výsledky</button>
+          <button class="btn-danger" id="clearBtn">Smazat všechny výsledky</button>
           <button class="btn-secondary" id="backBtn">Zpět</button>
         </div>
         <div id="adminStats" class="result-list" style="margin-top:18px;"></div>
@@ -485,217 +665,29 @@
   </div>
 
   <script>
-    const ADMIN_PASSWORD = '6371';
+    // ====== Supabase konfigurace ======
+    const SUPABASE_URL = 'https://bnugrmehciespyemszwt.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_nxsaqPvIjNuUpxKq-MzChg_-Tjp1uQ4';
+    // F7: slug se čte z URL `?challenge=<slug>`, default 'default'.
+    // Slouží to k tomu, aby IC Office mohl mít víc soutěží (Brno 2026, Praha 2026, …)
+    // na stejném webu — každá má vlastní leaderboard a otázky.
+    const CHALLENGE_SLUG = (function () {
+      const p = new URLSearchParams(window.location.search).get('challenge');
+      return (p && p.trim()) || 'default';
+    })();
+    const QUESTION_IMAGES_BUCKET = 'question-images';
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    // ====== Lokální storage — jen anti-cheat + záloha výsledků při výpadku DB ======
     const QUIZ_MINUTES = 15;
-    const STORAGE_RESULTS_KEY = 'ic_office_challenge_results_v1';
     const STORAGE_ATTEMPTS_KEY = 'ic_office_challenge_attempts_v1';
-    const STORAGE_CONFIG_KEY = 'ic_office_challenge_config_v2';
-    const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxfomGVQ1kNL6qLlz24AsklNaWRo5EXmK-wvDRkM7u_jTnm9qUCfZZR2s4-zvHnjJmA/exec';
+    const STORAGE_RESULTS_BACKUP_KEY = 'ic_office_challenge_results_backup_v1';
 
-    const defaultQuestions = [
-      {
-        id: 1,
-        text: 'Co přesně je IC Office a kolik stojí přibližně na den?',
-        answers: [
-          'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-          'účetní software pro fakturaci a daně / zhruba 120 Kč na den',
-          'aplikace pro diagnostiku vozidel / zhruba 80 Kč na den',
-          'rozšířený balík Microsoft 365 / zhruba 15 Kč na den'
-        ],
-        correct: 'zakázkový a fakturační systém pro profesionální vedení autoservisu / zhruba 23 Kč na den',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 2,
-        text: 'Jak bys nejlépe popsal IC Office kolegovi?',
-        answers: [
-          'program na vedení autoservisu',
-          'aplikace pro objednávání dílů',
-          'něco jako Excel pro auta',
-          'program hlavně na fakturaci'
-        ],
-        correct: 'program na vedení autoservisu',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 3,
-        text: 'Při příjmu vozidla do servisu je největší ztráta času typicky:',
-        answers: [
-          'ruční vypisování zakázkového listu',
-          'přivítání zákazníka',
-          'zaparkování vozu',
-          'hledání velkého technického průkazu'
-        ],
-        correct: 'ruční vypisování zakázkového listu',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 4,
-        text: 'V čem pomáhá IC Office majitelům autoservisu?',
-        answers: [
-          'šetří čas při každodenní práci v autoservisu',
-          'stanovuje cenu opravy za mechanika',
-          'zrychluje samotnou mechanickou opravu',
-          'hledá nové zaměstnance do servisu'
-        ],
-        correct: 'šetří čas při každodenní práci v autoservisu',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 5,
-        text: 'Jaký je hlavní přínos načtení informací o vozidle pomocí fotografie VIN kódu?',
-        answers: [
-          'automatické vyplnění zakázkového listu',
-          'automatické vyřešení závady',
-          'zrychlení diagnostiky motoru',
-          'eliminace překlepu'
-        ],
-        correct: 'automatické vyplnění zakázkového listu',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 6,
-        text: 'Vede IC Office historii oprav vozidla?',
-        answers: [
-          'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-          'Ano, ale jen v papírové podobě',
-          'Ne, historii oprav nevede',
-          'Jen u vozidel registrovaných v České republice'
-        ],
-        correct: 'Ano, vede ji a umí ji poslat i e-mailem majiteli vozu',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 7,
-        text: 'Jaký přínos má přehled zakázek v systému?',
-        answers: [
-          'lepší organizace práce a plánování',
-          'automatická oprava vozidel',
-          'snížení počtu zákazníků',
-          'eliminace potřeby mechaniků'
-        ],
-        correct: 'lepší organizace práce a plánování',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 8,
-        text: 'Splňuje systém IC Office právní legislativu?',
-        answers: [
-          'Ano, včetně GDPR',
-          'Jen GDPR',
-          'Ne, legislativu neřeší',
-          'Jen požadavky České obchodní inspekce'
-        ],
-        correct: 'Ano, včetně GDPR',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 9,
-        text: 'Jaké riziko přináší ruční zadávání údajů o vozidle?',
-        answers: [
-          'vznik chyb a překlepů v informacích o vozidle',
-          'zrychlení procesu',
-          'vyšší přesnost',
-          'snížení administrativy'
-        ],
-        correct: 'vznik chyb a překlepů v informacích o vozidle',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 10,
-        text: 'Co má největší vliv na schopnost servisu odbavit více zakázek?',
-        answers: [
-          'rychlá práce s informacemi a daty',
-          'vyšší hlasitost rádia',
-          'větší pracovní stůl',
-          'delší pracovní doba'
-        ],
-        correct: 'rychlá práce s informacemi a daty',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 11,
-        text: 'Podle jakého údaje o vozidle nejpřesněji vybereme správný náhradní díl?',
-        answers: [
-          'VIN vozidla',
-          'barva vozidla',
-          'kód motoru',
-          'rok výroby'
-        ],
-        correct: 'VIN vozidla',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 12,
-        text: 'Je systém IC Office online?',
-        answers: [
-          'Ano',
-          'Ne, je to lokální instalace',
-          'Jen na tabletu',
-          'Jen pro velké autoservisy'
-        ],
-        correct: 'Ano',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 13,
-        text: 'Co nejčastěji zpomaluje práci v autoservisu?',
-        answers: [
-          'dohledávání informací místo samotné práce',
-          'samotná oprava',
-          'kontrola vozidla',
-          'příchod zákazníka'
-        ],
-        correct: 'dohledávání informací místo samotné práce',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 14,
-        text: 'Kdo vymyslel IC Office?',
-        answers: [
-          'majitel autoservisu',
-          'ministerstvo školství',
-          'ajťák',
-          'účetní'
-        ],
-        correct: 'majitel autoservisu',
-        imageUrl: '',
-        practical: false
-      },
-      {
-        id: 15,
-        text: 'Kolik autoservisů v ČR používá IC Office?',
-        answers: [
-          '170',
-          '370',
-          '700',
-          '70'
-        ],
-        correct: '700',
-        imageUrl: '',
-        practical: true
-      }
-    ];
-
-    const defaultConfig = {
-      minutes: 15,
-      questionCount: 15,
-      introText: 'Krátká soutěž pro studenty, mechaniky i mistry. Čeká tě 15 otázek na 15 minut. Rozhoduje počet správných odpovědí. Při shodě bodů rozhoduje rychlejší čas. Vyhodnocení soutěže proběhne na konci dne.',
-      questions: defaultQuestions
-    };
+    // Otázky i metadata soutěže žijí v Supabase tabulkách `challenge` a `questions`.
+    // Seed se nasazuje přes supabase/migrations/0002_seed_default_challenge.sql.
 
     const state = {
       participant: null,
@@ -708,7 +700,21 @@
       startedAt: null,
       quizVersion: null,
       uploadedFileName: '',
-      config: null
+      config: null,
+      // F3 admin tracking: ID otázek smazaných z UI od posledního loadu z DB.
+      // Použije se v saveAdminConfig() pro DELETE volání. Nové otázky mají
+      // ID typu 'new-<n>' a do tohoto seznamu se nikdy nedostanou.
+      deletedQuestionIds: [],
+      // Pending file uploady — mapa otázka ID → File objekt, který se má při
+      // dalším save uploadnout do Storage.
+      pendingImageUploads: {},
+      // F6 anti-cheat: počet a doba přepnutí pryč ze stránky během kvízu.
+      // Penalizace: čas běží 1,5× rychleji, kdy je dokument hidden.
+      // Hodnoty se posílají do results.meta při finishQuiz pro audit.
+      awayCount: 0,
+      awayTotalMs: 0,
+      awayStartedAt: null,
+      awayBannerEl: null
     };
 
     const el = {
@@ -729,6 +735,9 @@
       finalScore: document.getElementById('finalScore'),
       finalTime: document.getElementById('finalTime'),
       wrongCountText: document.getElementById('wrongCountText'),
+      shareResultBtn: document.getElementById('shareResultBtn'),
+      downloadCertificateBtn: document.getElementById('downloadCertificateBtn'),
+      openLeaderboardLink: document.getElementById('openLeaderboardLink'),
       reviewBlock: document.getElementById('reviewBlock'),
       practicalBlock: document.getElementById('practicalBlock'),
       photoUpload: document.getElementById('photoUpload'),
@@ -736,12 +745,24 @@
       clearBtn: document.getElementById('clearBtn'),
       backBtn: document.getElementById('backBtn'),
       adminStats: document.getElementById('adminStats'),
+      adminEmail: document.getElementById('adminEmail'),
       adminPassword: document.getElementById('adminPassword'),
       adminLoginBtn: document.getElementById('adminLoginBtn'),
       adminCancelBtn: document.getElementById('adminCancelBtn'),
+      challengeSelector: document.getElementById('challengeSelector'),
+      newChallengeBtn: document.getElementById('newChallengeBtn'),
+      deleteChallengeBtn: document.getElementById('deleteChallengeBtn'),
+      currentChallengeUrl: document.getElementById('currentChallengeUrl'),
+      configTitle: document.getElementById('configTitle'),
       configQuestionCount: document.getElementById('configQuestionCount'),
       configMinutes: document.getElementById('configMinutes'),
       configTitleText: document.getElementById('configTitleText'),
+      configShowRank: document.getElementById('configShowRank'),
+      configDisplayMode: document.getElementById('configDisplayMode'),
+      configYoutubeId: document.getElementById('configYoutubeId'),
+      configYoutubeIdWrap: document.getElementById('configYoutubeIdWrap'),
+      configPublicLeaderboard: document.getElementById('configPublicLeaderboard'),
+      saveDisplayBtn: document.getElementById('saveDisplayBtn'),
       saveConfigBtn: document.getElementById('saveConfigBtn'),
       addQuestionBtn: document.getElementById('addQuestionBtn'),
       resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
@@ -755,25 +776,60 @@
       return JSON.parse(JSON.stringify(obj));
     }
 
-    function getConfig() {
-      try {
-        const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-        if (!raw) return clone(defaultConfig);
+    // Načte soutěž + otázky z Supabase. Vrací config ve tvaru, který očekává
+    // zbytek render kódu (kompatibilita: questions[].answers, .imageUrl).
+    async function loadConfigFromSupabase() {
+      const { data: challenge, error: cErr } = await supabaseClient
+        .from('challenge')
+        .select('id, title, intro_text, question_count, time_limit_minutes, show_rank_to_player, is_public_leaderboard, display_mode, youtube_video_id, active')
+        .eq('slug', CHALLENGE_SLUG)
+        .single();
 
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed.questions) || !parsed.questions.length) {
-          return clone(defaultConfig);
-        }
-
-        return parsed;
-      } catch {
-        return clone(defaultConfig);
+      if (cErr || !challenge) {
+        throw new Error('Soutěž se nepodařilo načíst: ' + (cErr ? cErr.message : 'nenalezena'));
       }
+
+      const { data: questions, error: qErr } = await supabaseClient
+        .from('questions')
+        .select('id, position, text, options, correct, image_path, practical')
+        .eq('challenge_id', challenge.id)
+        .order('position', { ascending: true });
+
+      if (qErr) {
+        throw new Error('Otázky se nepodařilo načíst: ' + qErr.message);
+      }
+
+      return {
+        id: challenge.id,
+        title: challenge.title,
+        introText: challenge.intro_text,
+        questionCount: challenge.question_count,
+        minutes: challenge.time_limit_minutes,
+        showRankToPlayer: challenge.show_rank_to_player,
+        isPublicLeaderboard: challenge.is_public_leaderboard,
+        displayMode: challenge.display_mode,
+        youtubeVideoId: challenge.youtube_video_id,
+        active: challenge.active,
+        questions: (questions || []).map(q => ({
+          id: q.id,
+          text: q.text,
+          answers: Array.isArray(q.options) ? q.options : [],
+          correct: q.correct,
+          imageUrl: q.image_path ? imagePathToUrl(q.image_path) : '',
+          imagePath: q.image_path || '',
+          practical: q.practical
+        }))
+      };
     }
 
-    function saveConfig() {
-      localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(state.config));
+    function imagePathToUrl(path) {
+      if (!path) return '';
+      const { data } = supabaseClient.storage.from(QUESTION_IMAGES_BUCKET).getPublicUrl(path);
+      return data && data.publicUrl ? data.publicUrl : '';
     }
+
+    // F3: bude DB upsert (admin save). V F2 zatím no-op — saveAdminConfig je disabled.
+    function saveConfig() { /* no-op */ }
 
     function applyConfigToIntro() {
       el.introText.textContent = state.config.introText;
@@ -782,9 +838,94 @@
     }
 
     function syncAdminForm() {
+      el.configTitle.value = state.config.title || '';
       el.configQuestionCount.value = state.config.questionCount;
       el.configMinutes.value = state.config.minutes;
-      el.configTitleText.value = state.config.introText;
+      el.configTitleText.value = state.config.introText || '';
+      el.configShowRank.checked = state.config.showRankToPlayer !== false;
+      el.configDisplayMode.value = state.config.displayMode || 'leaderboard';
+      el.configYoutubeId.value = state.config.youtubeVideoId || '';
+      el.configPublicLeaderboard.checked = state.config.isPublicLeaderboard !== false;
+      toggleYoutubeFieldVisibility();
+    }
+
+    function toggleYoutubeFieldVisibility() {
+      const isYoutube = el.configDisplayMode.value === 'youtube';
+      el.configYoutubeIdWrap.style.display = isYoutube ? '' : 'none';
+    }
+
+    // Vytáhne YouTube video ID z různých formátů, které admin pravděpodobně vloží:
+    //   - holé ID:          "dQw4w9WgXcQ"
+    //   - watch URL:        "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42"
+    //   - short URL:        "https://youtu.be/dQw4w9WgXcQ"
+    //   - embed URL:        "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    //   - shorts URL:       "https://www.youtube.com/shorts/dQw4w9WgXcQ"
+    function extractYoutubeId(input) {
+      if (!input) return '';
+      const raw = String(input).trim();
+      // 11znakové ID složené z [A-Za-z0-9_-]
+      if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+      const patterns = [
+        /[?&]v=([A-Za-z0-9_-]{11})/,
+        /youtu\.be\/([A-Za-z0-9_-]{11})/,
+        /\/embed\/([A-Za-z0-9_-]{11})/,
+        /\/shorts\/([A-Za-z0-9_-]{11})/
+      ];
+      for (const p of patterns) {
+        const m = raw.match(p);
+        if (m) return m[1];
+      }
+      return ''; // nerozpoznáno — admin uvidí alert
+    }
+
+    async function saveDisplaySettings() {
+      if (!state.config || !state.config.id) {
+        alert('Soutěž ještě není načtená.');
+        return;
+      }
+
+      const mode = el.configDisplayMode.value;
+      const isPublic = !!el.configPublicLeaderboard.checked;
+      let youtubeId = null;
+
+      if (mode === 'youtube') {
+        youtubeId = extractYoutubeId(el.configYoutubeId.value);
+        if (!youtubeId) {
+          alert('Nepodařilo se rozpoznat YouTube video ID. Vlož celou URL z youtube.com nebo jen 11znakové ID.');
+          return;
+        }
+      }
+
+      el.saveDisplayBtn.disabled = true;
+      const originalLabel = el.saveDisplayBtn.textContent;
+      el.saveDisplayBtn.textContent = 'Ukládám…';
+
+      try {
+        const { error } = await supabaseClient
+          .from('challenge')
+          .update({
+            display_mode: mode,
+            youtube_video_id: youtubeId,
+            is_public_leaderboard: isPublic
+          })
+          .eq('id', state.config.id);
+
+        if (error) throw new Error('Uložení zobrazení selhalo: ' + error.message);
+
+        // Refresh lokálního state, ať UI sedí s DB.
+        state.config.displayMode = mode;
+        state.config.youtubeVideoId = youtubeId;
+        state.config.isPublicLeaderboard = isPublic;
+        el.configYoutubeId.value = youtubeId || '';
+
+        alert('Zobrazení uloženo. Leaderboard na projektoru se aktualizuje sám (real-time).');
+      } catch (e) {
+        console.error(e);
+        alert(e.message || 'Uložení selhalo.');
+      } finally {
+        el.saveDisplayBtn.disabled = false;
+        el.saveDisplayBtn.textContent = originalLabel;
+      }
     }
 
     function shuffle(array) {
@@ -823,33 +964,46 @@
       return Boolean(attempts[attemptKey(email, phone)]);
     }
 
-    function getStoredResults() {
+    // Záloha do localStorage — kdyby DB INSERT selhal, admin si může výsledek
+    // přepsat ručně. Zápis sem dělá finishQuiz vždy, primární zápis je do Supabase.
+    function getStoredResultsBackup() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_RESULTS_KEY) || '[]');
+        return JSON.parse(localStorage.getItem(STORAGE_RESULTS_BACKUP_KEY) || '[]');
       } catch {
         return [];
       }
     }
 
-    function saveResult(result) {
-      const results = getStoredResults();
+    function saveResultBackup(result) {
+      const results = getStoredResultsBackup();
       results.push(result);
-      localStorage.setItem(STORAGE_RESULTS_KEY, JSON.stringify(results));
+      localStorage.setItem(STORAGE_RESULTS_BACKUP_KEY, JSON.stringify(results));
     }
 
-    function sendToSheets(data) {
-      const params = new URLSearchParams({
+    // Pošle výsledek do Supabase (tabulka `results`). Anon role smí INSERT
+    // díky policy `results_insert_anon`. Vrací true/false podle úspěchu.
+    async function submitResultToSupabase(data) {
+      if (!state.config || !state.config.id) {
+        console.error('submitResultToSupabase: chybí challenge_id v state.config');
+        return false;
+      }
+
+      const { error } = await supabaseClient.from('results').insert({
+        challenge_id: state.config.id,
         name: data.name || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        school: data.school || '',
-        score: String(data.score || 0),
-        total: String(data.total || 0),
-        elapsedSeconds: String(data.elapsedSeconds || 0)
+        phone: data.phone || null,
+        email: data.email || null,
+        school: data.school || null,
+        score: Number(data.score) || 0,
+        total: Number(data.total) || 0,
+        time_seconds: Number(data.elapsedSeconds) || 0,
+        meta: data.meta || {}
       });
 
-      const img = new Image();
-      img.src = `${SHEETS_URL}?${params.toString()}&_t=${Date.now()}`;
+      if (error) {
+        console.error('Supabase results insert failed:', error);
+        return false;
+      }
       return true;
     }
 
@@ -912,6 +1066,9 @@
       state.uploadedFileName = '';
       el.photoUpload.value = '';
       el.timer.textContent = formatTime(state.timerSeconds);
+
+      // F6: vynulovat anti-cheat tracking pro nové sezení.
+      resetAntiCheatTracking();
 
       showScreen(el.quiz);
       renderQuestion();
@@ -1026,135 +1183,279 @@
         }))
       };
 
-      saveResult(result);
+      // F6: ukončit anti-cheat tracking a sebrat audit meta.
+      hideAwayBanner();
+      const submissionMeta = buildResultMeta();
+
+      // F8: zachovat data o posledním výsledku pro Web Share API
+      state.lastResult = {
+        score: correctAnswers,
+        total: state.questions.length,
+        elapsedSeconds: elapsedSeconds,
+        timedOut: timeout
+      };
+
+      saveResultBackup(result);
       saveAttempt(state.participant.email, state.participant.phone);
 
-      sendToSheets({
+      // Fire-and-forget submit do Supabase — hráč nečeká na network roundtrip,
+      // UI se ukáže hned. Pokud zápis selže, výsledek je v localStorage záloze.
+      submitResultToSupabase({
         name: result.participant?.name || '',
         phone: result.participant?.phone || '',
         email: result.participant?.email || '',
         school: result.participant?.school || '',
         score: result.score,
         total: result.total,
-        elapsedSeconds: result.elapsedSeconds
-      });
+        elapsedSeconds: result.elapsedSeconds,
+        meta: submissionMeta
+      }).catch(err => console.error('Submit failed:', err));
 
-      el.finalScore.textContent = `${correctAnswers} / ${state.questions.length}`;
-      el.finalTime.textContent = timeout
-        ? `Čas vypršel. Započtený čas: ${formatTime(elapsedSeconds)}`
-        : `Započtený čas: ${formatTime(elapsedSeconds)}`;
+      // Respektuje toggle show_rank_to_player z challenge tabulky:
+      // - true:  hráč vidí body, čas a přehled chyb (jako dosud)
+      // - false: hráč vidí jen poděkování, vyhlášení proběhne na konci akce
+      const showResults = state.config && state.config.showRankToPlayer !== false;
 
-      el.wrongCountText.textContent = `Počet chybných odpovědí: ${wrongCount}`;
+      if (showResults) {
+        el.finalScore.textContent = `${correctAnswers} / ${state.questions.length}`;
+        el.finalTime.textContent = timeout
+          ? `Čas vypršel. Započtený čas: ${formatTime(elapsedSeconds)}`
+          : `Započtený čas: ${formatTime(elapsedSeconds)}`;
+        el.wrongCountText.textContent = `Počet chybných odpovědí: ${wrongCount}`;
 
-      if (wrongQuestions.length > 0) {
-        el.reviewBlock.innerHTML = `
-          <strong>Chybné odpovědi:</strong>
-          <div style="margin-top:12px;">
-            ${wrongQuestions.map((q, index) => `
-              <div style="margin-bottom:18px; padding:14px; border:1px solid var(--border); border-radius:12px; background:#fff;">
-                <div style="font-weight:700; margin-bottom:8px;">${index + 1}. ${escapeHtml(q.text)}</div>
-                <div style="margin-bottom:6px;"><strong>Tvoje odpověď:</strong> ${escapeHtml(state.answers[q.id] || 'Bez odpovědi')}</div>
-                <div><strong>Správná odpověď:</strong> ${escapeHtml(q.correct)}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
+        if (wrongQuestions.length > 0) {
+          el.reviewBlock.innerHTML = `
+            <strong>Chybné odpovědi:</strong>
+            <div style="margin-top:12px;">
+              ${wrongQuestions.map((q, index) => `
+                <div style="margin-bottom:18px; padding:14px; border:1px solid var(--border); border-radius:12px; background:#fff;">
+                  <div style="font-weight:700; margin-bottom:8px;">${index + 1}. ${escapeHtml(q.text)}</div>
+                  <div style="margin-bottom:6px;"><strong>Tvoje odpověď:</strong> ${escapeHtml(state.answers[q.id] || 'Bez odpovědi')}</div>
+                  <div><strong>Správná odpověď:</strong> ${escapeHtml(q.correct)}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } else {
+          el.reviewBlock.innerHTML = `<strong>Všechny odpovědi byly správně.</strong>`;
+        }
+        el.reviewBlock.classList.remove('hidden');
       } else {
-        el.reviewBlock.innerHTML = `<strong>Všechny odpovědi byly správně.</strong>`;
+        el.finalScore.textContent = '✓';
+        el.finalTime.textContent = 'Děkujeme za vyplnění.';
+        el.wrongCountText.textContent = 'Výsledky budou vyhlášeny na konci akce.';
+        el.reviewBlock.innerHTML = '';
+        el.reviewBlock.classList.add('hidden');
       }
 
-      el.reviewBlock.classList.remove('hidden');
       showScreen(el.result);
     }
 
     function openAdminLogin() {
       el.adminPassword.value = '';
       showScreen(el.adminLogin);
-      setTimeout(() => el.adminPassword.focus(), 50);
+      setTimeout(() => (el.adminEmail.value ? el.adminPassword : el.adminEmail).focus(), 50);
     }
 
-    function handleAdminLogin() {
-      if (el.adminPassword.value === ADMIN_PASSWORD) {
+    async function handleAdminLogin() {
+      const email = el.adminEmail.value.trim();
+      const password = el.adminPassword.value;
+
+      if (!email || !password) {
+        alert('Vyplň e-mail i heslo.');
+        return;
+      }
+
+      el.adminLoginBtn.disabled = true;
+      const originalLabel = el.adminLoginBtn.textContent;
+      el.adminLoginBtn.textContent = 'Přihlašuji…';
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert('Přihlášení selhalo: ' + error.message);
+          return;
+        }
+
         syncAdminForm();
         renderQuestionEditors();
-        renderAdminStats();
+        await renderAdminStats();
+        await renderChallengeSelector();
+        bindChallengeAdminHandlers();
+        subscribeAdminResultsRealtime();
         showScreen(el.admin);
-      } else {
-        alert('Nesprávné heslo.');
+      } catch (e) {
+        alert('Chyba při přihlášení: ' + e.message);
+        console.error(e);
+      } finally {
+        el.adminLoginBtn.disabled = false;
+        el.adminLoginBtn.textContent = originalLabel;
+        el.adminPassword.value = '';
       }
     }
 
-    function ensureQuestionCount() {
-      let wanted = Math.max(1, Number(el.configQuestionCount.value) || 1);
+    // ====== F7 — Více challenges ======
 
-      while (state.config.questions.length < wanted) {
-        state.config.questions.push({
-          id: Date.now() + state.config.questions.length,
-          text: `Nová otázka ${state.config.questions.length + 1}`,
-          answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
-          correct: 'Odpověď A',
-          imageUrl: '',
-          practical: false
-        });
+    async function loadAllChallenges() {
+      const { data, error } = await supabaseClient
+        .from('challenge')
+        .select('id, slug, title, active, created_at')
+        .order('created_at', { ascending: true });
+      if (error) {
+        console.warn('loadAllChallenges failed:', error);
+        return [];
       }
-
-      if (state.config.questions.length > wanted) {
-        state.config.questions = state.config.questions.slice(0, wanted);
-      }
-
-      state.config.questionCount = wanted;
+      return data || [];
     }
 
-    function saveAdminConfig() {
-      ensureQuestionCount();
-      state.config.minutes = Math.max(1, Number(el.configMinutes.value) || 15);
-      state.config.introText = el.configTitleText.value.trim() || defaultConfig.introText;
+    async function renderChallengeSelector() {
+      const all = await loadAllChallenges();
+      const sel = el.challengeSelector;
+      if (!sel) return;
+      sel.innerHTML = all.map(c => `
+        <option value="${escapeHtml(c.slug)}" ${c.slug === CHALLENGE_SLUG ? 'selected' : ''}>
+          ${escapeHtml(c.title)} (${escapeHtml(c.slug)})${c.active === false ? ' — neaktivní' : ''}
+        </option>
+      `).join('');
+      sel.onchange = () => switchToChallenge(sel.value);
 
-      const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
-      const updated = cards.map((card, idx) => {
-        const answers = [
-          card.querySelector('[data-field="a1"]').value.trim(),
-          card.querySelector('[data-field="a2"]').value.trim(),
-          card.querySelector('[data-field="a3"]').value.trim(),
-          card.querySelector('[data-field="a4"]').value.trim()
-        ];
+      // Aktuální URL hráčů: window.location.origin + '/?challenge=<slug>'
+      // (default slug nemusí být v URL)
+      const url = CHALLENGE_SLUG === 'default'
+        ? window.location.origin + '/'
+        : window.location.origin + '/?challenge=' + encodeURIComponent(CHALLENGE_SLUG);
+      el.currentChallengeUrl.textContent = url;
+    }
 
-        const correctIndex = Number(card.querySelector('[data-field="correct"]').value);
-        const text = card.querySelector('[data-field="text"]').value.trim();
-        const imageUrl = card.querySelector('[data-field="imageUrl"]').value.trim();
-        const practical = card.querySelector('[data-field="practical"]').checked;
+    function switchToChallenge(newSlug) {
+      if (!newSlug || newSlug === CHALLENGE_SLUG) return;
+      // Reload stránky s novým slug v URL — všechny state se znovu načtou z DB.
+      const target = newSlug === 'default'
+        ? window.location.pathname
+        : window.location.pathname + '?challenge=' + encodeURIComponent(newSlug);
+      window.location.href = target;
+    }
 
-        if (!text) throw new Error(`Otázka ${idx + 1} nemá text.`);
-        if (answers.some(v => !v)) throw new Error(`Otázka ${idx + 1} nemá všechny odpovědi.`);
+    async function createNewChallenge() {
+      const title = prompt('Název nové soutěže (např. „IC Office Brno 2026"):');
+      if (!title || !title.trim()) return;
 
-        return {
-          id: Number(card.dataset.questionId),
-          text,
-          answers,
-          correct: answers[correctIndex],
-          imageUrl,
-          practical
-        };
+      const suggestedSlug = title.trim()
+        .toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')   // diakritika
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 50);
+
+      const slug = prompt('Slug (do URL, jen ASCII + pomlčky):', suggestedSlug);
+      if (!slug || !slug.trim()) return;
+      const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+      if (!cleanSlug) { alert('Slug musí obsahovat aspoň jedno písmeno nebo číslo.'); return; }
+
+      const { error } = await supabaseClient.from('challenge').insert({
+        slug: cleanSlug,
+        title: title.trim(),
+        intro_text: 'Krátká soutěž pro studenty, mechaniky i mistry.',
+        question_count: 1,
+        time_limit_minutes: 15
       });
+      if (error) {
+        alert('Vytvoření selhalo: ' + error.message + (error.message.includes('duplicate') ? '\nSlug už existuje, zvol jiný.' : ''));
+        return;
+      }
 
-      state.config.questions = updated;
-      saveConfig();
-      applyConfigToIntro();
-      syncAdminForm();
-      renderQuestionEditors();
-      alert('Administrace byla uložena.');
+      if (confirm('Soutěž "' + title + '" vytvořena.\n\nPřepnout admin na novou soutěž? (Stránka se obnoví.)')) {
+        switchToChallenge(cleanSlug);
+      } else {
+        await renderChallengeSelector();
+      }
+    }
+
+    async function deleteCurrentChallenge() {
+      if (!state.config || !state.config.id) { alert('Soutěž ještě není načtená.'); return; }
+      const all = await loadAllChallenges();
+      if (all.length <= 1) { alert('Musí zůstat aspoň jedna soutěž — smazání by zlomilo hráče.'); return; }
+
+      const txt = 'Opravdu smazat soutěž "' + (state.config.title || CHALLENGE_SLUG) + '"?\n\n' +
+        'Smaže se VŠECHNO: otázky, výsledky, fotky. Akce je nevratná.\n\n' +
+        'Napiš slug "' + CHALLENGE_SLUG + '" pro potvrzení:';
+      const confirmation = prompt(txt);
+      if (confirmation !== CHALLENGE_SLUG) {
+        if (confirmation != null) alert('Slug nesedí, smazání zrušeno.');
+        return;
+      }
+
+      const { error } = await supabaseClient.from('challenge').delete().eq('id', state.config.id);
+      if (error) { alert('Smazání selhalo: ' + error.message); return; }
+
+      // Přepnout na první zbývající challenge
+      const remaining = all.filter(c => c.slug !== CHALLENGE_SLUG);
+      switchToChallenge(remaining[0].slug);
+    }
+
+    function bindChallengeAdminHandlers() {
+      // .onclick (ne addEventListener), ať se při opakovaném admin loginu nehromadí handlery.
+      el.newChallengeBtn.onclick = createNewChallenge;
+      el.deleteChallengeBtn.onclick = deleteCurrentChallenge;
+    }
+
+    // F9 — admin sleduje výsledky live: při INSERT/UPDATE/DELETE v results
+    // se admin tabulka sama překresluje, žádný refresh není potřeba.
+    let adminResultsChannel = null;
+    function subscribeAdminResultsRealtime() {
+      if (!state.config || !state.config.id) return;
+      if (adminResultsChannel) {
+        try { supabaseClient.removeChannel(adminResultsChannel); } catch (_) {}
+        adminResultsChannel = null;
+      }
+      adminResultsChannel = supabaseClient
+        .channel('admin-results-' + state.config.id)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'results',
+            filter: `challenge_id=eq.${state.config.id}` },
+          () => { renderAdminStats().catch(err => console.warn(err)); }
+        )
+        .subscribe();
+    }
+
+    // ====== F3 admin CRUD ======
+
+    function isPersistedQuestionId(id) {
+      // DB UUID má 36 znaků s pomlčkami, nové dočasné otázky používají 'new-<n>'.
+      return typeof id === 'string' && id.length === 36 && id.includes('-') && !id.startsWith('new-');
+    }
+
+    // Nahraje obrázek otázky do Supabase Storage. Vrací path uvnitř bucketu
+    // (např. "<challenge-uuid>/<rand>.jpg"), který se uloží do questions.image_path.
+    async function uploadQuestionImage(file, challengeId) {
+      if (!file) return null;
+      const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+      const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+      const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+      const path = `${challengeId}/${safeId}.${ext}`;
+
+      const { error } = await supabaseClient.storage
+        .from(QUESTION_IMAGES_BUCKET)
+        .upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
+
+      if (error) {
+        throw new Error('Upload fotky selhal: ' + error.message);
+      }
+      return path;
     }
 
     function addQuestion() {
+      const tempId = 'new-' + (Date.now() + state.config.questions.length);
       state.config.questions.push({
-        id: Date.now(),
-        text: `Nová otázka ${state.config.questions.length + 1}`,
+        id: tempId,
+        text: 'Nová otázka ' + (state.config.questions.length + 1),
         answers: ['Odpověď A', 'Odpověď B', 'Odpověď C', 'Odpověď D'],
         correct: 'Odpověď A',
         imageUrl: '',
+        imagePath: '',
         practical: false
       });
-
       state.config.questionCount = state.config.questions.length;
       syncAdminForm();
       renderQuestionEditors();
@@ -1165,21 +1466,179 @@
         alert('Musí zůstat alespoň jedna otázka.');
         return;
       }
+      if (!confirm('Opravdu smazat tuto otázku?')) return;
 
+      if (isPersistedQuestionId(id) && !state.deletedQuestionIds.includes(id)) {
+        state.deletedQuestionIds.push(id);
+      }
+      delete state.pendingImageUploads[id];
       state.config.questions = state.config.questions.filter(q => q.id !== id);
       state.config.questionCount = state.config.questions.length;
       syncAdminForm();
       renderQuestionEditors();
     }
 
-    function resetDefaults() {
-      if (!confirm('Opravdu obnovit výchozí otázky a nastavení?')) return;
-      state.config = clone(defaultConfig);
-      saveConfig();
-      applyConfigToIntro();
-      syncAdminForm();
-      renderQuestionEditors();
-      alert('Výchozí nastavení bylo obnoveno.');
+    async function resetDefaults() {
+      if (!confirm('Načíst aktuální stav z databáze a zahodit neuložené změny?')) return;
+      try {
+        state.config = await loadConfigFromSupabase();
+        state.deletedQuestionIds = [];
+        state.pendingImageUploads = {};
+        applyConfigToIntro();
+        applyConfigToTitle();
+        syncAdminForm();
+        renderQuestionEditors();
+      } catch (e) {
+        alert('Načtení selhalo: ' + e.message);
+      }
+    }
+
+    async function saveAdminConfig() {
+      if (!state.config || !state.config.id) {
+        alert('Soutěž ještě není načtená.');
+        return;
+      }
+
+      // 1. Posbírej data z UI a zvaliduj.
+      const cards = [...document.querySelectorAll('.editor-card[data-question-id]')];
+      if (!cards.length) {
+        alert('Soutěž musí mít alespoň jednu otázku.');
+        return;
+      }
+
+      const draftQuestions = [];
+      for (let idx = 0; idx < cards.length; idx++) {
+        const card = cards[idx];
+        const id = card.dataset.questionId;
+        const text = card.querySelector('[data-field="text"]').value.trim();
+        const options = [
+          card.querySelector('[data-field="a1"]').value.trim(),
+          card.querySelector('[data-field="a2"]').value.trim(),
+          card.querySelector('[data-field="a3"]').value.trim(),
+          card.querySelector('[data-field="a4"]').value.trim()
+        ];
+        const correctIdx = Number(card.querySelector('[data-field="correct"]').value);
+        const practical = card.querySelector('[data-field="practical"]').checked;
+        const existingImagePath = card.dataset.imagePath || '';
+
+        if (!text) { alert(`Otázka ${idx + 1} nemá text.`); return; }
+        if (options.some(v => !v)) { alert(`Otázka ${idx + 1} nemá vyplněné všechny 4 odpovědi.`); return; }
+        if (!options[correctIdx]) { alert(`Otázka ${idx + 1} nemá vybranou správnou odpověď.`); return; }
+
+        draftQuestions.push({
+          uiId: id,
+          position: idx + 1,
+          text,
+          options,
+          correct: options[correctIdx],
+          practical,
+          existingImagePath
+        });
+      }
+
+      el.saveConfigBtn.disabled = true;
+      const originalLabel = el.saveConfigBtn.textContent;
+      el.saveConfigBtn.textContent = 'Ukládám…';
+
+      try {
+        // 2. Upload nových fotek (pendingImageUploads → image_path).
+        for (const q of draftQuestions) {
+          const pendingFile = state.pendingImageUploads[q.uiId];
+          if (pendingFile) {
+            q.imagePath = await uploadQuestionImage(pendingFile, state.config.id);
+          } else {
+            q.imagePath = q.existingImagePath || null;
+          }
+        }
+
+        // 3. UPDATE challenge metadata.
+        const newTitle = el.configTitle.value.trim() || state.config.title;
+        const newIntro = el.configTitleText.value.trim() || state.config.introText;
+        const newCount = Math.max(1, Math.min(draftQuestions.length, Number(el.configQuestionCount.value) || draftQuestions.length));
+        const newMinutes = Math.max(1, Number(el.configMinutes.value) || 15);
+        const newShowRank = !!el.configShowRank.checked;
+
+        const { error: cErr } = await supabaseClient
+          .from('challenge')
+          .update({
+            title: newTitle,
+            intro_text: newIntro,
+            question_count: newCount,
+            time_limit_minutes: newMinutes,
+            show_rank_to_player: newShowRank
+          })
+          .eq('id', state.config.id);
+        if (cErr) throw new Error('Uložení soutěže selhalo: ' + cErr.message);
+
+        // 4. UPSERT otázek (existující se updatují podle id, nové se vloží).
+        //    Pro nové (temp ID 'new-...') odstraníme id, ať DB vygeneruje UUID.
+        const upsertRows = draftQuestions.map(q => {
+          const row = {
+            challenge_id: state.config.id,
+            position: q.position,
+            text: q.text,
+            options: q.options,
+            correct: q.correct,
+            practical: q.practical,
+            image_path: q.imagePath
+          };
+          if (isPersistedQuestionId(q.uiId)) row.id = q.uiId;
+          return row;
+        });
+
+        // Aby upsert mohl matchnout existující řádky podle id, použijeme onConflict='id'.
+        // Postupujeme ve dvou krocích — nejdřív UPDATE existujících, pak INSERT nových —
+        // protože jinak by se 'position' duplicity bily mezi řádky uvnitř jedné transakce.
+        const existingRows = upsertRows.filter(r => r.id);
+        const newRows = upsertRows.filter(r => !r.id);
+
+        if (existingRows.length) {
+          // Aby unique (challenge_id, position) nezablokoval prohození pořadí,
+          // nejdřív posuneme pozice do offsetu 1000+ a pak zpátky.
+          const offsetRows = existingRows.map(r => ({ ...r, position: r.position + 1000 }));
+          const { error: e1 } = await supabaseClient
+            .from('questions')
+            .upsert(offsetRows, { onConflict: 'id' });
+          if (e1) throw new Error('Posun pozic selhal: ' + e1.message);
+
+          const { error: e2 } = await supabaseClient
+            .from('questions')
+            .upsert(existingRows, { onConflict: 'id' });
+          if (e2) throw new Error('Update otázek selhal: ' + e2.message);
+        }
+
+        if (newRows.length) {
+          const { error: nErr } = await supabaseClient
+            .from('questions')
+            .insert(newRows);
+          if (nErr) throw new Error('Vložení nových otázek selhalo: ' + nErr.message);
+        }
+
+        // 5. DELETE odstraněné otázky.
+        if (state.deletedQuestionIds.length) {
+          const { error: dErr } = await supabaseClient
+            .from('questions')
+            .delete()
+            .in('id', state.deletedQuestionIds);
+          if (dErr) throw new Error('Smazání otázek selhalo: ' + dErr.message);
+        }
+
+        // 6. Reload z DB, aby UI reflektoval skutečný stav.
+        state.config = await loadConfigFromSupabase();
+        state.deletedQuestionIds = [];
+        state.pendingImageUploads = {};
+        applyConfigToIntro();
+        applyConfigToTitle();
+        syncAdminForm();
+        renderQuestionEditors();
+        alert('Uloženo. ✓');
+      } catch (e) {
+        console.error(e);
+        alert(e.message || 'Uložení selhalo.');
+      } finally {
+        el.saveConfigBtn.disabled = false;
+        el.saveConfigBtn.textContent = originalLabel;
+      }
     }
 
     function renderQuestionEditors() {
@@ -1190,6 +1649,14 @@
         const card = document.createElement('div');
         card.className = 'editor-card';
         card.dataset.questionId = q.id;
+        // Uložíme path z DB (pokud existuje) — saveAdminConfig ho čte při buildu payloadu.
+        card.dataset.imagePath = q.imagePath || '';
+
+        const previewHtml = q.imageUrl
+          ? `<img class="image-preview" data-image-preview src="${escapeHtml(q.imageUrl)}" alt="Náhled fotky" />
+             <div style="margin-top:6px;"><button class="btn-secondary" type="button" data-remove-image style="width:auto; padding:6px 12px; font-size:13px;">Odebrat fotku</button></div>`
+          : '<div data-image-preview-empty class="small" style="margin-top:4px;">Žádná fotka.</div>';
+
         card.innerHTML = `
           <h3>Otázka ${idx + 1}</h3>
           <div class="editor-grid">
@@ -1198,9 +1665,11 @@
               <textarea data-field="text">${escapeHtml(q.text)}</textarea>
             </div>
             <div class="full">
-              <label>URL obrázku (volitelné)</label>
-              <input data-field="imageUrl" type="text" value="${escapeHtml(q.imageUrl || '')}" placeholder="https://.../obrazek.jpg" />
-              ${q.imageUrl ? `<img class="image-preview" src="${escapeHtml(q.imageUrl)}" alt="Preview" />` : ''}
+              <label>Fotka k otázce (volitelné, max 5 MB, JPG/PNG/WEBP)</label>
+              <input data-field="image" type="file" accept="image/*" />
+              <div data-image-preview-container style="margin-top:8px;">
+                ${previewHtml}
+              </div>
             </div>
             <div>
               <label>Odpověď A</label>
@@ -1234,43 +1703,133 @@
           </div>
 
           <div class="btn-row">
-            <button class="btn-danger" type="button" data-remove-id="${q.id}">Smazat otázku</button>
+            <button class="btn-danger" type="button" data-remove-id="${escapeHtml(q.id)}">Smazat otázku</button>
           </div>
         `;
         el.questionEditors.appendChild(card);
+
+        // File input → uložit do pendingImageUploads + ukázat lokální náhled.
+        const fileInput = card.querySelector('[data-field="image"]');
+        fileInput.addEventListener('change', (ev) => {
+          const file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) {
+            alert('Fotka je větší než 5 MB. Vyber menší.');
+            ev.target.value = '';
+            return;
+          }
+          state.pendingImageUploads[q.id] = file;
+
+          const reader = new FileReader();
+          reader.onload = (r) => {
+            const container = card.querySelector('[data-image-preview-container]');
+            container.innerHTML =
+              `<img class="image-preview" data-image-preview src="${r.target.result}" alt="Náhled fotky (neuloženo)" />
+               <div class="small" style="margin-top:6px; color:#b91c1c;">Nová fotka — uloží se po kliknutí na „Uložit nastavení a otázky".</div>
+               <div style="margin-top:6px;"><button class="btn-secondary" type="button" data-remove-image style="width:auto; padding:6px 12px; font-size:13px;">Odebrat fotku</button></div>`;
+            bindRemoveImage(card, q.id);
+          };
+          reader.readAsDataURL(file);
+        });
+
+        bindRemoveImage(card, q.id);
       });
 
       [...document.querySelectorAll('[data-remove-id]')].forEach(btn => {
-        btn.addEventListener('click', () => removeQuestion(Number(btn.dataset.removeId)));
+        btn.addEventListener('click', () => removeQuestion(btn.dataset.removeId));
+      });
+
+      // F10: SortableJS — drag-and-drop reorder otázek. Pořadí se uloží
+      // s ostatními změnami při Uložit. Funguje myší i dotykem.
+      if (window.Sortable && el.questionEditors) {
+        if (el.questionEditors.__sortable) {
+          el.questionEditors.__sortable.destroy();
+        }
+        el.questionEditors.__sortable = window.Sortable.create(el.questionEditors, {
+          animation: 180,
+          handle: 'h3',                  // přesouvá se za nadpis „Otázka N"
+          ghostClass: 'sortable-ghost',
+          chosenClass: 'sortable-chosen',
+          onEnd: () => {
+            // Přemapuj state.config.questions podle aktuálního pořadí v DOMu.
+            const cards = [...el.questionEditors.querySelectorAll('.editor-card[data-question-id]')];
+            const newOrder = cards.map(c => state.config.questions.find(q => String(q.id) === c.dataset.questionId)).filter(Boolean);
+            state.config.questions = newOrder;
+            // Re-render aby se popisky „Otázka 1/2/3…" aktualizovaly.
+            renderQuestionEditors();
+          }
+        });
+      }
+    }
+
+    function bindRemoveImage(card, questionId) {
+      const btn = card.querySelector('[data-remove-image]');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        // Vyresetuj pending upload, vymaž existující path, schovej preview.
+        delete state.pendingImageUploads[questionId];
+        card.dataset.imagePath = '';
+        const fileInput = card.querySelector('[data-field="image"]');
+        if (fileInput) fileInput.value = '';
+        const container = card.querySelector('[data-image-preview-container]');
+        container.innerHTML = '<div class="small" style="margin-top:4px; color:#b91c1c;">Fotka bude odebrána po uložení.</div>';
       });
     }
 
-    function renderAdminStats() {
-      const results = getStoredResults().sort((a, b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
+    async function renderAdminStats() {
+      el.adminStats.innerHTML = '<em>Načítám výsledky…</em>';
 
-      if (!results.length) {
+      if (!state.config || !state.config.id) {
+        el.adminStats.innerHTML = '<strong>Soutěž ještě není načtená.</strong>';
+        return;
+      }
+
+      const { data: results, error } = await supabaseClient
+        .from('results')
+        .select('id, name, email, phone, school, score, total, time_seconds, finished_at, meta')
+        .eq('challenge_id', state.config.id)
+        .order('score', { ascending: false })
+        .order('time_seconds', { ascending: true })
+        .order('finished_at', { ascending: true });
+
+      if (error) {
+        el.adminStats.innerHTML = '<strong>Chyba při načítání: ' + escapeHtml(error.message) + '</strong>';
+        return;
+      }
+
+      if (!results || !results.length) {
         el.adminStats.innerHTML = '<strong>Zatím nejsou uložené žádné výsledky.</strong>';
         return;
       }
 
-      const rows = results.map((r, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${escapeHtml(r.participant.name)}</td>
-          <td>${escapeHtml(r.participant.email)}</td>
-          <td>${escapeHtml(r.participant.phone)}</td>
-          <td>${r.score}/${r.total}</td>
-          <td>${r.wrongCount ?? '-'}</td>
-          <td>${escapeHtml(r.elapsedTime)}</td>
-          <td>${escapeHtml(r.participant.school || '-')}</td>
-          <td>${escapeHtml(r.uploadedFileName || '-')}</td>
-        </tr>
-      `).join('');
+      const rows = results.map((r, i) => {
+        const meta = r.meta || {};
+        const awayCount = Number(meta.away_count || 0);
+        const awaySec = Number(meta.away_total_seconds || 0);
+        // Vizuální signál: oranžová pro 1-2 přepnutí, červená pro 3+
+        const awayColor = awayCount >= 3 ? '#dc2626' : awayCount >= 1 ? '#d97706' : 'inherit';
+        const awayBadge = awayCount > 0
+          ? `<span style="color:${awayColor}; font-weight:700;">${awayCount}× / ${awaySec}s</span>`
+          : '<span style="color:#16a34a;">0×</span>';
+        return `
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${i + 1}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.name)}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.email || '-')}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.phone || '-')}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${r.score}/${r.total}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${(r.total ?? 0) - (r.score ?? 0)}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${formatTime(r.time_seconds || 0)}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);">${escapeHtml(r.school || '-')}</td>
+            <td style="padding:8px; border-bottom:1px solid var(--border);" title="Počet a sekundy přepnutí pryč ze stránky během kvízu (anti-cheat).">${awayBadge}</td>
+          </tr>
+        `;
+      }).join('');
 
       el.adminStats.innerHTML = `
         <strong>Počet výsledků:</strong> ${results.length}<br><br>
         <div style="overflow:auto;">
-          <table style="width:100%; border-collapse:collapse; min-width:900px;">
+          <table style="width:100%; border-collapse:collapse; min-width:860px;">
             <thead>
               <tr>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">#</th>
@@ -1281,7 +1840,7 @@
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Chyby</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Čas</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Škola/tým</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Foto</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);" title="Anti-cheat: kolikrát hráč přepnul pryč ze stránky / celkové sekundy.">Mimo</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -1290,50 +1849,82 @@
       `;
     }
 
-    function exportResultsToCSV() {
-      const results = getStoredResults();
-      if (!results.length) {
+    async function exportResultsToCSV() {
+      if (!state.config || !state.config.id) {
+        alert('Soutěž ještě není načtená.');
+        return;
+      }
+
+      const { data: results, error } = await supabaseClient
+        .from('results')
+        .select('id, name, email, phone, school, score, total, time_seconds, finished_at, meta')
+        .eq('challenge_id', state.config.id)
+        .order('score', { ascending: false })
+        .order('time_seconds', { ascending: true });
+
+      if (error) {
+        alert('Chyba při načítání výsledků: ' + error.message);
+        return;
+      }
+      if (!results || !results.length) {
         alert('Není co exportovat.');
         return;
       }
 
       const header = [
-        'timestamp','name','email','phone','school','score','wrongCount','total','elapsedTime','elapsedSeconds','timedOut','uploadedFileName','quizVersion'
+        'finished_at','name','email','phone','school','score','total','time_seconds',
+        'away_count','away_total_seconds','user_agent','time_zone'
       ];
 
-      const lines = results.map(r => [
-        r.timestamp,
-        r.participant.name,
-        r.participant.email,
-        r.participant.phone,
-        r.participant.school || '',
-        r.score,
-        r.wrongCount ?? '',
-        r.total,
-        r.elapsedTime,
-        r.elapsedSeconds,
-        r.timedOut,
-        r.uploadedFileName || '',
-        r.quizVersion
-      ].map(csvEscape).join(';'));
+      const lines = results.map(r => {
+        const m = r.meta || {};
+        return [
+          r.finished_at,
+          r.name,
+          r.email || '',
+          r.phone || '',
+          r.school || '',
+          r.score,
+          r.total,
+          r.time_seconds,
+          m.away_count ?? '',
+          m.away_total_seconds ?? '',
+          m.user_agent || '',
+          m.time_zone || ''
+        ].map(csvEscape).join(';');
+      });
 
-      const csv = [header.join(';'), ...lines].join('\n');
+      // BOM (﻿) zaručí, že Excel správně rozpozná UTF-8 (české znaky).
+      const csv = '﻿' + [header.join(';'), ...lines].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'ic-office-challenge-vysledky.csv';
+      a.download = `ic-office-challenge-vysledky-${new Date().toISOString().slice(0,10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
 
-    function clearResults() {
-      if (!confirm('Opravdu smazat všechny lokální výsledky a registrace?')) return;
-      localStorage.removeItem(STORAGE_RESULTS_KEY);
+    async function clearResults() {
+      if (!confirm('Opravdu smazat VŠECHNY výsledky z databáze? Tato akce je nevratná.')) return;
+      if (!state.config || !state.config.id) return;
+
+      const { error } = await supabaseClient
+        .from('results')
+        .delete()
+        .eq('challenge_id', state.config.id);
+
+      if (error) {
+        alert('Smazání selhalo: ' + error.message);
+        return;
+      }
+
       localStorage.removeItem(STORAGE_ATTEMPTS_KEY);
-      renderAdminStats();
+      localStorage.removeItem(STORAGE_RESULTS_BACKUP_KEY);
+      await renderAdminStats();
+      alert('Všechny výsledky byly smazány.');
     }
 
     function escapeHtml(text) {
@@ -1359,15 +1950,315 @@
       return String(Date.now()) + Math.random().toString(16).slice(2);
     }
 
-    function init() {
-      state.config = getConfig();
-      applyConfigToIntro();
-      syncAdminForm();
+    // ====== F6 anti-cheat ======
+
+    function isQuizActive() {
+      return !el.quiz.classList.contains('hidden');
+    }
+
+    function resetAntiCheatTracking() {
+      state.awayCount = 0;
+      state.awayTotalMs = 0;
+      state.awayStartedAt = null;
+      hideAwayBanner();
+    }
+
+    function showAwayBanner(awaySec, penaltySec) {
+      hideAwayBanner();
+      const banner = document.createElement('div');
+      banner.className = 'away-banner';
+      banner.textContent =
+        `Byl/a jsi pryč ${awaySec} s. Čas se zkrátil o ${penaltySec} s (penalty 1,5×). `
+        + `Celkem mimo: ${state.awayCount}× / ${Math.round(state.awayTotalMs / 1000)} s.`;
+      document.body.appendChild(banner);
+      state.awayBannerEl = banner;
+      setTimeout(hideAwayBanner, 6000);
+    }
+
+    function hideAwayBanner() {
+      if (state.awayBannerEl) {
+        state.awayBannerEl.remove();
+        state.awayBannerEl = null;
+      }
+    }
+
+    // Page Visibility API: hidden = uživatel přepl na jiný tab / app / zamkl obrazovku.
+    // Penalty: doba pryč × 0,5 navíc → čas běží 1,5× rychleji celkově.
+    function onVisibilityChangeForQuiz() {
+      if (!isQuizActive()) return;
+
+      if (document.hidden) {
+        state.awayStartedAt = Date.now();
+        return;
+      }
+
+      if (state.awayStartedAt === null) return;
+
+      const awayMs = Date.now() - state.awayStartedAt;
+      state.awayStartedAt = null;
+      state.awayCount += 1;
+      state.awayTotalMs += awayMs;
+
+      const penaltySec = Math.max(1, Math.round((awayMs * 0.5) / 1000));
+      state.timerSeconds = Math.max(0, state.timerSeconds - penaltySec);
+      el.timer.textContent = formatTime(state.timerSeconds);
+      showAwayBanner(Math.round(awayMs / 1000), penaltySec);
+
+      if (state.timerSeconds <= 0) {
+        clearInterval(state.timerInterval);
+        finishQuiz(true);
+      }
+    }
+
+    function blockEventInQuiz(e) {
+      if (isQuizActive()) e.preventDefault();
+    }
+
+    function setupAntiCheatListeners() {
+      document.addEventListener('visibilitychange', onVisibilityChangeForQuiz);
+      // Blokovat copy / cut / context menu jen během kvízu — admin a intro nechat.
+      document.addEventListener('copy', blockEventInQuiz);
+      document.addEventListener('cut', blockEventInQuiz);
+      document.addEventListener('contextmenu', blockEventInQuiz);
+      // Drag-and-drop obrázku otázky do ChatGPT.
+      document.addEventListener('dragstart', blockEventInQuiz);
+    }
+
+    // ====== F8 Web Share API ======
+
+    async function shareResult() {
+      const r = state.lastResult;
+      if (!r) {
+        alert('Nejdřív dokonči soutěž.');
+        return;
+      }
+
+      const mm = String(Math.floor(r.elapsedSeconds / 60)).padStart(2, '0');
+      const ss = String(r.elapsedSeconds % 60).padStart(2, '0');
+      const title = state.config?.title || 'IC Office Challenge';
+      const url = 'https://www.ic-office-challenge.eu/';
+
+      const text = `${title}: ${r.score} / ${r.total} bodů za ${mm}:${ss}. Zkus to taky → ${url}`;
+
+      // Web Share API (mobil + Edge/Chrome na desktopu) — otevře nativní share dialog.
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url });
+          return;
+        } catch (e) {
+          // AbortError = uživatel zrušil share, není to chyba; jinak fallback.
+          if (e.name === 'AbortError') return;
+          console.warn('Native share failed, falling back to clipboard:', e);
+        }
+      }
+
+      // Fallback: zkopírovat text do clipboard.
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Výsledek zkopírován do schránky 📋\n\n' + text);
+      } catch (e) {
+        // Pokud i clipboard selže (např. starý prohlížeč, žádné HTTPS), ukázat text ručně.
+        prompt('Zkopíruj výsledek a sdílej, kde chceš:', text);
+      }
+    }
+
+    // ====== F10a — Certifikát PDF ======
+
+    function downloadCertificate() {
+      const r = state.lastResult;
+      const participant = state.participant;
+      if (!r || !participant) { alert('Nejdřív dokonči soutěž.'); return; }
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('Knihovna pro PDF se nenačetla. Zkontroluj internetové připojení a obnov stránku.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const W = 297, H = 210;
+
+      // Bílé pozadí + vnější červený rám (IC Office paleta)
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, W, H, 'F');
+      doc.setDrawColor(200, 30, 30);
+      doc.setLineWidth(2.4);
+      doc.rect(8, 8, W - 16, H - 16);
+      doc.setLineWidth(0.6);
+      doc.rect(12, 12, W - 24, H - 24);
+
+      // Záhlaví — značka IC Office
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(200, 30, 30);
+      doc.text('IC OFFICE', 20, 24);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(110, 110, 110);
+      doc.text('· Challenge ·', 41, 24);
+
+      // Hlavní titulek
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(48);
+      doc.setTextColor(11, 15, 26);
+      doc.text('CERTIFIKÁT', W / 2, 56, { align: 'center' });
+
+      // Podtitul „uděluje se"
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(14);
+      doc.setTextColor(100, 116, 139);
+      doc.text('uděluje se', W / 2, 70, { align: 'center' });
+
+      // Jméno účastníka — velký font
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(34);
+      doc.setTextColor(200, 30, 30);
+      doc.text(participant.name || 'Účastník', W / 2, 92, { align: 'center' });
+
+      // Škola / firma, pokud existuje
+      if (participant.school) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(13);
+        doc.setTextColor(100, 116, 139);
+        doc.text(participant.school, W / 2, 102, { align: 'center' });
+      }
+
+      // Popis výkonu
+      const title = state.config?.title || 'IC Office Challenge';
+      const mm = String(Math.floor(r.elapsedSeconds / 60)).padStart(2, '0');
+      const ss = String(r.elapsedSeconds % 60).padStart(2, '0');
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(13);
+      doc.setTextColor(11, 15, 26);
+      doc.text('za úspěšné absolvování soutěže', W / 2, 118, { align: 'center' });
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text(title, W / 2, 128, { align: 'center' });
+
+      // Výsledky — tři pole
+      const boxY = 144, boxH = 28;
+      const labels = ['BODY', 'ČAS', 'DATUM'];
+      const values = [
+        `${r.score} / ${r.total}`,
+        `${mm}:${ss}`,
+        new Date().toLocaleDateString('cs-CZ')
+      ];
+      labels.forEach((lab, i) => {
+        const cx = (W / 4) * (i + 1);
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.4);
+        doc.line(cx - 36, boxY, cx + 36, boxY);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(lab, cx, boxY + 7, { align: 'center' });
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(11, 15, 26);
+        doc.text(values[i], cx, boxY + 19, { align: 'center' });
+      });
+
+      // Patička
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      doc.text('www.ic-office.eu', 20, H - 14);
+      doc.text('IC Office · Software pro autoservisy', W - 20, H - 14, { align: 'right' });
+
+      // Podpisová linka uprostřed dole
+      doc.setDrawColor(200, 30, 30);
+      doc.setLineWidth(0.6);
+      doc.line(W / 2 - 40, H - 22, W / 2 + 40, H - 22);
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text('IC Office Challenge', W / 2, H - 17, { align: 'center' });
+
+      // Generování názvu souboru
+      const safeName = (participant.name || 'ucastnik')
+        .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+      doc.save(`ic-office-certifikat-${safeName}-${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
+    function buildResultMeta() {
+      const m = {
+        user_agent: (navigator.userAgent || '').slice(0, 500),
+        away_count: state.awayCount,
+        away_total_seconds: Math.round(state.awayTotalMs / 1000),
+        screen_width: window.screen && window.screen.width || null,
+        screen_height: window.screen && window.screen.height || null,
+        viewport_width: window.innerWidth || null,
+        viewport_height: window.innerHeight || null,
+        time_zone: (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || null,
+        client_started_at: state.startedAt ? state.startedAt.toISOString() : null,
+        client_finished_at: new Date().toISOString()
+      };
+      return m;
+    }
+
+    async function init() {
+      // F6: zaregistrovat anti-cheat listenery jednou při startu stránky.
+      // Sami se aktivují jen když je kvízová obrazovka viditelná.
+      setupAntiCheatListeners();
+
+      // F10b: zaregistrovat service worker pro PWA install + offline cache.
+      // Service worker bude fungovat jen na produkčním HTTPS hostingu.
+      if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.warn('Service worker registration failed (ne-kritické):', err);
+        });
+      }
+
+      try {
+        showLoadingIntro(true);
+        state.config = await loadConfigFromSupabase();
+        applyConfigToIntro();
+        applyConfigToTitle();
+        syncAdminForm();
+      } catch (e) {
+        console.error('init failed:', e);
+        showInitError(e.message || 'Neznámá chyba');
+      } finally {
+        showLoadingIntro(false);
+      }
+    }
+
+    function showLoadingIntro(loading) {
+      el.startBtn.disabled = loading;
+      el.startBtn.textContent = loading ? 'Načítám soutěž…' : 'Spustit challenge';
+    }
+
+    function showInitError(msg) {
+      el.introText.innerHTML = '<strong>Soutěž se nepodařilo načíst:</strong> '
+        + escapeHtml(msg)
+        + '<br><br>Obnov stránku. Pokud chyba přetrvává, kontaktuj správce.';
+      el.startBtn.disabled = true;
+      el.startBtn.textContent = 'Soutěž není dostupná';
+    }
+
+    // Promítne title ze Supabase do <title> i nadpisu na intro screenu.
+    function applyConfigToTitle() {
+      if (!state.config || !state.config.title) return;
+      document.title = state.config.title;
+
+      const hotspot = document.getElementById('adminHotspot');
+      if (!hotspot) return;
+
+      const parts = state.config.title.split(' ');
+      if (parts.length >= 2 && parts[0] === 'IC' && parts[1] === 'Office') {
+        hotspot.innerHTML =
+          '<span style="color:#c81e1e;">IC Office</span>'
+          + '<span style="color:#111111;"> ' + escapeHtml(parts.slice(2).join(' ')) + '</span>';
+      } else {
+        hotspot.innerHTML = '<span style="color:#c81e1e;">' + escapeHtml(state.config.title) + '</span>';
+      }
     }
 
     el.startBtn.addEventListener('click', startQuiz);
     el.nextBtn.addEventListener('click', nextQuestion);
     el.finishBtn.addEventListener('click', () => finishQuiz(false));
+    el.shareResultBtn.addEventListener('click', shareResult);
+    el.downloadCertificateBtn.addEventListener('click', downloadCertificate);
     el.exportBtn.addEventListener('click', exportResultsToCSV);
     el.clearBtn.addEventListener('click', clearResults);
     el.backBtn.addEventListener('click', () => showScreen(el.intro));
@@ -1380,6 +2271,8 @@
     el.saveConfigBtn.addEventListener('click', saveAdminConfig);
     el.addQuestionBtn.addEventListener('click', addQuestion);
     el.resetDefaultsBtn.addEventListener('click', resetDefaults);
+    el.saveDisplayBtn.addEventListener('click', saveDisplaySettings);
+    el.configDisplayMode.addEventListener('change', toggleYoutubeFieldVisibility);
 
     window.addEventListener('beforeunload', function (e) {
       if (!el.quiz.classList.contains('hidden')) {
