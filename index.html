@@ -1222,6 +1222,7 @@
         syncAdminForm();
         renderQuestionEditors();
         await renderAdminStats();
+        subscribeAdminResultsRealtime();
         showScreen(el.admin);
       } catch (e) {
         alert('Chyba při přihlášení: ' + e.message);
@@ -1231,6 +1232,25 @@
         el.adminLoginBtn.textContent = originalLabel;
         el.adminPassword.value = '';
       }
+    }
+
+    // F9 — admin sleduje výsledky live: při INSERT/UPDATE/DELETE v results
+    // se admin tabulka sama překresluje, žádný refresh není potřeba.
+    let adminResultsChannel = null;
+    function subscribeAdminResultsRealtime() {
+      if (!state.config || !state.config.id) return;
+      if (adminResultsChannel) {
+        try { supabaseClient.removeChannel(adminResultsChannel); } catch (_) {}
+        adminResultsChannel = null;
+      }
+      adminResultsChannel = supabaseClient
+        .channel('admin-results-' + state.config.id)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'results',
+            filter: `challenge_id=eq.${state.config.id}` },
+          () => { renderAdminStats().catch(err => console.warn(err)); }
+        )
+        .subscribe();
     }
 
     // ====== F3 admin CRUD ======
