@@ -1045,7 +1045,12 @@
           <div class="small" style="margin-top:4px; color:var(--muted);">
             <strong>Google Slides:</strong> File → Share → Publish to web → Embed → zkopíruj <code>src</code> z iframe.<br>
             <strong>PDF z Google Drive:</strong> sdílej veřejně → použij <code>https://drive.google.com/file/d/&lt;ID&gt;/preview</code>.<br>
-            <strong>Canva:</strong> Share → More → Embed → zkopíruj URL.
+            <strong>Canva:</strong> Share → More → Embed → zkopíruj URL.<br>
+            <strong>PowerPoint (.pptx):</strong> použij tlačítko níže — nahraje se a vygeneruje se URL automaticky.
+          </div>
+          <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px;">
+            <input id="introPptxFileInput" type="file" accept=".pptx,.ppt,.pdf" />
+            <button class="btn btn-secondary" id="introPptxUploadBtn" type="button">Nahrát .pptx</button>
           </div>
           <div style="height:8px;"></div>
           <label for="introBodyInput">Doplňující text (volitelné)</label>
@@ -1066,7 +1071,21 @@
           <div style="height:8px;"></div>
           <label for="outroSlidesInput">Slidy embed URL (volitelné)</label>
           <input id="outroSlidesInput" type="text" placeholder="https://docs.google.com/presentation/d/.../embed" />
+          <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px;">
+            <input id="outroPptxFileInput" type="file" accept=".pptx,.ppt,.pdf" />
+            <button class="btn btn-secondary" id="outroPptxUploadBtn" type="button">Nahrát .pptx</button>
+          </div>
           <div style="height:8px;"></div>
+          <div style="display:grid; grid-template-columns:1fr 90px; gap:10px; align-items:center; padding:10px 12px; background:var(--panel-2, #f1f5f9); border-radius:10px;">
+            <div>
+              <label for="slidesZoomInput" style="margin:0;">🔍 Zoom slidů na projektoru</label>
+              <div class="small" style="color:var(--muted); margin-top:2px;">Když má PowerPoint malý font nebo fotky, posuň slider. Účastnické mobily zoom neaplikují.</div>
+            </div>
+            <div style="text-align:right;">
+              <input id="slidesZoomInput" type="range" min="50" max="300" step="5" value="100" style="width:100%;" />
+              <div style="font-weight:800; font-size:14px;"><span id="slidesZoomValue">100</span> %</div>
+            </div>
+          </div>
           <label for="outroBodyInput">Doplňující text (volitelné)</label>
           <textarea id="outroBodyInput" maxlength="2000" placeholder="Kontakty, odkaz na materiály, další školení…"></textarea>
           <div class="btn-row" style="margin-top:10px;">
@@ -1241,6 +1260,7 @@
     const ATTENDEE_NAME_KEY = 'qa_attendee_name_v1';
     const MATERIALS_BUCKET = 'session-materials';
     const AUDIO_BUCKET = 'session-audio';
+    const PRESENTATIONS_BUCKET = 'session-presentations';
 
     // ====== Stav ======
     const state = {
@@ -1355,6 +1375,9 @@
         $('outroSlidesFrame').src = '';
         $('outroSlidesWrap').classList.add('hidden');
       }
+
+      // F17 — aplikuj projektorový zoom na slide iframe.
+      applySlidesZoomToProjector();
     }
 
     // ====== F13 Agenda — fetch + render ======
@@ -2175,6 +2198,21 @@
       $('saveIntroBtn').onclick = () => saveIntroOutro('intro');
       $('saveOutroBtn').onclick = () => saveIntroOutro('outro');
 
+      // F17: pptx upload + zoom slider
+      $('introPptxUploadBtn').onclick = () => uploadPresentationFile('intro');
+      $('outroPptxUploadBtn').onclick = () => uploadPresentationFile('outro');
+
+      const zoom = state.session.slides_zoom || 100;
+      $('slidesZoomInput').value = zoom;
+      $('slidesZoomValue').textContent = zoom;
+      let zoomDebounce = null;
+      $('slidesZoomInput').oninput = () => {
+        const v = $('slidesZoomInput').value;
+        $('slidesZoomValue').textContent = v;
+        clearTimeout(zoomDebounce);
+        zoomDebounce = setTimeout(() => saveSlidesZoom(Number(v)), 250);
+      };
+
       // Sekce účastníci
       $('adminRequireRegistration').checked = !!state.session.require_registration;
       $('adminRequireRegistration').onchange = () => toggleRequireRegistration($('adminRequireRegistration').checked);
@@ -2348,6 +2386,99 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== F17 PowerPoint upload + zoom ======
+
+    // Nahraje .pptx (nebo .ppt / .pdf) do Storage a vyplní příslušný „slides URL"
+    // input s odkazem na Office Web Viewer, který umí .pptx renderovat 1:1.
+    async function uploadPresentationFile(kind) {
+      // kind: 'intro' | 'outro'
+      const fileInput = $(kind + 'PptxFileInput');
+      const urlInput  = $(kind + 'SlidesInput');
+      const file = fileInput.files[0];
+      if (!file) {
+        showAlert('phaseAlert', 'error', 'Vyber .pptx, .ppt nebo .pdf soubor.');
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        showAlert('phaseAlert', 'error', 'Soubor je větší než 50 MB. Zmenši nebo zkomprimuj prezentaci.');
+        return;
+      }
+
+      const btn = $(kind + 'PptxUploadBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = 'Nahrávám…';
+
+      try {
+        const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'pptx';
+        const path = `${state.session.id}/${safeId}.${ext}`;
+
+        const up = await supabaseClient.storage
+          .from(PRESENTATIONS_BUCKET)
+          .upload(path, file, {
+            upsert: false,
+            contentType: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+          });
+        if (up.error) throw new Error('Upload selhal: ' + up.error.message);
+
+        const { data: pub } = supabaseClient.storage.from(PRESENTATIONS_BUCKET).getPublicUrl(path);
+        const publicUrl = pub && pub.publicUrl;
+        if (!publicUrl) throw new Error('Storage nevrátil veřejnou URL — zkontroluj, že je bucket Public.');
+
+        // PDF se v Office Web Vieweru nezobrazí — pro PDF použijeme Google Drive viewer.
+        let embedUrl;
+        if (ext === 'pdf') {
+          embedUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(publicUrl) + '&embedded=true';
+        } else {
+          embedUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(publicUrl);
+        }
+
+        urlInput.value = embedUrl;
+        fileInput.value = '';
+        showAlert('phaseAlert', 'ok', 'Prezentace nahrána. URL vyplněná v poli — klikni „Uložit ' + kind + '".');
+      } catch (e) {
+        showAlert('phaseAlert', 'error', e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
+    }
+
+    async function saveSlidesZoom(percent) {
+      if (!state.session) return;
+      const z = Math.max(50, Math.min(300, Math.round(percent)));
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ slides_zoom: z })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Změna zoomu selhala: ' + error.message);
+      }
+    }
+
+    // Aplikuje zoom % na iframe ve slide rámečcích (jen projektor).
+    function applySlidesZoomToProjector() {
+      if (state.mode !== 'display') return;
+      const z = (state.session && state.session.slides_zoom) || 100;
+      const scale = z / 100;
+      [$('introSlidesFrame'), $('outroSlidesFrame')].forEach(frame => {
+        if (!frame) return;
+        if (scale === 1) {
+          frame.style.transform = '';
+          frame.style.transformOrigin = '';
+          frame.style.width = '';
+          frame.style.height = '';
+        } else {
+          // CSS scale + kompenzace velikosti aby iframe nezmenšil svůj viewport
+          frame.style.transformOrigin = 'top left';
+          frame.style.transform = `scale(${scale})`;
+          frame.style.width = (100 / scale) + '%';
+          frame.style.height = (100 / scale) + '%';
+        }
+      });
     }
 
     // ====== F16 Hudba na pozadí ======
