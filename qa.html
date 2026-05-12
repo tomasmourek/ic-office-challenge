@@ -496,6 +496,51 @@
       <p class="subtitle" id="subtitle">Načítám…</p>
     </header>
 
+    <!-- ============ REGISTRATION (účastník před vstupem do Q&A) ============ -->
+    <section id="screen-register" class="hidden">
+      <div class="card">
+        <h3 style="margin:0 0 6px;">Registrace na školení</h3>
+        <p class="subtitle" style="margin:0 0 16px;" id="registerSessionInfo">—</p>
+
+        <div style="display:grid; gap:10px;">
+          <div>
+            <label for="regCustomerNumber">Zákaznické číslo Intercars (<code>C</code> + 5 číslic)</label>
+            <input id="regCustomerNumber" type="text" maxlength="6" placeholder="C12345" autocomplete="off" />
+          </div>
+          <div>
+            <label for="regCompany">Firma nebo jméno <span style="color:var(--danger);">*</span></label>
+            <input id="regCompany" type="text" maxlength="160" placeholder="AutoServis Novák s.r.o. nebo Jan Novák" autocomplete="organization" />
+          </div>
+          <div>
+            <label for="regIco">IČ (8 cifer)</label>
+            <input id="regIco" type="text" inputmode="numeric" maxlength="8" placeholder="12345678" autocomplete="off" />
+          </div>
+          <div>
+            <label for="regEmail">E-mail <span style="color:var(--danger);">*</span></label>
+            <input id="regEmail" type="email" maxlength="160" placeholder="vy@firma.cz" autocomplete="email" />
+          </div>
+          <div>
+            <label for="regPhone">Telefon</label>
+            <input id="regPhone" type="tel" maxlength="40" placeholder="+420 …" autocomplete="tel" />
+          </div>
+          <div>
+            <label for="regNote">Poznámka (volitelné)</label>
+            <textarea id="regNote" maxlength="500" placeholder="Cokoli, co se hodí lektorovi vědět…" style="min-height:64px;"></textarea>
+          </div>
+        </div>
+
+        <div id="registerAlert" style="margin-top:10px;"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="registerSubmitBtn">Pokračovat na školení</button>
+        </div>
+        <p class="subtitle" style="font-size:12px; margin-top:14px;">
+          Údaje slouží pro registraci na IC Office a evidenci účastníka školení.
+          Hvězdičkou jsou označená povinná pole.
+        </p>
+      </div>
+    </section>
+
     <!-- ============ INTRO PHASE (společný pro účastníka i projektor) ============ -->
     <section id="screen-intro-phase" class="hidden">
       <div class="ic-stage">
@@ -713,6 +758,26 @@
       </div>
 
       <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h3 style="margin:0;">Účastníci školení</h3>
+          <div class="row-toggle" style="margin:0;">
+            <input id="adminRequireRegistration" type="checkbox" />
+            <label for="adminRequireRegistration" style="margin:0; font-size:13px;">Vyžadovat registraci před přístupem k Q&amp;A</label>
+          </div>
+        </div>
+        <p class="subtitle" style="margin:6px 0 12px; font-size:13px;">
+          Když je zapnuto, účastník musí před vstupem do Q&amp;A vyplnit formulář
+          (zákaznické číslo Intercars, e-mail, IČ, telefon, firma).
+        </p>
+        <div id="attendeesCount" style="font-size:14px; margin-bottom:8px;">—</div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-secondary" id="exportAttendeesBtn">Export do CSV</button>
+          <button class="btn btn-ghost" id="toggleAttendeesListBtn">Zobrazit seznam ↓</button>
+        </div>
+        <div id="attendeesList" class="hidden" style="margin-top:14px; max-height:420px; overflow:auto;"></div>
+      </div>
+
+      <div class="card">
         <h3 style="margin:0 0 12px;">Dotazy (live)</h3>
         <div class="question-list" id="adminList"></div>
         <div id="adminEmpty" class="empty hidden">Zatím žádné dotazy.</div>
@@ -756,6 +821,8 @@
     const VOTER_TOKEN_KEY = 'qa_voter_token_v1';
     const RATE_LIMIT_KEY = 'qa_last_submit_ts';
     const RATE_LIMIT_MS = 30000; // 30 s mezi dotazy
+    const ATTENDEE_KEY_PREFIX = 'qa_attendee_'; // + session slug
+    const ATTENDEE_NAME_KEY = 'qa_attendee_name_v1';
 
     // ====== Stav ======
     const state = {
@@ -853,11 +920,21 @@
     }
 
     // Hlavní dispatcher pro participant + display mód: rozhodne, který screen ukázat
-    // podle state.session.display_phase (intro / live / outro).
+    // podle state.session.display_phase (intro / live / outro) a podle toho,
+    // jestli musí účastník ještě projít registračním formulářem.
     function showPhaseScreen(forParticipant) {
       const phase = (state.session && state.session.display_phase) || 'live';
-      ['screen-intro-phase', 'screen-outro-phase', 'screen-participant', 'screen-display']
+      ['screen-register', 'screen-intro-phase', 'screen-outro-phase',
+       'screen-participant', 'screen-display']
         .forEach(id => $(id).classList.add('hidden'));
+
+      // Registrace má přednost před fázemi (jen pro participant mode):
+      // projektor sám sebe nikdy neregistruje, vždy zobrazuje obsah.
+      if (forParticipant && needsRegistration()) {
+        renderRegisterScreen();
+        $('screen-register').classList.remove('hidden');
+        return;
+      }
 
       renderIntroOutroFromSession(state.session);
 
@@ -875,6 +952,84 @@
       } else {
         $('screen-display').classList.remove('hidden');
       }
+    }
+
+    // ====== Registrace účastníka ======
+
+    function needsRegistration() {
+      if (!state.session || !state.session.require_registration) return false;
+      const key = ATTENDEE_KEY_PREFIX + state.session.slug;
+      return !localStorage.getItem(key);
+    }
+
+    function renderRegisterScreen() {
+      $('registerSessionInfo').textContent =
+        state.session.title + (state.session.description ? ' · ' + state.session.description : '');
+    }
+
+    // Validace: CXXXXX (písmeno C + 5 cifer). Case-insensitive.
+    function validateCustomerNumber(v) {
+      if (!v) return true; // nepovinné
+      return /^[Cc]\d{5}$/.test(v.trim());
+    }
+    function validateIco(v) {
+      if (!v) return true; // nepovinné
+      return /^\d{8}$/.test(v.trim());
+    }
+    function validateEmail(v) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+    }
+
+    async function submitRegistration() {
+      const customer = $('regCustomerNumber').value.trim();
+      const company = $('regCompany').value.trim();
+      const ico = $('regIco').value.trim();
+      const email = $('regEmail').value.trim();
+      const phone = $('regPhone').value.trim();
+      const note = $('regNote').value.trim();
+
+      // Validace
+      if (!company) { showAlert('registerAlert', 'error', 'Vyplň firmu nebo jméno.'); return; }
+      if (!email || !validateEmail(email)) { showAlert('registerAlert', 'error', 'Vyplň platný e-mail.'); return; }
+      if (!validateCustomerNumber(customer)) { showAlert('registerAlert', 'error', 'Zákaznické číslo musí být ve formátu C + 5 cifer (např. C12345).'); return; }
+      if (!validateIco(ico)) { showAlert('registerAlert', 'error', 'IČ musí být 8 cifer.'); return; }
+
+      $('registerSubmitBtn').disabled = true;
+      const orig = $('registerSubmitBtn').textContent;
+      $('registerSubmitBtn').textContent = 'Registruji…';
+
+      const payload = {
+        session_id: state.session.id,
+        customer_number: customer ? customer.toUpperCase() : null,
+        company_or_name: company,
+        ico: ico || null,
+        email: email,
+        phone: phone || null,
+        note: note || null,
+        voter_token: state.voterToken
+      };
+
+      const { data, error } = await supabaseClient
+        .from('attendees')
+        .insert(payload)
+        .select()
+        .single();
+
+      $('registerSubmitBtn').disabled = false;
+      $('registerSubmitBtn').textContent = orig;
+
+      if (error) {
+        showAlert('registerAlert', 'error', 'Registrace selhala: ' + error.message);
+        return;
+      }
+
+      // Uložit lokálně — kombinace ID + jméno pro auto-fill v Q&A.
+      const key = ATTENDEE_KEY_PREFIX + state.session.slug;
+      localStorage.setItem(key, data.id);
+      localStorage.setItem(ATTENDEE_NAME_KEY, company);
+
+      // Pokračovat na další screen — buď intro/outro fáze, nebo přímo dotazy.
+      showPhaseScreen(true);
     }
 
     // ====== Bootstrap ======
@@ -978,6 +1133,11 @@
           { event: '*', schema: 'public', table: 'qa_votes' },
           () => onChange()
         )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'attendees',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
         .subscribe();
 
       state.channels.push(ch);
@@ -1002,11 +1162,16 @@
         $('qNameWrap').classList.remove('hidden');
       }
 
+      // Auto-fill jména v Q&A formuláři z registrace (jestli proběhla).
+      const savedName = localStorage.getItem(ATTENDEE_NAME_KEY);
+      if (savedName) $('qName').value = savedName;
+
       $('qBody').addEventListener('input', updateCharCounter);
       $('qAnonymous').addEventListener('change', () => {
         $('qNameWrap').classList.toggle('hidden', $('qAnonymous').checked);
       });
       $('qSubmitBtn').addEventListener('click', submitQuestion);
+      $('registerSubmitBtn').addEventListener('click', submitRegistration);
 
       renderParticipantList();
       subscribeRealtime(state.session.id, async () => {
@@ -1408,6 +1573,18 @@
       $('saveIntroBtn').onclick = () => saveIntroOutro('intro');
       $('saveOutroBtn').onclick = () => saveIntroOutro('outro');
 
+      // Sekce účastníci
+      $('adminRequireRegistration').checked = !!state.session.require_registration;
+      $('adminRequireRegistration').onchange = () => toggleRequireRegistration($('adminRequireRegistration').checked);
+      $('exportAttendeesBtn').onclick = exportAttendeesCsv;
+      $('toggleAttendeesListBtn').onclick = () => {
+        const list = $('attendeesList');
+        const wasHidden = list.classList.contains('hidden');
+        list.classList.toggle('hidden', !wasHidden);
+        $('toggleAttendeesListBtn').textContent = wasHidden ? 'Skrýt seznam ↑' : 'Zobrazit seznam ↓';
+      };
+      await renderAttendees();
+
       await renderAdminQuestionList();
       subscribeRealtime(state.session.id, async () => {
         state.session = await loadSessionBySlug(state.session.slug) || state.session;
@@ -1422,7 +1599,9 @@
         $('phaseSwitch').querySelectorAll('button[data-phase]').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.phase === phase);
         });
+        $('adminRequireRegistration').checked = !!state.session.require_registration;
         await renderAdminQuestionList();
+        await renderAttendees();
       });
     }
 
@@ -1437,6 +1616,102 @@
       }
       const labels = { intro: '🎬 Intro', live: '🎤 Live Q&A', outro: '👋 Outro' };
       showAlert('phaseAlert', 'ok', 'Přepnuto na ' + labels[phase] + '. Účastníci i projektor se aktualizují automaticky.');
+    }
+
+    // ====== Admin: Účastníci ======
+
+    async function renderAttendees() {
+      if (!state.session) return;
+      const { data, error, count } = await supabaseClient
+        .from('attendees')
+        .select('id, customer_number, company_or_name, ico, email, phone, note, registered_at', { count: 'exact' })
+        .eq('session_id', state.session.id)
+        .order('registered_at', { ascending: false });
+
+      if (error) {
+        $('attendeesCount').innerHTML = `<span style="color:var(--danger);">Načtení selhalo: ${escapeHtml(error.message)}</span>`;
+        return;
+      }
+
+      const rows = data || [];
+      $('attendeesCount').innerHTML = `<strong>${count != null ? count : rows.length}</strong> registrovaných účastníků`;
+
+      if (!rows.length) {
+        $('attendeesList').innerHTML = '<div class="empty">Zatím žádné registrace.</div>';
+        return;
+      }
+
+      $('attendeesList').innerHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="text-align:left; color:var(--muted); border-bottom:1px solid var(--border);">
+              <th style="padding:6px 8px;">Čas</th>
+              <th style="padding:6px 8px;">Zákazník</th>
+              <th style="padding:6px 8px;">Firma / jméno</th>
+              <th style="padding:6px 8px;">IČ</th>
+              <th style="padding:6px 8px;">E-mail</th>
+              <th style="padding:6px 8px;">Telefon</th>
+              <th style="padding:6px 8px;">Poznámka</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(a => `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:6px 8px; white-space:nowrap;">${new Date(a.registered_at).toLocaleString('cs-CZ')}</td>
+                <td style="padding:6px 8px; font-family:ui-monospace,Consolas,monospace;">${escapeHtml(a.customer_number || '—')}</td>
+                <td style="padding:6px 8px;"><strong>${escapeHtml(a.company_or_name || '—')}</strong></td>
+                <td style="padding:6px 8px; font-variant-numeric:tabular-nums;">${escapeHtml(a.ico || '—')}</td>
+                <td style="padding:6px 8px;">${escapeHtml(a.email || '—')}</td>
+                <td style="padding:6px 8px;">${escapeHtml(a.phone || '—')}</td>
+                <td style="padding:6px 8px; color:var(--muted);">${escapeHtml(a.note || '')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function toggleRequireRegistration(value) {
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ require_registration: value })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('phaseAlert', 'error', 'Změna selhala: ' + error.message);
+        $('adminRequireRegistration').checked = !value; // revert
+        return;
+      }
+      state.session.require_registration = value;
+      showAlert('phaseAlert', 'ok',
+        value ? 'Registrace je teď povinná. Účastníci uvidí formulář.'
+              : 'Registrace je vypnutá. Účastníci jdou rovnou do Q&A.');
+    }
+
+    async function exportAttendeesCsv() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient
+        .from('attendees')
+        .select('registered_at, customer_number, company_or_name, ico, email, phone, note')
+        .eq('session_id', state.session.id)
+        .order('registered_at', { ascending: false });
+
+      if (error) { alert('Načtení selhalo: ' + error.message); return; }
+      if (!data || !data.length) { alert('Žádné registrace k exportu.'); return; }
+
+      const csvEscape = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const header = ['registered_at', 'customer_number', 'company_or_name', 'ico', 'email', 'phone', 'note'];
+      const lines = data.map(a => header.map(k => csvEscape(a[k])).join(';'));
+      // BOM kvůli českým znakům v Excelu
+      const csv = '﻿' + [header.join(';'), ...lines].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ic-office-attendees-${state.session.slug}-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     }
 
     async function saveIntroOutro(kind) {
