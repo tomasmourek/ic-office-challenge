@@ -587,6 +587,140 @@
     body.display-mode .break-banner .label { font-size: 28px; margin-bottom: 16px; }
     body.display-mode .break-banner .countdown { font-size: clamp(80px, 14vw, 200px); }
 
+    /* ====== F18 Live polls ====== */
+
+    .poll-card {
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px rgba(200,30,30,0.12);
+    }
+    body.display-mode .poll-card { background: #1c2440; box-shadow: 0 24px 80px rgba(200,30,30,0.25); }
+
+    .poll-card .question {
+      font-weight: 800;
+      font-size: clamp(16px, 2.4vw, 22px);
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+    body.display-mode .poll-card .question { font-size: clamp(28px, 3.6vw, 44px); color: #fff; }
+
+    .poll-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .poll-option-btn {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--panel-2, #f1f5f9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease, transform 100ms ease;
+    }
+    .poll-option-btn:hover { background: #fee2e2; border-color: var(--accent); }
+    .poll-option-btn[disabled] { opacity: 0.6; cursor: default; }
+    .poll-option-btn.voted { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Rating hvězdy */
+    .poll-stars { display: flex; gap: 6px; flex-wrap: wrap; }
+    .poll-star-btn {
+      flex: 1;
+      min-width: 44px;
+      padding: 14px 0;
+      font-size: 28px;
+      line-height: 1;
+      background: var(--panel-2, #f1f5f9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 120ms ease, transform 120ms ease;
+    }
+    .poll-star-btn:hover { background: #fef3c7; }
+    .poll-star-btn:active { transform: scale(0.92); }
+    .poll-star-btn[disabled] { opacity: 0.4; cursor: wait; }
+
+    /* Bar chart na projektoru / v adminu */
+    .poll-bar-row {
+      margin-bottom: 10px;
+    }
+    .poll-bar-row .label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    body.display-mode .poll-bar-row .label { font-size: 22px; }
+    .poll-bar-row .label .pct { color: var(--accent); }
+    .poll-bar-track {
+      height: 22px;
+      background: var(--panel-2, #f1f5f9);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    body.display-mode .poll-bar-track { background: #1c2440; height: 32px; }
+    .poll-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Rating gauge — průměr číslem + hvězdičky */
+    .poll-rating-gauge {
+      text-align: center;
+      padding: 16px 0;
+    }
+    .poll-rating-gauge .avg {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--accent);
+    }
+    .poll-rating-gauge .scale { color: var(--muted); font-size: 14px; }
+    .poll-rating-gauge .count { color: var(--muted); font-size: 13px; margin-top: 6px; }
+    .poll-rating-distribution { margin-top: 14px; }
+
+    /* Word cloud */
+    .poll-word-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      justify-content: center;
+      align-items: baseline;
+      padding: 16px 8px;
+    }
+    .poll-word {
+      font-weight: 800;
+      transition: transform 250ms ease;
+      line-height: 1.1;
+    }
+    .poll-word:hover { transform: scale(1.08); }
+    .poll-word.tier-1 { font-size: clamp(40px, 6vw, 88px); color: var(--accent); }
+    .poll-word.tier-2 { font-size: clamp(28px, 4.5vw, 60px); color: var(--accent-2); }
+    .poll-word.tier-3 { font-size: clamp(22px, 3.5vw, 40px); color: #f59e0b; }
+    .poll-word.tier-4 { font-size: clamp(18px, 2.5vw, 28px); color: var(--text); }
+    .poll-word.tier-5 { font-size: clamp(14px, 2vw, 22px); color: var(--muted); }
+    body.display-mode .poll-word.tier-4 { color: #fff; }
+
+    .poll-status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .poll-status-draft  { background: #f1f5f9; color: var(--muted); }
+    .poll-status-active { background: var(--ok); color: #fff; }
+    .poll-status-closed { background: #fee2e2; color: var(--danger); }
+
     /* ====== F20 Reactions / emoji storm ====== */
 
     /* Tlačítka pro účastníka — krásná řada s emoji nad polem dotazu */
@@ -956,6 +1090,9 @@
 
     <!-- ============ PARTICIPANT MODE ============ -->
     <section id="screen-participant" class="hidden">
+      <!-- F18: aktivní live poll (multiple choice / rating / word cloud) -->
+      <div id="participantPollWrap" class="hidden"></div>
+
       <div class="card">
         <label style="margin-bottom:4px;">Pošli reakci na projektor 👇</label>
         <div class="reactions-row" id="reactionsRow">
@@ -1214,6 +1351,42 @@
       </div>
 
       <div class="card">
+        <h3 style="margin:0 0 4px;">📊 Live polls (hlasování)</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Účastníci hlasují tlačítky, projektor zobrazí výsledky live. Jeden aktivní
+          poll v jeden moment — předchozí se sám uzavře, když aktivuješ jiný.
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 160px; gap:10px;">
+          <div>
+            <label for="pollQuestionInput">Otázka</label>
+            <input id="pollQuestionInput" type="text" maxlength="280" placeholder="Např. Co tě v IC Office nejvíc překvapilo?" />
+          </div>
+          <div>
+            <label for="pollKindInput">Typ</label>
+            <select id="pollKindInput">
+              <option value="choice">📊 Multiple choice</option>
+              <option value="rating">⭐ Rating 1–5</option>
+              <option value="word_cloud">☁️ Word cloud</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pollOptionsWrap" style="margin-top:10px;">
+          <label>Možnosti (Multiple choice)</label>
+          <div id="pollOptionsList"></div>
+          <button class="btn btn-ghost" id="pollAddOptionBtn" type="button" style="padding:6px 12px; font-size:12px; margin-top:6px;">+ Přidat možnost</button>
+        </div>
+
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-primary" id="pollCreateBtn">Vytvořit poll</button>
+        </div>
+        <div id="pollAdminAlert" style="margin-top:8px;"></div>
+
+        <div id="pollsAdminList" style="margin-top:18px;"></div>
+      </div>
+
+      <div class="card">
         <h3 style="margin:0 0 4px;">🎵 Hudba na pozadí (projektor)</h3>
         <p class="small" style="margin:0 0 10px; color:var(--muted);">
           mp3 / mp4 podtext, který se sám pustí na projektoru podle fáze:
@@ -1285,6 +1458,9 @@
 
     <!-- ============ DISPLAY MODE (projektor) ============ -->
     <section id="screen-display" class="hidden">
+      <!-- F18: aktivní live poll s živými výsledky -->
+      <div id="displayPollWrap" class="hidden"></div>
+
       <div id="displayHighlightWrap" class="hidden">
         <div class="display-highlight">
           <div class="label">Aktuální dotaz</div>
@@ -1806,6 +1982,15 @@
             filter: `session_id=eq.${sessionId}` },
           () => onChange()
         )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_polls',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_poll_answers' },
+          () => onChange()
+        )
         .subscribe();
 
       state.channels.push(ch);
@@ -1846,6 +2031,7 @@
       renderParticipantList();
       await refreshAgendaForView();
       await refreshMaterialsForView();
+      await refreshParticipantPoll();
       updateBreakBanner();
       startAgendaAutoHighlight();
       subscribeRealtime(state.session.id, async () => {
@@ -1857,6 +2043,7 @@
         await renderParticipantList();
         await refreshAgendaForView();
         await refreshMaterialsForView();
+        await refreshParticipantPoll();
         updateBreakBanner();
       });
     }
@@ -2014,6 +2201,7 @@
       await refreshAgendaForView();
       await refreshMaterialsForView();
       await refreshAudioForDisplay();
+      await refreshDisplayPoll();
       updateBreakBanner();
       startAgendaAutoHighlight();
 
@@ -2032,6 +2220,7 @@
         await refreshAgendaForView();
         await refreshMaterialsForView();
         await refreshAudioForDisplay();
+        await refreshDisplayPoll();
         updateBreakBanner();
       });
     }
@@ -2312,6 +2501,17 @@
       $('audioUploadBtn').onclick = uploadAudioTrack;
       await renderAudioTracksAdmin();
 
+      // Sekce polls (F18)
+      togglePollOptionsVisibility();
+      $('pollKindInput').onchange = togglePollOptionsVisibility;
+      resetPollOptionsList();
+      $('pollAddOptionBtn').onclick = () => {
+        const current = $('pollOptionsList').querySelectorAll('input').length;
+        renderAdminPollOptionInputs(current + 1);
+      };
+      $('pollCreateBtn').onclick = createPoll;
+      await renderPollsAdmin();
+
       $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
       $('breakLabelSaveBtn').onclick = saveBreakLabel;
       $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
@@ -2347,6 +2547,7 @@
         await renderAttendees();
         await renderMaterialsAdmin();
         await renderAudioTracksAdmin();
+        await renderPollsAdmin();
       });
     }
 
@@ -2457,6 +2658,347 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== F18 Live polls ======
+
+    const POLL_VOTE_KEY_PREFIX = 'qa_poll_vote_'; // + poll.id → option_idx | rating | text
+
+    async function loadActivePoll(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_polls')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('status', 'active')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      if (error) { console.warn('loadActivePoll failed:', error); return null; }
+      return (data && data[0]) || null;
+    }
+
+    async function loadAllPolls(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_polls')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false });
+      if (error) return [];
+      return data || [];
+    }
+
+    async function loadPollAnswers(pollId) {
+      const { data, error } = await supabaseClient
+        .from('qa_poll_answers')
+        .select('id, option_idx, rating_value, text_value, voter_token, created_at')
+        .eq('poll_id', pollId);
+      if (error) return [];
+      return data || [];
+    }
+
+    function getMyPollVote(pollId) {
+      const v = localStorage.getItem(POLL_VOTE_KEY_PREFIX + pollId);
+      if (!v) return null;
+      try { return JSON.parse(v); } catch { return null; }
+    }
+
+    function setMyPollVote(pollId, vote) {
+      localStorage.setItem(POLL_VOTE_KEY_PREFIX + pollId, JSON.stringify(vote));
+    }
+
+    // Render aktivního pollu pro účastníka (s tlačítky / hvězdy / text inputem)
+    async function refreshParticipantPoll() {
+      if (state.mode !== 'participant' || !state.session) return;
+      const poll = await loadActivePoll(state.session.id);
+      const wrap = $('participantPollWrap');
+      if (!poll) { wrap.classList.add('hidden'); wrap.innerHTML = ''; return; }
+
+      const myVote = getMyPollVote(poll.id);
+      wrap.classList.remove('hidden');
+
+      if (poll.kind === 'choice') {
+        const options = Array.isArray(poll.options) ? poll.options : [];
+        wrap.innerHTML = `
+          <div class="poll-card">
+            <div class="question">📊 ${escapeHtml(poll.question)}</div>
+            <div class="poll-options" id="pollOptionButtons">
+              ${options.map((opt, idx) => `
+                <button class="poll-option-btn ${myVote && myVote.option_idx === idx ? 'voted' : ''}"
+                        data-option-idx="${idx}"
+                        ${myVote ? 'disabled' : ''}>${escapeHtml(opt)}</button>
+              `).join('')}
+            </div>
+            ${myVote ? '<div class="small" style="margin-top:8px; color:var(--ok); font-weight:700;">✓ Tvůj hlas zaznamenán.</div>' : ''}
+          </div>
+        `;
+        if (!myVote) {
+          $('pollOptionButtons').querySelectorAll('[data-option-idx]').forEach(btn => {
+            btn.addEventListener('click', () => submitPollVote(poll, { option_idx: Number(btn.dataset.optionIdx) }));
+          });
+        }
+      } else if (poll.kind === 'rating') {
+        const max = poll.rating_max || 5;
+        wrap.innerHTML = `
+          <div class="poll-card">
+            <div class="question">⭐ ${escapeHtml(poll.question)}</div>
+            <div class="poll-stars" id="pollStarsRow">
+              ${Array.from({ length: max }, (_, i) => i + 1).map(v => `
+                <button class="poll-star-btn" data-rating="${v}" ${myVote ? 'disabled' : ''}>
+                  ${myVote && myVote.rating_value >= v ? '⭐' : '☆'}
+                </button>
+              `).join('')}
+            </div>
+            ${myVote ? `<div class="small" style="margin-top:8px; color:var(--ok); font-weight:700;">✓ Hlasoval/a jsi ${myVote.rating_value}/${max}.</div>` : ''}
+          </div>
+        `;
+        if (!myVote) {
+          $('pollStarsRow').querySelectorAll('[data-rating]').forEach(btn => {
+            btn.addEventListener('click', () => submitPollVote(poll, { rating_value: Number(btn.dataset.rating) }));
+          });
+        }
+      } else if (poll.kind === 'word_cloud') {
+        wrap.innerHTML = `
+          <div class="poll-card">
+            <div class="question">☁️ ${escapeHtml(poll.question)}</div>
+            <input id="pollWordInput" type="text" maxlength="40" placeholder="Jedno slovo (max 40 znaků)" ${myVote ? 'disabled' : ''} value="${escapeHtml(myVote ? myVote.text_value || '' : '')}" />
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn btn-primary" id="pollWordSubmitBtn" ${myVote ? 'disabled' : ''}>${myVote ? '✓ Odesláno' : 'Odeslat'}</button>
+            </div>
+          </div>
+        `;
+        if (!myVote) {
+          $('pollWordSubmitBtn').addEventListener('click', () => {
+            const v = $('pollWordInput').value.trim();
+            if (!v) return;
+            submitPollVote(poll, { text_value: v.slice(0, 40) });
+          });
+        }
+      }
+    }
+
+    async function submitPollVote(poll, vote) {
+      const payload = {
+        poll_id: poll.id,
+        voter_token: state.voterToken,
+        option_idx: vote.option_idx != null ? vote.option_idx : null,
+        rating_value: vote.rating_value != null ? vote.rating_value : null,
+        text_value: vote.text_value || null
+      };
+      const { error } = await supabaseClient.from('qa_poll_answers').insert(payload);
+      if (error && !String(error.message).toLowerCase().includes('duplicate')) {
+        alert('Hlas se nepodařilo zaznamenat: ' + error.message);
+        return;
+      }
+      setMyPollVote(poll.id, vote);
+      await refreshParticipantPoll();
+    }
+
+    // Render aktivního pollu na projektoru — bar chart / gauge / word cloud
+    async function refreshDisplayPoll() {
+      if (state.mode !== 'display' || !state.session) return;
+      const wrap = $('displayPollWrap');
+      const poll = await loadActivePoll(state.session.id);
+      if (!poll) { wrap.classList.add('hidden'); wrap.innerHTML = ''; return; }
+      const answers = await loadPollAnswers(poll.id);
+      wrap.classList.remove('hidden');
+      wrap.innerHTML = renderPollResults(poll, answers);
+    }
+
+    function renderPollResults(poll, answers) {
+      const total = answers.length;
+      if (poll.kind === 'choice') {
+        const options = Array.isArray(poll.options) ? poll.options : [];
+        const counts = options.map((_, i) => answers.filter(a => a.option_idx === i).length);
+        return `
+          <div class="poll-card">
+            <div class="question">📊 ${escapeHtml(poll.question)}</div>
+            ${options.map((opt, i) => {
+              const n = counts[i];
+              const pct = total ? Math.round((n / total) * 100) : 0;
+              return `
+                <div class="poll-bar-row">
+                  <div class="label"><span>${escapeHtml(opt)}</span><span><span class="pct">${pct} %</span> · ${n}</span></div>
+                  <div class="poll-bar-track"><div class="poll-bar-fill" style="width:${pct}%;"></div></div>
+                </div>
+              `;
+            }).join('')}
+            <div class="small" style="text-align:center; margin-top:10px; opacity:0.7;">Celkem hlasů: ${total}</div>
+          </div>
+        `;
+      }
+      if (poll.kind === 'rating') {
+        const ratings = answers.map(a => a.rating_value).filter(v => v != null);
+        const avg = ratings.length ? (ratings.reduce((s, v) => s + v, 0) / ratings.length) : 0;
+        const max = poll.rating_max || 5;
+        const dist = Array.from({ length: max }, (_, i) => i + 1).map(v => ratings.filter(r => r === v).length);
+        return `
+          <div class="poll-card">
+            <div class="question">⭐ ${escapeHtml(poll.question)}</div>
+            <div class="poll-rating-gauge">
+              <div class="avg">${avg.toFixed(1)}</div>
+              <div class="scale">z ${max} (${ratings.length} hlasů)</div>
+            </div>
+            <div class="poll-rating-distribution">
+              ${dist.map((n, i) => {
+                const pct = ratings.length ? Math.round((n / ratings.length) * 100) : 0;
+                return `
+                  <div class="poll-bar-row">
+                    <div class="label"><span>${i + 1} ⭐</span><span><span class="pct">${pct} %</span> · ${n}</span></div>
+                    <div class="poll-bar-track"><div class="poll-bar-fill" style="width:${pct}%;"></div></div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+      // word_cloud
+      const freq = {};
+      answers.forEach(a => {
+        const w = (a.text_value || '').trim().toLowerCase();
+        if (!w) return;
+        freq[w] = (freq[w] || 0) + 1;
+      });
+      const entries = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+      const maxFreq = entries.length ? entries[0][1] : 1;
+      const tierFor = (n) => {
+        const r = n / maxFreq;
+        if (r > 0.8) return 1;
+        if (r > 0.55) return 2;
+        if (r > 0.3) return 3;
+        if (r > 0.15) return 4;
+        return 5;
+      };
+      return `
+        <div class="poll-card">
+          <div class="question">☁️ ${escapeHtml(poll.question)}</div>
+          <div class="poll-word-cloud">
+            ${entries.length === 0 ? '<div class="small">Zatím žádná slova.</div>' :
+              entries.map(([w, n]) => `<span class="poll-word tier-${tierFor(n)}" title="${n}×">${escapeHtml(w)}</span>`).join('')}
+          </div>
+          <div class="small" style="text-align:center; margin-top:10px; opacity:0.7;">Celkem slov: ${entries.length} · ${answers.length} hlasů</div>
+        </div>
+      `;
+    }
+
+    // ====== Admin: polls CRUD ======
+
+    function renderAdminPollOptionInputs(count) {
+      // Render N input řádků pro multiple-choice options
+      const wrap = $('pollOptionsList');
+      const existing = wrap.querySelectorAll('input').length;
+      let html = '';
+      const start = existing;
+      for (let i = existing; i < count; i++) {
+        html += `<input class="poll-admin-option-input" type="text" maxlength="160" placeholder="Možnost ${i + 1}" style="margin-bottom:6px;" />`;
+      }
+      wrap.insertAdjacentHTML('beforeend', html);
+    }
+
+    function resetPollOptionsList() {
+      $('pollOptionsList').innerHTML = '';
+      renderAdminPollOptionInputs(2); // start se 2 prázdnými poli
+    }
+
+    function togglePollOptionsVisibility() {
+      const kind = $('pollKindInput').value;
+      $('pollOptionsWrap').classList.toggle('hidden', kind !== 'choice');
+    }
+
+    async function createPoll() {
+      if (!state.session) return;
+      const question = $('pollQuestionInput').value.trim();
+      const kind = $('pollKindInput').value;
+      if (!question) { showAlert('pollAdminAlert', 'error', 'Vyplň otázku.'); return; }
+
+      let options = null;
+      if (kind === 'choice') {
+        options = [...$('pollOptionsList').querySelectorAll('input')]
+          .map(i => i.value.trim()).filter(v => v);
+        if (options.length < 2) {
+          showAlert('pollAdminAlert', 'error', 'Multiple choice musí mít aspoň 2 možnosti.');
+          return;
+        }
+      }
+
+      const { error } = await supabaseClient.from('qa_polls').insert({
+        session_id: state.session.id,
+        kind,
+        question,
+        options,
+        status: 'draft'
+      });
+      if (error) { showAlert('pollAdminAlert', 'error', 'Vytvoření selhalo: ' + error.message); return; }
+
+      $('pollQuestionInput').value = '';
+      resetPollOptionsList();
+      showAlert('pollAdminAlert', 'ok', 'Poll vytvořen. Klikni „Aktivovat" v seznamu níže.');
+      await renderPollsAdmin();
+    }
+
+    async function activatePoll(pollId) {
+      if (!state.session) return;
+      // Uzavřít předchozí aktivní polls v této session
+      const r1 = await supabaseClient.from('qa_polls')
+        .update({ status: 'closed' })
+        .eq('session_id', state.session.id)
+        .eq('status', 'active');
+      if (r1.error) console.warn(r1.error);
+      const r2 = await supabaseClient.from('qa_polls')
+        .update({ status: 'active' })
+        .eq('id', pollId);
+      if (r2.error) { alert('Aktivace selhala: ' + r2.error.message); return; }
+      await renderPollsAdmin();
+    }
+
+    async function closePoll(pollId) {
+      const { error } = await supabaseClient.from('qa_polls')
+        .update({ status: 'closed' })
+        .eq('id', pollId);
+      if (error) alert('Uzavření selhalo: ' + error.message);
+      await renderPollsAdmin();
+    }
+
+    async function deletePoll(pollId) {
+      if (!confirm('Smazat poll včetně všech hlasů?')) return;
+      const { error } = await supabaseClient.from('qa_polls').delete().eq('id', pollId);
+      if (error) alert('Smazání selhalo: ' + error.message);
+      await renderPollsAdmin();
+    }
+
+    async function renderPollsAdmin() {
+      if (!state.session) return;
+      const polls = await loadAllPolls(state.session.id);
+      const list = $('pollsAdminList');
+      if (!polls.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné polls.</div>';
+        return;
+      }
+      list.innerHTML = polls.map(p => `
+        <div class="audio-track-row" style="grid-template-columns: 44px 1fr auto;">
+          <div class="icon" style="background:linear-gradient(135deg, ${p.kind === 'choice' ? '#3b82f6, #1e40af' : p.kind === 'rating' ? '#f59e0b, #d97706' : '#8b5cf6, #6d28d9'});">
+            ${p.kind === 'choice' ? '📊' : p.kind === 'rating' ? '⭐' : '☁️'}
+          </div>
+          <div>
+            <div class="title">
+              <span class="poll-status-badge poll-status-${p.kind === 'choice' ? 'choice' : ''} poll-status-${p.status}">${p.status}</span>
+              ${escapeHtml(p.question)}
+            </div>
+            <div class="meta">
+              ${p.kind === 'choice' ? (p.options || []).length + ' možností' : p.kind === 'rating' ? '1–' + p.rating_max + '⭐' : 'word cloud'}
+              · vytvořeno ${new Date(p.created_at).toLocaleString('cs-CZ')}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${p.status !== 'active' ? `<button class="btn btn-ok" data-poll-activate="${p.id}" style="padding:6px 10px; font-size:12px;">▶ Aktivovat</button>` : ''}
+            ${p.status === 'active' ? `<button class="btn btn-secondary" data-poll-close="${p.id}" style="padding:6px 10px; font-size:12px;">⏹ Uzavřít</button>` : ''}
+            <button class="btn btn-danger" data-poll-delete="${p.id}" style="padding:6px 10px; font-size:12px;">Smazat</button>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('[data-poll-activate]').forEach(b => b.addEventListener('click', () => activatePoll(b.dataset.pollActivate)));
+      list.querySelectorAll('[data-poll-close]').forEach(b => b.addEventListener('click', () => closePoll(b.dataset.pollClose)));
+      list.querySelectorAll('[data-poll-delete]').forEach(b => b.addEventListener('click', () => deletePoll(b.dataset.pollDelete)));
     }
 
     // ====== F20 Reactions / emoji storm ======
