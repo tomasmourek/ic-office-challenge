@@ -27,6 +27,11 @@
   <link rel="manifest" href="site.webmanifest" />
   <link rel="icon" href="favicon.png" />
   <link rel="apple-touch-icon" href="favicon.png" />
+  <!-- PWA: iOS / standalone app capable -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="IC Office Challenge" />
+  <meta name="mobile-web-app-capable" content="yes" />
 
   <style>
     :root {
@@ -2195,6 +2200,14 @@
       // F6: zaregistrovat anti-cheat listenery jednou při startu stránky.
       // Sami se aktivují jen když je kvízová obrazovka viditelná.
       setupAntiCheatListeners();
+
+      // F10b: zaregistrovat service worker pro PWA install + offline cache.
+      // Service worker bude fungovat jen na produkčním HTTPS hostingu.
+      if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.warn('Service worker registration failed (ne-kritické):', err);
+        });
+      }
 
       try {
         showLoadingIntro(true);
