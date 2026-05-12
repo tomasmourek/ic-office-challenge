@@ -456,6 +456,104 @@
     body.display-mode .ic-brand img { width: 56px; height: 56px; }
     body.display-mode .ic-brand-text { font-size: clamp(26px, 3vw, 36px); }
 
+    /* ====== Agenda dne školení ====== */
+    .agenda-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .agenda-item {
+      display: grid;
+      grid-template-columns: 110px 24px 1fr;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      transition: background 200ms ease, transform 200ms ease;
+    }
+    .agenda-item .time {
+      font-family: ui-monospace, Consolas, monospace;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .agenda-item .icon { font-size: 18px; line-height: 1; text-align: center; }
+    .agenda-item .title { font-weight: 700; font-size: 15px; }
+    .agenda-item .desc { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+    .agenda-item.kind-break { border-color: #fde68a; background: #fef9c3; }
+    body.display-mode .agenda-item.kind-break { background: #422006; border-color: #d97706; }
+    .agenda-item.kind-lunch { border-color: #bbf7d0; background: #dcfce7; }
+    body.display-mode .agenda-item.kind-lunch { background: #14532d; border-color: #16a34a; }
+
+    .agenda-item.current {
+      border-color: var(--accent);
+      background: #fee2e2;
+      transform: translateX(3px);
+      box-shadow: 0 4px 16px rgba(200,30,30,0.18);
+    }
+    body.display-mode .agenda-item.current {
+      background: rgba(200,30,30,0.18);
+      border-color: var(--accent-2);
+    }
+    .agenda-item.current .time { color: var(--accent); }
+    .agenda-item.past { opacity: 0.45; }
+
+    body.display-mode .agenda-item { background: #1c2440; border-color: #2a3454; }
+    body.display-mode .agenda-item .title { color: #fff; }
+
+    /* Velký font na projektoru */
+    body.display-mode .agenda-item { padding: 14px 18px; }
+    body.display-mode .agenda-item .time { font-size: 18px; }
+    body.display-mode .agenda-item .title { font-size: 20px; }
+    body.display-mode .agenda-item .desc { font-size: 15px; }
+
+    /* ====== Pauza countdown banner ====== */
+    .break-banner {
+      position: fixed;
+      left: 0; right: 0;
+      top: 0;
+      z-index: 9000;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+      color: #fff;
+      padding: 14px 20px;
+      text-align: center;
+      box-shadow: 0 6px 24px rgba(220,38,38,0.35);
+      animation: breakSlide 350ms ease-out;
+    }
+    @keyframes breakSlide {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(0); }
+    }
+    .break-banner .label {
+      font-size: clamp(14px, 1.5vw, 18px);
+      font-weight: 700;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .break-banner .countdown {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: clamp(36px, 7vw, 80px);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    /* Velký countdown na projektoru — celá obrazovka místo banneru */
+    body.display-mode .break-banner {
+      position: relative;
+      top: auto;
+      padding: 64px 20px;
+      border-radius: 24px;
+      margin-bottom: 24px;
+    }
+    body.display-mode .break-banner .label { font-size: 28px; margin-bottom: 16px; }
+    body.display-mode .break-banner .countdown { font-size: clamp(80px, 14vw, 200px); }
+
     /* Phase přepínač v adminu */
     .phase-switch {
       display: inline-flex;
@@ -490,6 +588,12 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 </head>
 <body>
+  <!-- Pauza countdown banner — fixed top (participant/admin) nebo inline na projektoru -->
+  <div id="breakBanner" class="break-banner hidden" aria-live="polite">
+    <div class="label" id="breakBannerLabel">Pauza končí za</div>
+    <div class="countdown" id="breakBannerCountdown">00:00</div>
+  </div>
+
   <div class="wrap">
     <header>
       <h1><span class="ic">IC Office</span> <span id="modeSuffix">— dotazy</span></h1>
@@ -558,6 +662,8 @@
         </div>
 
         <div class="body-text" id="introBody"></div>
+
+        <div id="agendaWidgetIntro" style="margin-top:20px;"></div>
 
         <div class="ic-footer">
           <span>Připravujeme se. Brzy začínáme 🎤</span>
@@ -758,6 +864,39 @@
       </div>
 
       <div class="card">
+        <h3 style="margin:0 0 4px;">Agenda dne</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Časový rozvrh školení. Zobrazí se v intro fázi i na projektoru během Q&amp;A.
+          Aktuální blok se sám vyznačí podle reálného času.
+        </p>
+        <div id="agendaEditor"></div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-secondary" id="agendaAddBtn">+ Přidat blok</button>
+          <button class="btn btn-primary" id="agendaSaveBtn">Uložit agendu</button>
+        </div>
+
+        <h4 style="margin:18px 0 6px; font-size:14px;">⏱️ Pauza / odpočet</h4>
+        <p class="small" style="margin:0 0 8px; color:var(--muted);">
+          Spusť veřejný countdown — účastníci i projektor uvidí velkou časomíru.
+        </p>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-secondary" data-break-min="5">Pauza 5 min</button>
+          <button class="btn btn-secondary" data-break-min="10">Pauza 10 min</button>
+          <button class="btn btn-secondary" data-break-min="15">Pauza 15 min</button>
+          <button class="btn btn-secondary" data-break-min="30">Pauza 30 min</button>
+          <button class="btn btn-ghost" id="breakCustomBtn">Vlastní…</button>
+          <button class="btn btn-danger hidden" id="breakStopBtn">Ukončit pauzu</button>
+        </div>
+        <div class="row-toggle" style="margin-top:10px; font-size:13px;">
+          <label for="breakLabelInput" style="margin:0; flex-shrink:0;">Popisek:</label>
+          <input id="breakLabelInput" type="text" maxlength="60" placeholder="Pauza končí za" style="flex:1; min-width:0;" />
+          <button class="btn btn-ghost" id="breakLabelSaveBtn" style="padding:6px 10px; font-size:12px;">Uložit</button>
+        </div>
+
+        <div id="agendaAlert" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
           <h3 style="margin:0;">Účastníci školení</h3>
           <div class="row-toggle" style="margin:0;">
@@ -796,6 +935,8 @@
       <h3 style="margin:0 0 12px; opacity:0.8;">Top dotazy</h3>
       <div class="question-list display-list" id="displayList"></div>
       <div id="displayEmpty" class="empty hidden">Zatím žádné dotazy. Naskenuj QR kód v rohu a pošli svůj 🎤</div>
+
+      <div id="agendaWidgetDisplay" style="margin-top:28px;"></div>
     </section>
 
     <footer>
@@ -832,7 +973,13 @@
       questions: [],
       myVotes: new Set(),        // ID otázek, kterým jsem dal +1 (z localStorage)
       voterToken: null,
-      channels: []
+      channels: [],
+      // F13 agenda
+      agenda: [],                // pole agenda items (start_time, end_time, title, kind, position)
+      deletedAgendaIds: [],      // ID původních DB řádků smazaných v editoru
+      // F13 pauza countdown
+      breakInterval: null,       // setInterval handle pro tick countdownu
+      adminAgendaSeq: 0          // counter pro temp ID nových řádků v editoru
     };
 
     // ====== Helpers ======
@@ -916,6 +1063,132 @@
       } else {
         $('outroVideoFrame').src = '';
         $('outroVideoWrap').classList.add('hidden');
+      }
+    }
+
+    // ====== F13 Agenda — fetch + render ======
+
+    async function loadAgenda(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_agenda_items')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('position', { ascending: true });
+      if (error) {
+        console.warn('loadAgenda failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    // "HH:MM" → minutes since midnight (pro detekci aktuálního bloku)
+    function timeToMinutes(hhmm) {
+      if (!hhmm) return -1;
+      const m = String(hhmm).match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return -1;
+      return Number(m[1]) * 60 + Number(m[2]);
+    }
+
+    function currentLocalMinutes() {
+      const d = new Date();
+      return d.getHours() * 60 + d.getMinutes();
+    }
+
+    function kindIcon(kind) {
+      switch (kind) {
+        case 'break': return '☕';
+        case 'lunch': return '🍽️';
+        case 'other': return '📌';
+        default:      return '🎤';
+      }
+    }
+
+    function renderAgendaInto(containerId, items) {
+      const el = $(containerId);
+      if (!el) return;
+      if (!items || !items.length) { el.innerHTML = ''; return; }
+
+      const nowMin = currentLocalMinutes();
+      const html = items.map(it => {
+        const start = timeToMinutes(it.start_time);
+        const end = timeToMinutes(it.end_time);
+        let cls = 'agenda-item kind-' + (it.kind || 'session');
+        if (start >= 0 && end >= 0) {
+          if (nowMin >= start && nowMin < end) cls += ' current';
+          else if (end <= nowMin) cls += ' past';
+        }
+        return `
+          <div class="${cls}">
+            <div class="time">${escapeHtml(it.start_time)}–${escapeHtml(it.end_time)}</div>
+            <div class="icon">${kindIcon(it.kind)}</div>
+            <div>
+              <div class="title">${escapeHtml(it.title)}</div>
+              ${it.description ? `<div class="desc">${escapeHtml(it.description)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      el.innerHTML = `<div class="agenda-list">${html}</div>`;
+    }
+
+    async function refreshAgendaForView() {
+      if (!state.session) return;
+      state.agenda = await loadAgenda(state.session.id);
+      renderAgendaInto('agendaWidgetIntro', state.agenda);
+      renderAgendaInto('agendaWidgetDisplay', state.agenda);
+    }
+
+    // Refresh agenda highlight každou minutu (aby se „current" sám posunul s časem)
+    let agendaRefreshInterval = null;
+    function startAgendaAutoHighlight() {
+      if (agendaRefreshInterval) return;
+      agendaRefreshInterval = setInterval(() => {
+        renderAgendaInto('agendaWidgetIntro', state.agenda);
+        renderAgendaInto('agendaWidgetDisplay', state.agenda);
+      }, 30 * 1000);
+    }
+
+    // ====== F13 Pauza / countdown ======
+
+    function clearBreakInterval() {
+      if (state.breakInterval) {
+        clearInterval(state.breakInterval);
+        state.breakInterval = null;
+      }
+    }
+
+    function updateBreakBanner() {
+      const banner = $('breakBanner');
+      const session = state.session;
+      const until = session && session.break_until ? new Date(session.break_until).getTime() : null;
+      if (!until) {
+        banner.classList.add('hidden');
+        clearBreakInterval();
+        return;
+      }
+
+      const diffMs = until - Date.now();
+      if (diffMs <= 0) {
+        // Pauza skončila — vyčistit lokálně i v DB (jen admin smí UPDATE, ale obyčejný
+        // klient prostě nechá banner zmizet; admin při dalším otevření vidí null).
+        banner.classList.add('hidden');
+        clearBreakInterval();
+        if (state.mode === 'admin') {
+          supabaseClient.from('qa_sessions').update({ break_until: null }).eq('id', session.id);
+        }
+        return;
+      }
+
+      const totalSec = Math.ceil(diffMs / 1000);
+      const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const ss = String(totalSec % 60).padStart(2, '0');
+      $('breakBannerLabel').textContent = session.break_label || 'Pauza končí za';
+      $('breakBannerCountdown').textContent = `${mm}:${ss}`;
+      banner.classList.remove('hidden');
+
+      if (!state.breakInterval) {
+        state.breakInterval = setInterval(updateBreakBanner, 1000);
       }
     }
 
@@ -1138,6 +1411,11 @@
             filter: `session_id=eq.${sessionId}` },
           () => onChange()
         )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_agenda_items',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
         .subscribe();
 
       state.channels.push(ch);
@@ -1174,13 +1452,18 @@
       $('registerSubmitBtn').addEventListener('click', submitRegistration);
 
       renderParticipantList();
+      await refreshAgendaForView();
+      updateBreakBanner();
+      startAgendaAutoHighlight();
       subscribeRealtime(state.session.id, async () => {
-        // Aktualizovat session, ať zachytíme změnu display_phase / intro / outro / closed
+        // Aktualizovat session, ať zachytíme změnu display_phase / intro / outro / closed / break_until
         const fresh = await loadSessionBySlug(state.sessionSlug);
         if (fresh) state.session = fresh;
         showPhaseScreen(true);
         await loadMyVotes();
         await renderParticipantList();
+        await refreshAgendaForView();
+        updateBreakBanner();
       });
     }
 
@@ -1334,11 +1617,16 @@
       });
 
       renderDisplayList();
+      await refreshAgendaForView();
+      updateBreakBanner();
+      startAgendaAutoHighlight();
       subscribeRealtime(state.session.id, async () => {
-        // Refresh session (aby zachytil změnu highlight_question_id, display_phase, intro/outro) i questions.
+        // Refresh session (aby zachytil změnu highlight_question_id, display_phase, intro/outro, break_until) i questions.
         state.session = await loadSessionBySlug(state.sessionSlug) || state.session;
         showPhaseScreen(false);
         await renderDisplayList();
+        await refreshAgendaForView();
+        updateBreakBanner();
       });
     }
 
@@ -1585,6 +1873,28 @@
       };
       await renderAttendees();
 
+      // Sekce agenda + pauza
+      const agendaItems = await loadAgenda(state.session.id);
+      state.agenda = agendaItems.map(i => ({ ...i, uiId: i.id, _persistedId: i.id }));
+      state.deletedAgendaIds = [];
+      renderAgendaEditor();
+      $('agendaAddBtn').onclick = addAgendaRow;
+      $('agendaSaveBtn').onclick = saveAgenda;
+
+      $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
+      $('breakLabelSaveBtn').onclick = saveBreakLabel;
+      $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
+      $('breakStopBtn').onclick = stopBreak;
+      document.querySelectorAll('[data-break-min]').forEach(btn => {
+        btn.onclick = () => startBreak(Number(btn.dataset.breakMin));
+      });
+      $('breakCustomBtn').onclick = () => {
+        const ans = prompt('Pauza na kolik minut?', '15');
+        const n = Number(ans);
+        if (!isNaN(n) && n > 0 && n <= 240) startBreak(n);
+      };
+      updateBreakBanner();
+
       await renderAdminQuestionList();
       subscribeRealtime(state.session.id, async () => {
         state.session = await loadSessionBySlug(state.session.slug) || state.session;
@@ -1600,6 +1910,8 @@
           btn.classList.toggle('active', btn.dataset.phase === phase);
         });
         $('adminRequireRegistration').checked = !!state.session.require_registration;
+        $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
+        updateBreakBanner();
         await renderAdminQuestionList();
         await renderAttendees();
       });
@@ -1712,6 +2024,214 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== Admin: agenda editor ======
+
+    function renderAgendaEditor() {
+      const container = $('agendaEditor');
+      if (!state.agenda.length) {
+        container.innerHTML = '<div class="empty" style="padding:18px;">Žádné položky. Klikni „+ Přidat blok".</div>';
+        return;
+      }
+      container.innerHTML = state.agenda.map((it, idx) => `
+        <div class="card" style="padding:10px; margin-bottom:8px;" data-agenda-ui-id="${escapeHtml(String(it.uiId))}">
+          <div style="display:grid; grid-template-columns: 80px 80px 1fr 130px 60px; gap:8px; align-items:end;">
+            <div>
+              <label style="font-size:11px;">Od</label>
+              <input type="text" data-field="start_time" value="${escapeHtml(it.start_time || '')}" placeholder="9:30" maxlength="5" />
+            </div>
+            <div>
+              <label style="font-size:11px;">Do</label>
+              <input type="text" data-field="end_time" value="${escapeHtml(it.end_time || '')}" placeholder="10:30" maxlength="5" />
+            </div>
+            <div>
+              <label style="font-size:11px;">Název bloku</label>
+              <input type="text" data-field="title" value="${escapeHtml(it.title || '')}" placeholder="Např. Prezentace IC Office" maxlength="160" />
+            </div>
+            <div>
+              <label style="font-size:11px;">Typ</label>
+              <select data-field="kind">
+                <option value="session" ${it.kind === 'session' ? 'selected' : ''}>🎤 Blok</option>
+                <option value="break"   ${it.kind === 'break'   ? 'selected' : ''}>☕ Pauza</option>
+                <option value="lunch"   ${it.kind === 'lunch'   ? 'selected' : ''}>🍽️ Oběd</option>
+                <option value="other"   ${it.kind === 'other'   ? 'selected' : ''}>📌 Jiné</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-danger" data-remove-agenda="${escapeHtml(String(it.uiId))}" style="padding:8px; font-size:12px;">Smazat</button>
+            </div>
+          </div>
+          <input type="text" data-field="description" value="${escapeHtml(it.description || '')}" placeholder="Popis (volitelné)" style="margin-top:6px;" />
+        </div>
+      `).join('');
+
+      container.querySelectorAll('[data-remove-agenda]').forEach(btn => {
+        btn.addEventListener('click', () => removeAgendaRow(btn.dataset.removeAgenda));
+      });
+    }
+
+    function addAgendaRow() {
+      state.adminAgendaSeq += 1;
+      const uiId = 'new-' + state.adminAgendaSeq;
+      state.agenda.push({
+        uiId,
+        // Pokud nějaká položka existuje, navrhneme čas po její end_time, jinak prázdné.
+        start_time: state.agenda.length ? (state.agenda[state.agenda.length - 1].end_time || '') : '',
+        end_time: '',
+        title: '',
+        description: '',
+        kind: 'session',
+        _persistedId: null
+      });
+      renderAgendaEditor();
+    }
+
+    function removeAgendaRow(uiId) {
+      const it = state.agenda.find(x => String(x.uiId) === String(uiId));
+      if (it && it._persistedId) state.deletedAgendaIds.push(it._persistedId);
+      state.agenda = state.agenda.filter(x => String(x.uiId) !== String(uiId));
+      renderAgendaEditor();
+    }
+
+    // Z UI cards sebere aktuální stav (pro save) — nečte přímo state, jde přes DOM.
+    function collectAgendaFromEditor() {
+      const cards = [...$('agendaEditor').querySelectorAll('[data-agenda-ui-id]')];
+      return cards.map((card, idx) => {
+        const uiId = card.dataset.agendaUiId;
+        const existing = state.agenda.find(x => String(x.uiId) === uiId);
+        return {
+          uiId,
+          _persistedId: existing && existing._persistedId,
+          position: idx + 1,
+          start_time: card.querySelector('[data-field="start_time"]').value.trim(),
+          end_time: card.querySelector('[data-field="end_time"]').value.trim(),
+          title: card.querySelector('[data-field="title"]').value.trim(),
+          description: card.querySelector('[data-field="description"]').value.trim(),
+          kind: card.querySelector('[data-field="kind"]').value
+        };
+      });
+    }
+
+    function validateAgendaTime(t) {
+      // Akceptuje 9:30, 09:30, 23:59. Vrací normalizovaný "HH:MM" nebo null.
+      const m = String(t || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return null;
+      const h = Number(m[1]); const mm = Number(m[2]);
+      if (h < 0 || h > 23 || mm < 0 || mm > 59) return null;
+      return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+
+    async function saveAgenda() {
+      if (!state.session) return;
+      const drafted = collectAgendaFromEditor();
+
+      // Validace
+      for (let i = 0; i < drafted.length; i++) {
+        const it = drafted[i];
+        if (!it.title) { showAlert('agendaAlert', 'error', `Blok #${i+1} nemá název.`); return; }
+        const s = validateAgendaTime(it.start_time);
+        const e = validateAgendaTime(it.end_time);
+        if (!s || !e) { showAlert('agendaAlert', 'error', `Blok #${i+1} má neplatný čas (formát HH:MM, např. 9:30).`); return; }
+        it.start_time = s; it.end_time = e;
+      }
+
+      $('agendaSaveBtn').disabled = true;
+      const orig = $('agendaSaveBtn').textContent;
+      $('agendaSaveBtn').textContent = 'Ukládám…';
+
+      try {
+        // 1. Smazat zaháknuté
+        if (state.deletedAgendaIds.length) {
+          const { error } = await supabaseClient
+            .from('qa_agenda_items').delete()
+            .in('id', state.deletedAgendaIds);
+          if (error) throw new Error('Smazání selhalo: ' + error.message);
+          state.deletedAgendaIds = [];
+        }
+
+        // 2. UPSERT — existující řádky mají _persistedId; nové (bez něho) nechají DB vygenerovat.
+        //    Stejně jako u questions, kvůli unique (session_id, position) posuneme
+        //    existující do offsetu 1000+, pak zpět.
+        const rows = drafted.map(d => {
+          const row = {
+            session_id: state.session.id,
+            position: d.position,
+            start_time: d.start_time,
+            end_time: d.end_time,
+            title: d.title,
+            description: d.description,
+            kind: d.kind
+          };
+          if (d._persistedId) row.id = d._persistedId;
+          return row;
+        });
+        const existing = rows.filter(r => r.id);
+        const fresh    = rows.filter(r => !r.id);
+
+        if (existing.length) {
+          const offset = existing.map(r => ({ ...r, position: r.position + 1000 }));
+          const r1 = await supabaseClient.from('qa_agenda_items').upsert(offset, { onConflict: 'id' });
+          if (r1.error) throw new Error('Reorder selhal: ' + r1.error.message);
+          const r2 = await supabaseClient.from('qa_agenda_items').upsert(existing, { onConflict: 'id' });
+          if (r2.error) throw new Error('Save existujících selhal: ' + r2.error.message);
+        }
+        if (fresh.length) {
+          const r3 = await supabaseClient.from('qa_agenda_items').insert(fresh);
+          if (r3.error) throw new Error('Vložení nových selhalo: ' + r3.error.message);
+        }
+
+        // 3. Reload state z DB
+        const items = await loadAgenda(state.session.id);
+        state.agenda = items.map(i => ({ ...i, uiId: i.id, _persistedId: i.id }));
+        renderAgendaEditor();
+        showAlert('agendaAlert', 'ok', 'Agenda uložena.');
+      } catch (e) {
+        showAlert('agendaAlert', 'error', e.message);
+      } finally {
+        $('agendaSaveBtn').disabled = false;
+        $('agendaSaveBtn').textContent = orig;
+      }
+    }
+
+    // ====== Admin: pauza ovládání ======
+
+    async function startBreak(minutes) {
+      if (!state.session) return;
+      const until = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ break_until: until })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('agendaAlert', 'error', 'Spuštění pauzy selhalo: ' + error.message);
+        return;
+      }
+      showAlert('agendaAlert', 'ok', `Pauza spuštěna na ${minutes} min. Účastníci i projektor vidí countdown.`);
+    }
+
+    async function stopBreak() {
+      if (!state.session) return;
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ break_until: null })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('agendaAlert', 'error', 'Ukončení pauzy selhalo: ' + error.message);
+        return;
+      }
+      showAlert('agendaAlert', 'ok', 'Pauza ukončena.');
+    }
+
+    async function saveBreakLabel() {
+      if (!state.session) return;
+      const label = $('breakLabelInput').value.trim() || 'Pauza končí za';
+      const { error } = await supabaseClient.from('qa_sessions')
+        .update({ break_label: label })
+        .eq('id', state.session.id);
+      if (error) {
+        showAlert('agendaAlert', 'error', 'Uložení popisku selhalo: ' + error.message);
+        return;
+      }
+      showAlert('agendaAlert', 'ok', 'Popisek uložen.');
     }
 
     async function saveIntroOutro(kind) {
