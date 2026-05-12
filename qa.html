@@ -430,6 +430,39 @@
       pointer-events: none;
     }
 
+    /* Slide frame — stejný styl jako video frame, jiný badge */
+    .ic-slides-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f8fafc;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 2px solid var(--accent);
+    }
+    .ic-slides-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .ic-slides-frame::before {
+      content: "SLIDY · IC OFFICE";
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      background: rgba(200, 30, 30, 0.9);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
     .ic-footer {
       margin-top: 22px;
       padding-top: 16px;
@@ -719,6 +752,12 @@
           </div>
         </div>
 
+        <div id="introSlidesWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-slides-frame">
+            <iframe id="introSlidesFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+
         <div class="body-text" id="introBody"></div>
 
         <div id="materialsWidgetIntro" style="margin-top:20px;"></div>
@@ -744,6 +783,12 @@
         <div id="outroVideoWrap" class="hidden" style="margin-bottom:22px;">
           <div class="ic-video-frame">
             <iframe id="outroVideoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div id="outroSlidesWrap" class="hidden" style="margin-bottom:22px;">
+          <div class="ic-slides-frame">
+            <iframe id="outroSlidesFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
           </div>
         </div>
 
@@ -897,6 +942,14 @@
           <label for="introVideoInput">YouTube ID nebo URL (volitelné)</label>
           <input id="introVideoInput" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
           <div style="height:8px;"></div>
+          <label for="introSlidesInput">Slidy IC Office / Intercars — embed URL (volitelné)</label>
+          <input id="introSlidesInput" type="text" placeholder="https://docs.google.com/presentation/d/.../embed nebo .../preview" />
+          <div class="small" style="margin-top:4px; color:var(--muted);">
+            <strong>Google Slides:</strong> File → Share → Publish to web → Embed → zkopíruj <code>src</code> z iframe.<br>
+            <strong>PDF z Google Drive:</strong> sdílej veřejně → použij <code>https://drive.google.com/file/d/&lt;ID&gt;/preview</code>.<br>
+            <strong>Canva:</strong> Share → More → Embed → zkopíruj URL.
+          </div>
+          <div style="height:8px;"></div>
           <label for="introBodyInput">Doplňující text (volitelné)</label>
           <textarea id="introBodyInput" maxlength="2000" placeholder="Co účastníky čeká, program, organizační info…"></textarea>
           <div class="btn-row" style="margin-top:10px;">
@@ -912,6 +965,9 @@
           <div style="height:8px;"></div>
           <label for="outroVideoInput">YouTube ID nebo URL (volitelné)</label>
           <input id="outroVideoInput" type="text" placeholder="dQw4w9WgXcQ nebo celá URL" />
+          <div style="height:8px;"></div>
+          <label for="outroSlidesInput">Slidy embed URL (volitelné)</label>
+          <input id="outroSlidesInput" type="text" placeholder="https://docs.google.com/presentation/d/.../embed" />
           <div style="height:8px;"></div>
           <label for="outroBodyInput">Doplňující text (volitelné)</label>
           <textarea id="outroBodyInput" maxlength="2000" placeholder="Kontakty, odkaz na materiály, další školení…"></textarea>
@@ -1130,6 +1186,13 @@
         $('introVideoFrame').src = '';
         $('introVideoWrap').classList.add('hidden');
       }
+      if (session.intro_slides_url) {
+        $('introSlidesFrame').src = session.intro_slides_url;
+        $('introSlidesWrap').classList.remove('hidden');
+      } else {
+        $('introSlidesFrame').src = '';
+        $('introSlidesWrap').classList.add('hidden');
+      }
 
       // Outro
       $('outroTitle').textContent = (session.outro_text && session.outro_text.split('\n')[0]) || 'Děkujeme za účast';
@@ -1142,6 +1205,13 @@
       } else {
         $('outroVideoFrame').src = '';
         $('outroVideoWrap').classList.add('hidden');
+      }
+      if (session.outro_slides_url) {
+        $('outroSlidesFrame').src = session.outro_slides_url;
+        $('outroSlidesWrap').classList.remove('hidden');
+      } else {
+        $('outroSlidesFrame').src = '';
+        $('outroSlidesWrap').classList.add('hidden');
       }
     }
 
@@ -1940,11 +2010,13 @@
       $('introTitleInput').value = introLines[0] || '';
       $('introBodyInput').value = introLines.slice(1).join('\n').trim();
       $('introVideoInput').value = state.session.intro_video_id || '';
+      $('introSlidesInput').value = state.session.intro_slides_url || '';
 
       const outroLines = (state.session.outro_text || '').split('\n');
       $('outroTitleInput').value = outroLines[0] || '';
       $('outroBodyInput').value = outroLines.slice(1).join('\n').trim();
       $('outroVideoInput').value = state.session.outro_video_id || '';
+      $('outroSlidesInput').value = state.session.outro_slides_url || '';
 
       $('saveIntroBtn').onclick = () => saveIntroOutro('intro');
       $('saveOutroBtn').onclick = () => saveIntroOutro('outro');
@@ -2490,6 +2562,7 @@
       const title = $(kind + 'TitleInput').value.trim();
       const body = $(kind + 'BodyInput').value.trim();
       const videoRaw = $(kind + 'VideoInput').value.trim();
+      const slidesUrl = $(kind + 'SlidesInput').value.trim() || null;
 
       let videoId = null;
       if (videoRaw) {
@@ -2500,11 +2573,17 @@
         }
       }
 
+      // Základní sanitization URL — musí být http(s).
+      if (slidesUrl && !/^https?:\/\//i.test(slidesUrl)) {
+        showAlert('phaseAlert', 'error', 'Slidy URL musí začínat http(s)://.');
+        return;
+      }
+
       // Uložíme title + body sloučené přes \n do existujícího sloupce intro_text / outro_text.
       const combined = title + (body ? '\n' + body : '');
       const patch = kind === 'intro'
-        ? { intro_text: combined, intro_video_id: videoId }
-        : { outro_text: combined, outro_video_id: videoId };
+        ? { intro_text: combined, intro_video_id: videoId, intro_slides_url: slidesUrl }
+        : { outro_text: combined, outro_video_id: videoId, outro_slides_url: slidesUrl };
 
       const btn = $('save' + kind.charAt(0).toUpperCase() + kind.slice(1) + 'Btn');
       btn.disabled = true;
