@@ -384,7 +384,11 @@
     // ====== Konfigurace ======
     const SUPABASE_URL = 'https://bnugrmehciespyemszwt.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_nxsaqPvIjNuUpxKq-MzChg_-Tjp1uQ4';
-    const CHALLENGE_SLUG = 'default';
+    // F7: ?challenge=<slug> přepne, kterou soutěž leaderboard ukazuje.
+    const CHALLENGE_SLUG = (function () {
+      const p = new URLSearchParams(window.location.search).get('challenge');
+      return (p && p.trim()) || 'default';
+    })();
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 

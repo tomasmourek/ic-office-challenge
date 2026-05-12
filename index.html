@@ -537,6 +537,24 @@
       <p>V administraci můžeš upravovat počet otázek, jejich znění, odpovědi, správné odpovědi, celkový čas i obrázky k otázkám.</p>
 
       <div class="editor-card">
+        <h3>Soutěže (challenges)</h3>
+        <p class="small" style="margin-top:-4px;">
+          Pro každou událost (např. „IC Office Challenge — Brno 2026") můžeš mít samostatnou soutěž s vlastními otázkami a leaderboardem.
+          Aktuální URL hráčů: <code id="currentChallengeUrl">/</code>
+        </p>
+        <div class="grid grid-2" style="margin-top:8px;">
+          <div>
+            <label for="challengeSelector">Aktivně upravuješ</label>
+            <select id="challengeSelector"></select>
+          </div>
+          <div style="display:flex; align-items:end; gap:8px;">
+            <button class="btn-secondary" id="newChallengeBtn" type="button" style="flex:1;">+ Nová soutěž</button>
+            <button class="btn-danger" id="deleteChallengeBtn" type="button" style="flex:1;">Smazat tuto</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-card">
         <h3>Nastavení soutěže</h3>
         <div class="grid grid-2">
           <div class="full">
@@ -643,7 +661,13 @@
     // ====== Supabase konfigurace ======
     const SUPABASE_URL = 'https://bnugrmehciespyemszwt.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_nxsaqPvIjNuUpxKq-MzChg_-Tjp1uQ4';
-    const CHALLENGE_SLUG = 'default';
+    // F7: slug se čte z URL `?challenge=<slug>`, default 'default'.
+    // Slouží to k tomu, aby IC Office mohl mít víc soutěží (Brno 2026, Praha 2026, …)
+    // na stejném webu — každá má vlastní leaderboard a otázky.
+    const CHALLENGE_SLUG = (function () {
+      const p = new URLSearchParams(window.location.search).get('challenge');
+      return (p && p.trim()) || 'default';
+    })();
     const QUESTION_IMAGES_BUCKET = 'question-images';
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -717,6 +741,10 @@
       adminPassword: document.getElementById('adminPassword'),
       adminLoginBtn: document.getElementById('adminLoginBtn'),
       adminCancelBtn: document.getElementById('adminCancelBtn'),
+      challengeSelector: document.getElementById('challengeSelector'),
+      newChallengeBtn: document.getElementById('newChallengeBtn'),
+      deleteChallengeBtn: document.getElementById('deleteChallengeBtn'),
+      currentChallengeUrl: document.getElementById('currentChallengeUrl'),
       configTitle: document.getElementById('configTitle'),
       configQuestionCount: document.getElementById('configQuestionCount'),
       configMinutes: document.getElementById('configMinutes'),
@@ -1244,6 +1272,8 @@
         syncAdminForm();
         renderQuestionEditors();
         await renderAdminStats();
+        await renderChallengeSelector();
+        bindChallengeAdminHandlers();
         subscribeAdminResultsRealtime();
         showScreen(el.admin);
       } catch (e) {
@@ -1254,6 +1284,112 @@
         el.adminLoginBtn.textContent = originalLabel;
         el.adminPassword.value = '';
       }
+    }
+
+    // ====== F7 — Více challenges ======
+
+    async function loadAllChallenges() {
+      const { data, error } = await supabaseClient
+        .from('challenge')
+        .select('id, slug, title, active, created_at')
+        .order('created_at', { ascending: true });
+      if (error) {
+        console.warn('loadAllChallenges failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    async function renderChallengeSelector() {
+      const all = await loadAllChallenges();
+      const sel = el.challengeSelector;
+      if (!sel) return;
+      sel.innerHTML = all.map(c => `
+        <option value="${escapeHtml(c.slug)}" ${c.slug === CHALLENGE_SLUG ? 'selected' : ''}>
+          ${escapeHtml(c.title)} (${escapeHtml(c.slug)})${c.active === false ? ' — neaktivní' : ''}
+        </option>
+      `).join('');
+      sel.onchange = () => switchToChallenge(sel.value);
+
+      // Aktuální URL hráčů: window.location.origin + '/?challenge=<slug>'
+      // (default slug nemusí být v URL)
+      const url = CHALLENGE_SLUG === 'default'
+        ? window.location.origin + '/'
+        : window.location.origin + '/?challenge=' + encodeURIComponent(CHALLENGE_SLUG);
+      el.currentChallengeUrl.textContent = url;
+    }
+
+    function switchToChallenge(newSlug) {
+      if (!newSlug || newSlug === CHALLENGE_SLUG) return;
+      // Reload stránky s novým slug v URL — všechny state se znovu načtou z DB.
+      const target = newSlug === 'default'
+        ? window.location.pathname
+        : window.location.pathname + '?challenge=' + encodeURIComponent(newSlug);
+      window.location.href = target;
+    }
+
+    async function createNewChallenge() {
+      const title = prompt('Název nové soutěže (např. „IC Office Brno 2026"):');
+      if (!title || !title.trim()) return;
+
+      const suggestedSlug = title.trim()
+        .toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')   // diakritika
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 50);
+
+      const slug = prompt('Slug (do URL, jen ASCII + pomlčky):', suggestedSlug);
+      if (!slug || !slug.trim()) return;
+      const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+      if (!cleanSlug) { alert('Slug musí obsahovat aspoň jedno písmeno nebo číslo.'); return; }
+
+      const { error } = await supabaseClient.from('challenge').insert({
+        slug: cleanSlug,
+        title: title.trim(),
+        intro_text: 'Krátká soutěž pro studenty, mechaniky i mistry.',
+        question_count: 1,
+        time_limit_minutes: 15
+      });
+      if (error) {
+        alert('Vytvoření selhalo: ' + error.message + (error.message.includes('duplicate') ? '\nSlug už existuje, zvol jiný.' : ''));
+        return;
+      }
+
+      if (confirm('Soutěž "' + title + '" vytvořena.\n\nPřepnout admin na novou soutěž? (Stránka se obnoví.)')) {
+        switchToChallenge(cleanSlug);
+      } else {
+        await renderChallengeSelector();
+      }
+    }
+
+    async function deleteCurrentChallenge() {
+      if (!state.config || !state.config.id) { alert('Soutěž ještě není načtená.'); return; }
+      const all = await loadAllChallenges();
+      if (all.length <= 1) { alert('Musí zůstat aspoň jedna soutěž — smazání by zlomilo hráče.'); return; }
+
+      const txt = 'Opravdu smazat soutěž "' + (state.config.title || CHALLENGE_SLUG) + '"?\n\n' +
+        'Smaže se VŠECHNO: otázky, výsledky, fotky. Akce je nevratná.\n\n' +
+        'Napiš slug "' + CHALLENGE_SLUG + '" pro potvrzení:';
+      const confirmation = prompt(txt);
+      if (confirmation !== CHALLENGE_SLUG) {
+        if (confirmation != null) alert('Slug nesedí, smazání zrušeno.');
+        return;
+      }
+
+      const { error } = await supabaseClient.from('challenge').delete().eq('id', state.config.id);
+      if (error) { alert('Smazání selhalo: ' + error.message); return; }
+
+      // Přepnout na první zbývající challenge
+      const remaining = all.filter(c => c.slug !== CHALLENGE_SLUG);
+      switchToChallenge(remaining[0].slug);
+    }
+
+    function bindChallengeAdminHandlers() {
+      // .onclick (ne addEventListener), ať se při opakovaném admin loginu nehromadí handlery.
+      el.newChallengeBtn.onclick = createNewChallenge;
+      el.deleteChallengeBtn.onclick = deleteCurrentChallenge;
     }
 
     // F9 — admin sleduje výsledky live: při INSERT/UPDATE/DELETE v results
