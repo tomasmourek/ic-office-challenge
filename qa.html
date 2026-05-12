@@ -587,6 +587,56 @@
     body.display-mode .break-banner .label { font-size: 28px; margin-bottom: 16px; }
     body.display-mode .break-banner .countdown { font-size: clamp(80px, 14vw, 200px); }
 
+    /* ====== F20 Reactions / emoji storm ====== */
+
+    /* Tlačítka pro účastníka — krásná řada s emoji nad polem dotazu */
+    .reactions-row {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .reaction-btn {
+      flex: 1;
+      min-width: 50px;
+      padding: 10px 0;
+      font-size: 26px;
+      line-height: 1;
+      background: var(--panel-2, #f1f5f9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+    .reaction-btn:hover { background: #fee2e2; }
+    .reaction-btn:active { transform: scale(0.92); }
+    .reaction-btn[disabled] { opacity: 0.4; cursor: wait; }
+
+    /* Projektor — letící emoji odspodu nahoru */
+    #reactionsCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 8500;
+      overflow: hidden;
+    }
+    .flying-emoji {
+      position: absolute;
+      bottom: -60px;
+      font-size: 52px;
+      line-height: 1;
+      animation: flyUp 4s ease-in forwards;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+      will-change: transform, opacity;
+    }
+    @keyframes flyUp {
+      0%   { transform: translate(var(--dx-from, 0px), 0)   rotate(var(--rot-from, 0deg));  opacity: 0; }
+      10%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translate(var(--dx-to,   0px), -110vh) rotate(var(--rot-to,   0deg)); opacity: 0; }
+    }
+
     /* ====== F16 Hudba na pozadí ====== */
 
     /* Velké unlock tlačítko v projektoru — admin klikne jednou na začátku,
@@ -783,6 +833,9 @@
   <!-- Skryté audio elementy — jeden „active" v daný moment, řízeno JS -->
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <!-- F20: vrstva pro letící emoji — jen viditelná na projektoru -->
+  <div id="reactionsCanvas" aria-hidden="true"></div>
+
   <div class="wrap">
     <header>
       <h1><span class="ic">IC Office</span> <span id="modeSuffix">— dotazy</span></h1>
@@ -903,6 +956,19 @@
 
     <!-- ============ PARTICIPANT MODE ============ -->
     <section id="screen-participant" class="hidden">
+      <div class="card">
+        <label style="margin-bottom:4px;">Pošli reakci na projektor 👇</label>
+        <div class="reactions-row" id="reactionsRow">
+          <button class="reaction-btn" type="button" data-emoji="👏">👏</button>
+          <button class="reaction-btn" type="button" data-emoji="🎉">🎉</button>
+          <button class="reaction-btn" type="button" data-emoji="❤️">❤️</button>
+          <button class="reaction-btn" type="button" data-emoji="😀">😀</button>
+          <button class="reaction-btn" type="button" data-emoji="🤔">🤔</button>
+          <button class="reaction-btn" type="button" data-emoji="🔥">🔥</button>
+          <button class="reaction-btn" type="button" data-emoji="🙌">🙌</button>
+        </div>
+      </div>
+
       <div class="card">
         <label for="qBody">Tvůj dotaz</label>
         <textarea id="qBody" maxlength="1000" placeholder="Co tě zajímá? Napiš dotaz pro lektora…"></textarea>
@@ -1774,6 +1840,8 @@
       });
       $('qSubmitBtn').addEventListener('click', submitQuestion);
       $('registerSubmitBtn').addEventListener('click', submitRegistration);
+      bindParticipantReactions();
+      subscribeReactions(state.session.id);
 
       renderParticipantList();
       await refreshAgendaForView();
@@ -1952,6 +2020,9 @@
       // F16: ukázat unlock tlačítko jen na projektoru, dokud admin neklikl.
       $('audioUnlockBtn').classList.remove('hidden');
       $('audioUnlockBtn').addEventListener('click', unlockAudio);
+
+      // F20: subscribe na reakce — letící emoji animace.
+      subscribeReactions(state.session.id);
 
       subscribeRealtime(state.session.id, async () => {
         // Refresh session (aby zachytil změnu highlight_question_id, display_phase, intro/outro, break_until) i questions.
@@ -2386,6 +2457,94 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== F20 Reactions / emoji storm ======
+
+    let lastReactionTs = 0;
+    const REACTION_THROTTLE_MS = 400; // anti-spam: max 1 reakce / 400 ms per browser
+
+    async function sendReaction(emoji) {
+      const now = Date.now();
+      if (now - lastReactionTs < REACTION_THROTTLE_MS) return;
+      lastReactionTs = now;
+
+      // Optimistická lokální animace pro účastníka — ať vidí okamžitou
+      // odezvu i kdyby DB INSERT trval pár stovek ms.
+      // Skutečnou animaci na projektoru spustí realtime subscription.
+
+      const { error } = await supabaseClient.from('qa_reactions').insert({
+        session_id: state.session.id,
+        emoji,
+        voter_token: state.voterToken
+      });
+      if (error) console.warn('Reaction insert failed:', error);
+    }
+
+    function spawnFlyingEmoji(emoji) {
+      const canvas = $('reactionsCanvas');
+      if (!canvas) return;
+      const node = document.createElement('div');
+      node.className = 'flying-emoji';
+      node.textContent = emoji;
+
+      // Náhodná startovní pozice (po celé šířce projektoru) a drobné odchýlení
+      // při letu — efekt „roje", ne sloupce.
+      const startX = Math.random() * 90 + 5; // 5–95 %
+      const dxFrom = (Math.random() * 40 - 20) + 'px';
+      const dxTo   = (Math.random() * 200 - 100) + 'px';
+      const rotFrom = (Math.random() * 30 - 15) + 'deg';
+      const rotTo   = (Math.random() * 60 - 30) + 'deg';
+      const duration = 3500 + Math.random() * 2000; // 3,5–5,5 s
+
+      node.style.left = startX + '%';
+      node.style.setProperty('--dx-from', dxFrom);
+      node.style.setProperty('--dx-to', dxTo);
+      node.style.setProperty('--rot-from', rotFrom);
+      node.style.setProperty('--rot-to', rotTo);
+      node.style.animationDuration = duration + 'ms';
+
+      canvas.appendChild(node);
+      setTimeout(() => node.remove(), duration + 200);
+    }
+
+    function bindParticipantReactions() {
+      const row = $('reactionsRow');
+      if (!row) return;
+      row.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const emoji = btn.dataset.emoji;
+          if (!emoji) return;
+          btn.disabled = true;
+          setTimeout(() => btn.disabled = false, REACTION_THROTTLE_MS);
+          sendReaction(emoji);
+          // Lokální mini-feedback: emoji "vyskočí" z tlačítka (CSS scale animace)
+          btn.style.transform = 'scale(1.4)';
+          setTimeout(() => { btn.style.transform = ''; }, 200);
+        });
+      });
+    }
+
+    // Subscribe na nové reakce — na projektoru spawne flying emoji animace.
+    // Účastník i admin reakce ignorují (zobrazuje se jen na projektoru).
+    let reactionsChannel = null;
+    function subscribeReactions(sessionId) {
+      if (reactionsChannel) {
+        try { supabaseClient.removeChannel(reactionsChannel); } catch (_) {}
+        reactionsChannel = null;
+      }
+      reactionsChannel = supabaseClient
+        .channel('qa-reactions-' + sessionId)
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'qa_reactions',
+            filter: `session_id=eq.${sessionId}` },
+          (payload) => {
+            if (state.mode !== 'display') return;
+            const r = payload.new;
+            if (r && r.emoji) spawnFlyingEmoji(r.emoji);
+          }
+        )
+        .subscribe();
     }
 
     // ====== F17 PowerPoint upload + zoom ======
