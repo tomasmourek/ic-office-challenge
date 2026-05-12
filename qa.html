@@ -554,6 +554,64 @@
     body.display-mode .break-banner .label { font-size: 28px; margin-bottom: 16px; }
     body.display-mode .break-banner .countdown { font-size: clamp(80px, 14vw, 200px); }
 
+    /* ====== Materiály ke stažení ====== */
+    .materials-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .material-card {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 150ms ease, transform 150ms ease, background 150ms ease;
+    }
+    .material-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      background: #fef2f2;
+    }
+    body.display-mode .material-card { background: #1c2440; border-color: #2a3454; }
+    body.display-mode .material-card:hover { background: #2a3454; border-color: var(--accent-2); }
+
+    .material-card .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .material-card .title { font-weight: 700; font-size: 15px; }
+    .material-card .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .material-card .download-cta {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    body.display-mode .material-card .title { color: #fff; }
+
+    .materials-empty {
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
     /* Phase přepínač v adminu */
     .phase-switch {
       display: inline-flex;
@@ -663,6 +721,7 @@
 
         <div class="body-text" id="introBody"></div>
 
+        <div id="materialsWidgetIntro" style="margin-top:20px;"></div>
         <div id="agendaWidgetIntro" style="margin-top:20px;"></div>
 
         <div class="ic-footer">
@@ -689,6 +748,8 @@
         </div>
 
         <div class="body-text" id="outroBody"></div>
+
+        <div id="materialsWidgetOutro" style="margin-top:20px;"></div>
 
         <div class="ic-footer">
           <span>Najdi nás na <a href="https://www.ic-office.eu" target="_blank" rel="noopener">www.ic-office.eu</a></span>
@@ -897,6 +958,23 @@
       </div>
 
       <div class="card">
+        <h3 style="margin:0 0 4px;">Materiály ke stažení</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Slidy, fotky, PDF s manuálem… Soubory uvidí účastníci v intro a outro
+          fázi a mohou si je stáhnout.
+        </p>
+        <div style="display:grid; grid-template-columns:1fr 200px; gap:10px; margin-bottom:10px;">
+          <input id="materialTitleInput" type="text" maxlength="160" placeholder="Název materiálu (např. „Slidy IC Office")" />
+          <input id="materialFileInput" type="file" accept="*/*" />
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-primary" id="materialUploadBtn">Nahrát materiál</button>
+        </div>
+        <div id="materialUploadAlert" style="margin-top:8px;"></div>
+        <div id="materialsAdminList" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
           <h3 style="margin:0;">Účastníci školení</h3>
           <div class="row-toggle" style="margin:0;">
@@ -964,6 +1042,7 @@
     const RATE_LIMIT_MS = 30000; // 30 s mezi dotazy
     const ATTENDEE_KEY_PREFIX = 'qa_attendee_'; // + session slug
     const ATTENDEE_NAME_KEY = 'qa_attendee_name_v1';
+    const MATERIALS_BUCKET = 'session-materials';
 
     // ====== Stav ======
     const state = {
@@ -1416,6 +1495,11 @@
             filter: `session_id=eq.${sessionId}` },
           () => onChange()
         )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_materials',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
         .subscribe();
 
       state.channels.push(ch);
@@ -1453,6 +1537,7 @@
 
       renderParticipantList();
       await refreshAgendaForView();
+      await refreshMaterialsForView();
       updateBreakBanner();
       startAgendaAutoHighlight();
       subscribeRealtime(state.session.id, async () => {
@@ -1463,6 +1548,7 @@
         await loadMyVotes();
         await renderParticipantList();
         await refreshAgendaForView();
+        await refreshMaterialsForView();
         updateBreakBanner();
       });
     }
@@ -1618,6 +1704,7 @@
 
       renderDisplayList();
       await refreshAgendaForView();
+      await refreshMaterialsForView();
       updateBreakBanner();
       startAgendaAutoHighlight();
       subscribeRealtime(state.session.id, async () => {
@@ -1626,6 +1713,7 @@
         showPhaseScreen(false);
         await renderDisplayList();
         await refreshAgendaForView();
+        await refreshMaterialsForView();
         updateBreakBanner();
       });
     }
@@ -1881,6 +1969,10 @@
       $('agendaAddBtn').onclick = addAgendaRow;
       $('agendaSaveBtn').onclick = saveAgenda;
 
+      // Sekce materiály
+      $('materialUploadBtn').onclick = uploadMaterial;
+      await renderMaterialsAdmin();
+
       $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
       $('breakLabelSaveBtn').onclick = saveBreakLabel;
       $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
@@ -1914,6 +2006,7 @@
         updateBreakBanner();
         await renderAdminQuestionList();
         await renderAttendees();
+        await renderMaterialsAdmin();
       });
     }
 
@@ -2024,6 +2117,164 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== F12 Materiály ke stažení ======
+
+    async function loadMaterials(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_materials')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.warn('loadMaterials failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    function materialPublicUrl(path) {
+      if (!path) return '';
+      const { data } = supabaseClient.storage.from(MATERIALS_BUCKET).getPublicUrl(path);
+      return (data && data.publicUrl) || '';
+    }
+
+    function formatFileSize(bytes) {
+      const n = Number(bytes || 0);
+      if (n < 1024) return n + ' B';
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' kB';
+      return (n / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    function iconForMime(mime) {
+      if (!mime) return '📎';
+      if (mime.startsWith('image/')) return '🖼️';
+      if (mime === 'application/pdf') return '📄';
+      if (mime.startsWith('video/')) return '🎬';
+      if (mime.startsWith('audio/')) return '🎵';
+      if (mime.includes('presentation') || mime.includes('powerpoint')) return '📊';
+      if (mime.includes('spreadsheet') || mime.includes('excel')) return '📈';
+      if (mime.includes('word') || mime.includes('document')) return '📝';
+      if (mime.includes('zip') || mime.includes('compressed')) return '🗜️';
+      return '📎';
+    }
+
+    function renderMaterialsInto(containerId, items) {
+      const el = $(containerId);
+      if (!el) return;
+      if (!items || !items.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `
+        <h4 style="margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:0.05em; opacity:0.8;">
+          Materiály ke stažení
+        </h4>
+        <div class="materials-list">
+          ${items.map(m => `
+            <a class="material-card" href="${escapeHtml(materialPublicUrl(m.file_path))}" target="_blank" rel="noopener" download>
+              <div class="icon">${iconForMime(m.mime_type)}</div>
+              <div>
+                <div class="title">${escapeHtml(m.title)}</div>
+                <div class="meta">${formatFileSize(m.file_size)}${m.mime_type ? ' · ' + escapeHtml(m.mime_type.split('/').pop()) : ''}</div>
+              </div>
+              <div class="download-cta">Stáhnout ↓</div>
+            </a>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function refreshMaterialsForView() {
+      if (!state.session) return;
+      const items = await loadMaterials(state.session.id);
+      renderMaterialsInto('materialsWidgetIntro', items);
+      renderMaterialsInto('materialsWidgetOutro', items);
+    }
+
+    // ====== Admin: materiály upload + delete ======
+
+    async function renderMaterialsAdmin() {
+      if (!state.session) return;
+      const items = await loadMaterials(state.session.id);
+      const list = $('materialsAdminList');
+      if (!items.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné materiály.</div>';
+        return;
+      }
+      list.innerHTML = `
+        <div class="materials-list">
+          ${items.map(m => `
+            <div class="material-card" style="cursor:default;">
+              <div class="icon">${iconForMime(m.mime_type)}</div>
+              <div>
+                <div class="title">${escapeHtml(m.title)}</div>
+                <div class="meta">${formatFileSize(m.file_size)}${m.mime_type ? ' · ' + escapeHtml(m.mime_type) : ''} · ${new Date(m.created_at).toLocaleString('cs-CZ')}</div>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <a class="btn btn-ghost" href="${escapeHtml(materialPublicUrl(m.file_path))}" target="_blank" rel="noopener" style="padding:6px 12px; font-size:12px; text-decoration:none;">Otevřít</a>
+                <button class="btn btn-danger" data-delete-material="${escapeHtml(m.id)}" data-delete-path="${escapeHtml(m.file_path)}" style="padding:6px 12px; font-size:12px;">Smazat</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      list.querySelectorAll('[data-delete-material]').forEach(btn => {
+        btn.addEventListener('click', () => deleteMaterial(btn.dataset.deleteMaterial, btn.dataset.deletePath));
+      });
+    }
+
+    async function uploadMaterial() {
+      const title = $('materialTitleInput').value.trim();
+      const file = $('materialFileInput').files[0];
+      if (!title) { showAlert('materialUploadAlert', 'error', 'Vyplň název materiálu.'); return; }
+      if (!file)  { showAlert('materialUploadAlert', 'error', 'Vyber soubor.'); return; }
+
+      $('materialUploadBtn').disabled = true;
+      const orig = $('materialUploadBtn').textContent;
+      $('materialUploadBtn').textContent = 'Nahrávám…';
+
+      try {
+        const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'bin';
+        const path = `${state.session.id}/${safeId}.${ext}`;
+
+        const up = await supabaseClient.storage
+          .from(MATERIALS_BUCKET)
+          .upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+        if (up.error) throw new Error('Upload do Storage selhal: ' + up.error.message);
+
+        const ins = await supabaseClient.from('qa_materials').insert({
+          session_id: state.session.id,
+          title,
+          file_path: path,
+          file_size: file.size,
+          mime_type: file.type || null,
+          position: 0
+        });
+        if (ins.error) throw new Error('Zápis do DB selhal: ' + ins.error.message);
+
+        $('materialTitleInput').value = '';
+        $('materialFileInput').value = '';
+        showAlert('materialUploadAlert', 'ok', 'Materiál nahrán.');
+        await renderMaterialsAdmin();
+      } catch (e) {
+        showAlert('materialUploadAlert', 'error', e.message);
+      } finally {
+        $('materialUploadBtn').disabled = false;
+        $('materialUploadBtn').textContent = orig;
+      }
+    }
+
+    async function deleteMaterial(id, filePath) {
+      if (!confirm('Smazat materiál nadobro?')) return;
+      const r1 = await supabaseClient.from('qa_materials').delete().eq('id', id);
+      if (r1.error) { alert('Smazání DB záznamu selhalo: ' + r1.error.message); return; }
+      // Soubor v Storage smažeme best-effort — i kdyby selhalo, DB záznam je pryč.
+      try {
+        await supabaseClient.storage.from(MATERIALS_BUCKET).remove([filePath]);
+      } catch (e) { console.warn('Storage delete failed (ignored):', e); }
+      await renderMaterialsAdmin();
     }
 
     // ====== Admin: agenda editor ======
