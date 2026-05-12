@@ -1081,6 +1081,33 @@
 
         <div id="materialsWidgetOutro" style="margin-top:20px;"></div>
 
+        <!-- F21: feedback formulář — viditelný v outro fázi pro účastníka (skryto v display módu) -->
+        <div id="feedbackWidget" class="hidden" style="margin-top:20px;">
+          <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px;">
+            <h3 style="margin:0 0 6px;">⭐ Tvoje zpětná vazba</h3>
+            <p class="small" style="margin:0 0 12px; color:var(--muted);">
+              Jak hodnotíš dnešní školení? Pomáhá nám to zlepšit další akce.
+            </p>
+            <label>Hodnocení (1–5 hvězd)</label>
+            <div class="poll-stars" id="feedbackStarsRow">
+              ${[1,2,3,4,5].map(v => `
+                <button class="poll-star-btn" type="button" data-fb-rating="${v}">☆</button>
+              `).join('')}
+            </div>
+            <div style="height:10px;"></div>
+            <label for="feedbackComment">Komentář (nepovinné)</label>
+            <textarea id="feedbackComment" maxlength="1000" placeholder="Co tě nejvíc bavilo, co bys zlepšil/a…" style="min-height:80px;"></textarea>
+            <div class="row-toggle" style="margin-top:10px;">
+              <input id="feedbackRecommend" type="checkbox" checked />
+              <label for="feedbackRecommend" style="margin:0; font-size:13px;">Doporučil/a bych kolegovi</label>
+            </div>
+            <div id="feedbackAlert" style="margin-top:8px;"></div>
+            <div class="btn-row" style="margin-top:10px;">
+              <button class="btn btn-primary" id="feedbackSubmitBtn">Odeslat zpětnou vazbu</button>
+            </div>
+          </div>
+        </div>
+
         <div class="ic-footer">
           <span>Najdi nás na <a href="https://www.ic-office.eu" target="_blank" rel="noopener">www.ic-office.eu</a></span>
           <span class="ic-tag">IC Office</span>
@@ -1348,6 +1375,20 @@
         </div>
         <div id="materialUploadAlert" style="margin-top:8px;"></div>
         <div id="materialsAdminList" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">⭐ Feedback ze školení</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Účastníci v outro fázi vyplní hodnocení (1–5 ⭐) + nepovinný komentář.
+          Tady vidíš souhrn a můžeš stáhnout CSV pro vedení Intercars / IC Office.
+        </p>
+        <div id="feedbackAdminSummary" style="margin-bottom:10px;">—</div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-secondary" id="feedbackExportBtn">Export do CSV</button>
+          <button class="btn btn-ghost" id="feedbackToggleListBtn">Zobrazit komentáře ↓</button>
+        </div>
+        <div id="feedbackAdminList" class="hidden" style="margin-top:14px; max-height:420px; overflow:auto;"></div>
       </div>
 
       <div class="card">
@@ -1991,6 +2032,11 @@
           { event: '*', schema: 'public', table: 'qa_poll_answers' },
           () => onChange()
         )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_feedback',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
         .subscribe();
 
       state.channels.push(ch);
@@ -2028,6 +2074,10 @@
       bindParticipantReactions();
       subscribeReactions(state.session.id);
 
+      // F21: feedback v outro fázi
+      $('feedbackSubmitBtn').addEventListener('click', submitFeedback);
+      await refreshFeedbackUI();
+
       renderParticipantList();
       await refreshAgendaForView();
       await refreshMaterialsForView();
@@ -2044,6 +2094,7 @@
         await refreshAgendaForView();
         await refreshMaterialsForView();
         await refreshParticipantPoll();
+        await refreshFeedbackUI();
         updateBreakBanner();
       });
     }
@@ -2512,6 +2563,16 @@
       $('pollCreateBtn').onclick = createPoll;
       await renderPollsAdmin();
 
+      // Sekce feedback (F21)
+      $('feedbackExportBtn').onclick = exportFeedbackCsv;
+      $('feedbackToggleListBtn').onclick = () => {
+        const list = $('feedbackAdminList');
+        const wasHidden = list.classList.contains('hidden');
+        list.classList.toggle('hidden', !wasHidden);
+        $('feedbackToggleListBtn').textContent = wasHidden ? 'Skrýt komentáře ↑' : 'Zobrazit komentáře ↓';
+      };
+      await renderFeedbackAdmin();
+
       $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
       $('breakLabelSaveBtn').onclick = saveBreakLabel;
       $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
@@ -2548,6 +2609,7 @@
         await renderMaterialsAdmin();
         await renderAudioTracksAdmin();
         await renderPollsAdmin();
+        await renderFeedbackAdmin();
       });
     }
 
@@ -2654,6 +2716,174 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = `ic-office-attendees-${state.session.slug}-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ====== F21 Feedback v outro ======
+
+    const FEEDBACK_KEY_PREFIX = 'qa_feedback_'; // + slug → 'submitted'
+
+    function setStarsUI(value) {
+      // Zvýrazní hvězdičky do hodnoty value (1..5)
+      const stars = document.querySelectorAll('[data-fb-rating]');
+      stars.forEach(btn => {
+        const v = Number(btn.dataset.fbRating);
+        btn.textContent = (v <= value) ? '⭐' : '☆';
+      });
+    }
+
+    function bindFeedbackStars() {
+      const row = $('feedbackStarsRow');
+      if (!row || row.__bound) return;
+      row.__bound = true;
+      let chosen = 0;
+      row.querySelectorAll('[data-fb-rating]').forEach(btn => {
+        btn.addEventListener('mouseenter', () => setStarsUI(Number(btn.dataset.fbRating)));
+        btn.addEventListener('mouseleave', () => setStarsUI(chosen));
+        btn.addEventListener('click', () => {
+          chosen = Number(btn.dataset.fbRating);
+          setStarsUI(chosen);
+          row.dataset.chosen = String(chosen);
+        });
+      });
+    }
+
+    async function loadMyFeedback() {
+      if (!state.session) return null;
+      const { data, error } = await supabaseClient
+        .from('qa_feedback')
+        .select('*')
+        .eq('session_id', state.session.id)
+        .eq('voter_token', state.voterToken)
+        .limit(1);
+      if (error) return null;
+      return (data && data[0]) || null;
+    }
+
+    function shouldShowFeedback() {
+      if (state.mode !== 'participant' || !state.session) return false;
+      const phase = state.session.display_phase || 'live';
+      return phase === 'outro';
+    }
+
+    async function refreshFeedbackUI() {
+      const widget = $('feedbackWidget');
+      if (!widget) return;
+      if (!shouldShowFeedback()) { widget.classList.add('hidden'); return; }
+      widget.classList.remove('hidden');
+
+      bindFeedbackStars();
+
+      const my = await loadMyFeedback();
+      if (my) {
+        // Už odesláno — readonly verze
+        widget.innerHTML = `
+          <div style="background:var(--panel); border:1px solid var(--ok); border-radius:14px; padding:18px;">
+            <h3 style="margin:0 0 6px;">✓ Děkujeme za zpětnou vazbu</h3>
+            <div style="font-size:32px; margin:8px 0;">${'⭐'.repeat(my.rating)}${'☆'.repeat(5 - my.rating)}</div>
+            ${my.comment ? `<div class="small" style="font-style:italic;">„${escapeHtml(my.comment)}"</div>` : ''}
+          </div>
+        `;
+        return;
+      }
+    }
+
+    async function submitFeedback() {
+      const row = $('feedbackStarsRow');
+      const rating = Number(row && row.dataset.chosen);
+      const comment = $('feedbackComment').value.trim();
+      const recommend = !!$('feedbackRecommend').checked;
+      if (!rating || rating < 1 || rating > 5) {
+        showAlert('feedbackAlert', 'error', 'Zvol hodnocení 1–5 hvězd.');
+        return;
+      }
+      $('feedbackSubmitBtn').disabled = true;
+      const orig = $('feedbackSubmitBtn').textContent;
+      $('feedbackSubmitBtn').textContent = 'Odesílám…';
+
+      const { error } = await supabaseClient.from('qa_feedback').insert({
+        session_id: state.session.id,
+        voter_token: state.voterToken,
+        rating,
+        comment,
+        recommend_yes: recommend
+      });
+
+      $('feedbackSubmitBtn').disabled = false;
+      $('feedbackSubmitBtn').textContent = orig;
+
+      if (error && !String(error.message).toLowerCase().includes('duplicate')) {
+        showAlert('feedbackAlert', 'error', 'Odeslání selhalo: ' + error.message);
+        return;
+      }
+      localStorage.setItem(FEEDBACK_KEY_PREFIX + state.session.slug, 'submitted');
+      await refreshFeedbackUI();
+    }
+
+    // ====== Admin: feedback výpis + CSV ======
+
+    async function renderFeedbackAdmin() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient
+        .from('qa_feedback')
+        .select('rating, comment, recommend_yes, created_at')
+        .eq('session_id', state.session.id)
+        .order('created_at', { ascending: false });
+
+      const summary = $('feedbackAdminSummary');
+      const list = $('feedbackAdminList');
+      if (error) {
+        summary.innerHTML = `<span style="color:var(--danger);">Načtení selhalo: ${escapeHtml(error.message)}</span>`;
+        return;
+      }
+      const rows = data || [];
+      if (!rows.length) {
+        summary.innerHTML = '<em>Zatím žádné odezvy.</em>';
+        list.innerHTML = '';
+        return;
+      }
+      const avg = rows.reduce((s, r) => s + r.rating, 0) / rows.length;
+      const recYes = rows.filter(r => r.recommend_yes).length;
+      summary.innerHTML = `
+        <strong>${rows.length}</strong> odezv ·
+        průměr <strong>${avg.toFixed(2)} / 5</strong> ${'⭐'.repeat(Math.round(avg))} ·
+        doporučilo by ${recYes} / ${rows.length}
+      `;
+
+      list.innerHTML = rows.map(r => `
+        <div class="audio-track-row" style="grid-template-columns: 80px 1fr auto;">
+          <div style="font-size:22px; font-weight:800; color:var(--accent);">${r.rating}/5</div>
+          <div>
+            <div class="title">${'⭐'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} ${r.recommend_yes ? '<span style="color:var(--ok); font-size:11px;">✓ doporučí</span>' : ''}</div>
+            <div class="meta">${r.comment ? '„' + escapeHtml(r.comment) + '"' : '<em>bez komentáře</em>'}</div>
+          </div>
+          <div class="meta" style="font-size:11px; white-space:nowrap;">${new Date(r.created_at).toLocaleString('cs-CZ')}</div>
+        </div>
+      `).join('');
+    }
+
+    async function exportFeedbackCsv() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient
+        .from('qa_feedback')
+        .select('created_at, rating, recommend_yes, comment')
+        .eq('session_id', state.session.id)
+        .order('created_at', { ascending: false });
+      if (error) { alert('Načtení selhalo: ' + error.message); return; }
+      if (!data || !data.length) { alert('Žádná zpětná vazba k exportu.'); return; }
+
+      const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const header = ['created_at', 'rating', 'recommend_yes', 'comment'];
+      const lines = data.map(r => header.map(k => esc(r[k])).join(';'));
+      const csv = '﻿' + [header.join(';'), ...lines].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ic-office-feedback-${state.session.slug}-${new Date().toISOString().slice(0,10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
