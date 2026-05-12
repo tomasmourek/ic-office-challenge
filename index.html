@@ -2062,9 +2062,41 @@
       }
     }
 
-    // ====== F10a — Certifikát PDF ======
+    // ====== F10a — Certifikát PDF (s plnou českou diakritikou) ======
 
-    function downloadCertificate() {
+    // Cache fontů mezi voláními — stáhnou se jen jednou per session.
+    const certificateFontCache = { regular: null, bold: null };
+
+    async function loadCertificateFonts() {
+      if (certificateFontCache.regular && certificateFontCache.bold) {
+        return certificateFontCache;
+      }
+      // Roboto má plnou českou diakritiku v latin-ext sadě (ě, š, č, ř, ž, …).
+      // jsDelivr proxy přes GitHub má CORS hlavičky, takže fetch funguje
+      // přímo z prohlížeče.
+      const urls = {
+        regular: 'https://cdn.jsdelivr.net/gh/googlefonts/roboto@main/src/hinted/Roboto-Regular.ttf',
+        bold:    'https://cdn.jsdelivr.net/gh/googlefonts/roboto@main/src/hinted/Roboto-Bold.ttf'
+      };
+      const fetchBase64 = async (u) => {
+        const res = await fetch(u);
+        if (!res.ok) throw new Error('Fetch fontu selhal: HTTP ' + res.status);
+        const buf = new Uint8Array(await res.arrayBuffer());
+        // Chunked btoa, ať nepřetečeme stack na velkém ttf
+        let s = '';
+        const CHUNK = 0x8000;
+        for (let i = 0; i < buf.length; i += CHUNK) {
+          s += String.fromCharCode.apply(null, buf.subarray(i, i + CHUNK));
+        }
+        return btoa(s);
+      };
+      const [reg, bld] = await Promise.all([fetchBase64(urls.regular), fetchBase64(urls.bold)]);
+      certificateFontCache.regular = reg;
+      certificateFontCache.bold = bld;
+      return certificateFontCache;
+    }
+
+    async function downloadCertificate() {
       const r = state.lastResult;
       const participant = state.participant;
       if (!r || !participant) { alert('Nejdřív dokonči soutěž.'); return; }
@@ -2073,9 +2105,28 @@
         return;
       }
 
+      const btn = el.downloadCertificateBtn;
+      btn.disabled = true;
+      const origLabel = btn.textContent;
+      btn.textContent = 'Generuji…';
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const W = 297, H = 210;
+
+      // Načíst Roboto a zaregistrovat. Pokud selže (CORS / offline),
+      // fallback na Helvetica + warn — ale české znaky budou rozbité.
+      let fontFamily = 'helvetica';
+      try {
+        const fonts = await loadCertificateFonts();
+        doc.addFileToVFS('Roboto-Regular.ttf', fonts.regular);
+        doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+        doc.addFileToVFS('Roboto-Bold.ttf', fonts.bold);
+        doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
+        fontFamily = 'Roboto';
+      } catch (e) {
+        console.warn('Roboto font load failed, fallback to Helvetica (česká diakritika nebude správně):', e);
+      }
 
       // Bílé pozadí + vnější červený rám (IC Office paleta)
       doc.setFillColor(255, 255, 255);
@@ -2087,36 +2138,36 @@
       doc.rect(12, 12, W - 24, H - 24);
 
       // Záhlaví — značka IC Office
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(fontFamily, 'bold');
       doc.setFontSize(14);
       doc.setTextColor(200, 30, 30);
       doc.text('IC OFFICE', 20, 24);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(fontFamily, 'normal');
       doc.setFontSize(10);
       doc.setTextColor(110, 110, 110);
       doc.text('· Challenge ·', 41, 24);
 
       // Hlavní titulek
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(fontFamily, 'bold');
       doc.setFontSize(48);
       doc.setTextColor(11, 15, 26);
       doc.text('CERTIFIKÁT', W / 2, 56, { align: 'center' });
 
       // Podtitul „uděluje se"
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(fontFamily, 'normal');
       doc.setFontSize(14);
       doc.setTextColor(100, 116, 139);
       doc.text('uděluje se', W / 2, 70, { align: 'center' });
 
       // Jméno účastníka — velký font
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(fontFamily, 'bold');
       doc.setFontSize(34);
       doc.setTextColor(200, 30, 30);
       doc.text(participant.name || 'Účastník', W / 2, 92, { align: 'center' });
 
       // Škola / firma, pokud existuje
       if (participant.school) {
-        doc.setFont('helvetica', 'normal');
+        doc.setFont(fontFamily, 'normal');
         doc.setFontSize(13);
         doc.setTextColor(100, 116, 139);
         doc.text(participant.school, W / 2, 102, { align: 'center' });
@@ -2127,11 +2178,11 @@
       const mm = String(Math.floor(r.elapsedSeconds / 60)).padStart(2, '0');
       const ss = String(r.elapsedSeconds % 60).padStart(2, '0');
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(fontFamily, 'normal');
       doc.setFontSize(13);
       doc.setTextColor(11, 15, 26);
       doc.text('za úspěšné absolvování soutěže', W / 2, 118, { align: 'center' });
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(fontFamily, 'bold');
       doc.setFontSize(18);
       doc.text(title, W / 2, 128, { align: 'center' });
 
@@ -2148,18 +2199,18 @@
         doc.setDrawColor(229, 231, 235);
         doc.setLineWidth(0.4);
         doc.line(cx - 36, boxY, cx + 36, boxY);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont(fontFamily, 'normal');
         doc.setFontSize(9);
         doc.setTextColor(100, 116, 139);
         doc.text(lab, cx, boxY + 7, { align: 'center' });
-        doc.setFont('helvetica', 'bold');
+        doc.setFont(fontFamily, 'bold');
         doc.setFontSize(20);
         doc.setTextColor(11, 15, 26);
         doc.text(values[i], cx, boxY + 19, { align: 'center' });
       });
 
       // Patička
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(fontFamily, 'normal');
       doc.setFontSize(9);
       doc.setTextColor(150, 150, 150);
       doc.text('www.ic-office.eu', 20, H - 14);
@@ -2178,6 +2229,9 @@
         .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
         .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
       doc.save(`ic-office-certifikat-${safeName}-${new Date().toISOString().slice(0,10)}.pdf`);
+
+      btn.disabled = false;
+      btn.textContent = origLabel;
     }
 
     function buildResultMeta() {
