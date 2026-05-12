@@ -587,6 +587,92 @@
     body.display-mode .break-banner .label { font-size: 28px; margin-bottom: 16px; }
     body.display-mode .break-banner .countdown { font-size: clamp(80px, 14vw, 200px); }
 
+    /* ====== F16 Hudba na pozadí ====== */
+
+    /* Velké unlock tlačítko v projektoru — admin klikne jednou na začátku,
+       prohlížeč odemkne autoplay pro celou session.
+       Viditelné jen v display módu + dokud uživatel nekliknul. */
+    .audio-unlock {
+      position: fixed;
+      right: 24px;
+      top: 24px;
+      z-index: 9500;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 12px 36px rgba(220,38,38,0.4);
+      animation: audioUnlockPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes audioUnlockPulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.06); box-shadow: 0 16px 50px rgba(220,38,38,0.55); }
+    }
+
+    /* Diskrétní indikátor „hraje hudba" — malý dot vlevo dole, jen na projektoru */
+    .audio-now-playing {
+      position: fixed;
+      left: 24px;
+      bottom: 24px;
+      z-index: 50;
+      background: rgba(11,15,26,0.78);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    }
+    .audio-now-playing .icon { font-size: 14px; animation: audioNote 1.6s ease-in-out infinite; }
+    @keyframes audioNote {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-3px); }
+    }
+
+    /* Admin audio tracks list */
+    .audio-track-row {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    .audio-track-row .icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .audio-track-row .title { font-weight: 700; font-size: 14px; }
+    .audio-track-row .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .audio-track-row .kind-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 6px;
+    }
+    .audio-kind-intro  { background: #dbeafe; color: #1e40af; }
+    .audio-kind-break  { background: #fef3c7; color: #92400e; }
+    .audio-kind-outro  { background: #dcfce7; color: #166534; }
+    .audio-kind-custom { background: #f1f5f9; color: var(--muted); }
+
     /* ====== Materiály ke stažení ====== */
     .materials-list {
       display: flex;
@@ -684,6 +770,18 @@
     <div class="label" id="breakBannerLabel">Pauza končí za</div>
     <div class="countdown" id="breakBannerCountdown">00:00</div>
   </div>
+
+  <!-- F16: unlock tlačítko (jen projektor + dokud admin neklikl), now-playing indikátor -->
+  <button id="audioUnlockBtn" class="audio-unlock hidden" type="button" aria-label="Odemknout zvuk pro projektor">
+    🔊 Spustit zvuk
+  </button>
+  <div id="audioNowPlaying" class="audio-now-playing hidden">
+    <span class="icon">🎵</span>
+    <span id="audioNowPlayingLabel">—</span>
+  </div>
+
+  <!-- Skryté audio elementy — jeden „active" v daný moment, řízeno JS -->
+  <audio id="audioPlayer" preload="auto"></audio>
 
   <div class="wrap">
     <header>
@@ -1031,6 +1129,49 @@
       </div>
 
       <div class="card">
+        <h3 style="margin:0 0 4px;">🎵 Hudba na pozadí (projektor)</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          mp3 / mp4 podtext, který se sám pustí na projektoru podle fáze:
+          <strong>intro</strong>, <strong>pauza</strong> (break_until) a <strong>outro</strong>.
+          Hraje výhradně projektor (<code>?display=1</code>) — účastnické mobily zůstávají potichu.
+          Admin na projektoru musí jednou kliknout „🔊 Spustit zvuk" kvůli autoplay policy.
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 130px 90px 90px; gap:10px; margin-bottom:10px; align-items:end;">
+          <div>
+            <label for="audioTitleInput">Název stopy</label>
+            <input id="audioTitleInput" type="text" maxlength="120" placeholder="Např. Intro IC Office tune" />
+          </div>
+          <div>
+            <label for="audioKindSelect">Použít pro</label>
+            <select id="audioKindSelect">
+              <option value="intro">🎬 Intro</option>
+              <option value="break">☕ Pauza</option>
+              <option value="outro">👋 Outro</option>
+              <option value="custom">📌 Vlastní</option>
+            </select>
+          </div>
+          <div>
+            <label for="audioVolumeInput">Hlasitost</label>
+            <input id="audioVolumeInput" type="range" min="0" max="1" step="0.05" value="0.6" />
+          </div>
+          <div class="row-toggle" style="margin:0;">
+            <input id="audioLoopInput" type="checkbox" checked />
+            <label for="audioLoopInput" style="margin:0; font-size:13px;">Smyčka</label>
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label for="audioFileInput">Soubor (mp3, mp4, m4a, ogg, wav)</label>
+          <input id="audioFileInput" type="file" accept="audio/*,video/mp4" />
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-primary" id="audioUploadBtn">Nahrát stopu</button>
+        </div>
+        <div id="audioUploadAlert" style="margin-top:8px;"></div>
+        <div id="audioTracksAdminList" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
           <h3 style="margin:0;">Účastníci školení</h3>
           <div class="row-toggle" style="margin:0;">
@@ -1099,6 +1240,7 @@
     const ATTENDEE_KEY_PREFIX = 'qa_attendee_'; // + session slug
     const ATTENDEE_NAME_KEY = 'qa_attendee_name_v1';
     const MATERIALS_BUCKET = 'session-materials';
+    const AUDIO_BUCKET = 'session-audio';
 
     // ====== Stav ======
     const state = {
@@ -1570,6 +1712,11 @@
             filter: `session_id=eq.${sessionId}` },
           () => onChange()
         )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'qa_audio_tracks',
+            filter: `session_id=eq.${sessionId}` },
+          () => onChange()
+        )
         .subscribe();
 
       state.channels.push(ch);
@@ -1775,8 +1922,14 @@
       renderDisplayList();
       await refreshAgendaForView();
       await refreshMaterialsForView();
+      await refreshAudioForDisplay();
       updateBreakBanner();
       startAgendaAutoHighlight();
+
+      // F16: ukázat unlock tlačítko jen na projektoru, dokud admin neklikl.
+      $('audioUnlockBtn').classList.remove('hidden');
+      $('audioUnlockBtn').addEventListener('click', unlockAudio);
+
       subscribeRealtime(state.session.id, async () => {
         // Refresh session (aby zachytil změnu highlight_question_id, display_phase, intro/outro, break_until) i questions.
         state.session = await loadSessionBySlug(state.sessionSlug) || state.session;
@@ -1784,6 +1937,7 @@
         await renderDisplayList();
         await refreshAgendaForView();
         await refreshMaterialsForView();
+        await refreshAudioForDisplay();
         updateBreakBanner();
       });
     }
@@ -2045,6 +2199,10 @@
       $('materialUploadBtn').onclick = uploadMaterial;
       await renderMaterialsAdmin();
 
+      // Sekce hudba (F16)
+      $('audioUploadBtn').onclick = uploadAudioTrack;
+      await renderAudioTracksAdmin();
+
       $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
       $('breakLabelSaveBtn').onclick = saveBreakLabel;
       $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
@@ -2079,6 +2237,7 @@
         await renderAdminQuestionList();
         await renderAttendees();
         await renderMaterialsAdmin();
+        await renderAudioTracksAdmin();
       });
     }
 
@@ -2189,6 +2348,224 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== F16 Hudba na pozadí ======
+
+    const audioState = {
+      unlocked: false,            // admin už klikl „Spustit zvuk"?
+      currentKind: null,          // jaký kind hraje (intro/break/outro), null = ticho
+      currentTrackId: null,       // ID právě hrající stopy
+      tracks: []                  // všechny tracky aktuální session
+    };
+
+    async function loadAudioTracks(sessionId) {
+      const { data, error } = await supabaseClient
+        .from('qa_audio_tracks')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.warn('loadAudioTracks failed:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    function audioPublicUrl(path) {
+      if (!path) return '';
+      const { data } = supabaseClient.storage.from(AUDIO_BUCKET).getPublicUrl(path);
+      return (data && data.publicUrl) || '';
+    }
+
+    function pickActiveTrack(kind) {
+      // Pro daný kind vrátí nejnovější aktivní track. Pokud žádný neexistuje, null.
+      return audioState.tracks.find(t => t.kind === kind && t.active !== false) || null;
+    }
+
+    function effectivePhaseKind() {
+      if (!state.session) return null;
+      // Pauza má prioritu před fází — když je break_until aktivní, hraje break audio.
+      if (state.session.break_until) {
+        const until = new Date(state.session.break_until).getTime();
+        if (until > Date.now()) return 'break';
+      }
+      const phase = state.session.display_phase || 'live';
+      if (phase === 'intro') return 'intro';
+      if (phase === 'outro') return 'outro';
+      return null; // 'live' → ticho
+    }
+
+    function applyAudioForPhase() {
+      // Volá se jen v display módu (projektor).
+      if (state.mode !== 'display') return;
+      const player = $('audioPlayer');
+      const npLabel = $('audioNowPlayingLabel');
+      const np = $('audioNowPlaying');
+      const desiredKind = effectivePhaseKind();
+      const track = desiredKind ? pickActiveTrack(desiredKind) : null;
+
+      // Žádná stopa pro aktuální fázi → stop
+      if (!track) {
+        if (audioState.currentTrackId) {
+          player.pause();
+          player.removeAttribute('src');
+          player.load();
+        }
+        audioState.currentKind = null;
+        audioState.currentTrackId = null;
+        np.classList.add('hidden');
+        return;
+      }
+
+      // Stejná stopa pořád hraje → nedělat nic
+      if (audioState.currentTrackId === track.id && !player.paused) return;
+
+      // Přehrát novou
+      player.src = audioPublicUrl(track.file_path);
+      player.loop = !!track.loop_track;
+      player.volume = Math.max(0, Math.min(1, Number(track.volume) || 0.6));
+      audioState.currentKind = desiredKind;
+      audioState.currentTrackId = track.id;
+
+      // Pokud admin ještě nekliknul unlock, autoplay selže. Po unlock pak voláme znovu.
+      const playPromise = player.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(() => {
+          npLabel.textContent = ({
+            intro: '🎬 ' + track.title,
+            break: '☕ ' + track.title,
+            outro: '👋 ' + track.title
+          })[desiredKind] || track.title;
+          np.classList.remove('hidden');
+        }).catch(err => {
+          console.warn('Autoplay blocked (admin must click „Spustit zvuk"):', err && err.name);
+          // Necháme unlock tlačítko vidět — uživatel viděl ho na startu, případně refresh.
+          if (!audioState.unlocked) $('audioUnlockBtn').classList.remove('hidden');
+        });
+      }
+    }
+
+    function unlockAudio() {
+      audioState.unlocked = true;
+      $('audioUnlockBtn').classList.add('hidden');
+      // Po unlock zkusíme přehrát aktuální fázi.
+      applyAudioForPhase();
+    }
+
+    async function refreshAudioForDisplay() {
+      if (!state.session) return;
+      audioState.tracks = await loadAudioTracks(state.session.id);
+      applyAudioForPhase();
+    }
+
+    // ====== Admin: hudba upload + list ======
+
+    async function uploadAudioTrack() {
+      const title = $('audioTitleInput').value.trim();
+      const file = $('audioFileInput').files[0];
+      const kind = $('audioKindSelect').value;
+      const volume = Number($('audioVolumeInput').value) || 0.6;
+      const loopTrack = $('audioLoopInput').checked;
+
+      if (!title) { showAlert('audioUploadAlert', 'error', 'Vyplň název stopy.'); return; }
+      if (!file)  { showAlert('audioUploadAlert', 'error', 'Vyber audio soubor.'); return; }
+
+      $('audioUploadBtn').disabled = true;
+      const orig = $('audioUploadBtn').textContent;
+      $('audioUploadBtn').textContent = 'Nahrávám…';
+
+      try {
+        const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const extMatch = (file.name || '').match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : 'mp3';
+        const path = `${state.session.id}/${safeId}.${ext}`;
+
+        const up = await supabaseClient.storage
+          .from(AUDIO_BUCKET)
+          .upload(path, file, { upsert: false, contentType: file.type || 'audio/mpeg' });
+        if (up.error) throw new Error('Upload selhal: ' + up.error.message);
+
+        const ins = await supabaseClient.from('qa_audio_tracks').insert({
+          session_id: state.session.id,
+          title,
+          file_path: path,
+          mime_type: file.type || null,
+          file_size: file.size,
+          kind,
+          loop_track: loopTrack,
+          volume
+        });
+        if (ins.error) throw new Error('Zápis do DB selhal: ' + ins.error.message);
+
+        $('audioTitleInput').value = '';
+        $('audioFileInput').value = '';
+        showAlert('audioUploadAlert', 'ok', 'Stopa nahrána.');
+        await renderAudioTracksAdmin();
+      } catch (e) {
+        showAlert('audioUploadAlert', 'error', e.message);
+      } finally {
+        $('audioUploadBtn').disabled = false;
+        $('audioUploadBtn').textContent = orig;
+      }
+    }
+
+    async function renderAudioTracksAdmin() {
+      if (!state.session) return;
+      const tracks = await loadAudioTracks(state.session.id);
+      const list = $('audioTracksAdminList');
+      if (!tracks.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné audio stopy.</div>';
+        return;
+      }
+      const kindLabel = { intro: '🎬 Intro', break: '☕ Pauza', outro: '👋 Outro', custom: '📌 Vlastní' };
+      list.innerHTML = tracks.map(t => `
+        <div class="audio-track-row">
+          <div class="icon">🎵</div>
+          <div>
+            <div class="title">
+              <span class="kind-badge audio-kind-${escapeHtml(t.kind)}">${escapeHtml(kindLabel[t.kind] || t.kind)}</span>
+              ${escapeHtml(t.title)}
+            </div>
+            <div class="meta">
+              ${formatFileSize(t.file_size)} ·
+              hlasitost ${Math.round((Number(t.volume) || 0) * 100)} % ·
+              ${t.loop_track ? 'smyčka ON' : 'jednorázově'} ·
+              ${t.active === false ? '<span style="color:var(--danger);">vypnuto</span>' : 'aktivní'}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <a class="btn btn-ghost" href="${escapeHtml(audioPublicUrl(t.file_path))}" target="_blank" rel="noopener" style="padding:6px 10px; font-size:12px; text-decoration:none;">Poslechnout</a>
+            <button class="btn btn-ghost" data-toggle-audio="${escapeHtml(t.id)}" data-active="${t.active === false ? 'false' : 'true'}" style="padding:6px 10px; font-size:12px;">${t.active === false ? 'Zapnout' : 'Vypnout'}</button>
+            <button class="btn btn-danger" data-delete-audio="${escapeHtml(t.id)}" data-delete-path="${escapeHtml(t.file_path)}" style="padding:6px 10px; font-size:12px;">Smazat</button>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('[data-delete-audio]').forEach(btn => {
+        btn.addEventListener('click', () => deleteAudioTrack(btn.dataset.deleteAudio, btn.dataset.deletePath));
+      });
+      list.querySelectorAll('[data-toggle-audio]').forEach(btn => {
+        btn.addEventListener('click', () => toggleAudioTrack(btn.dataset.toggleAudio, btn.dataset.active === 'false'));
+      });
+    }
+
+    async function deleteAudioTrack(id, filePath) {
+      if (!confirm('Smazat audio stopu nadobro?')) return;
+      const r1 = await supabaseClient.from('qa_audio_tracks').delete().eq('id', id);
+      if (r1.error) { alert('Smazání selhalo: ' + r1.error.message); return; }
+      try { await supabaseClient.storage.from(AUDIO_BUCKET).remove([filePath]); }
+      catch (e) { console.warn('Storage delete failed (ignored):', e); }
+      await renderAudioTracksAdmin();
+    }
+
+    async function toggleAudioTrack(id, newActive) {
+      const { error } = await supabaseClient
+        .from('qa_audio_tracks')
+        .update({ active: newActive })
+        .eq('id', id);
+      if (error) { alert('Změna selhala: ' + error.message); return; }
+      await renderAudioTracksAdmin();
     }
 
     // ====== F12 Materiály ke stažení ======
