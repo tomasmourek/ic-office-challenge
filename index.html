@@ -367,6 +367,27 @@
       .full { grid-column: auto; }
     }
 
+    /* F10 — drag-and-drop reorder otázek v admin editoru.
+       Drag handle je nadpis „Otázka N", aby se nedalo omylem chytit pole. */
+    #questionEditors .editor-card h3 {
+      cursor: grab;
+      user-select: none;
+    }
+    #questionEditors .editor-card h3::before {
+      content: "⋮⋮ ";
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: -2px;
+    }
+    .sortable-ghost {
+      opacity: 0.35;
+      background: #fee2e2;
+    }
+    .sortable-chosen {
+      cursor: grabbing;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.18);
+    }
+
     /* Anti-cheat: na kvízové obrazovce nelze text označit / zkopírovat / otevřít kontext.
        Záměrné komplikace pro pokusy o copy-paste otázky do externí AI. */
     #screen-quiz {
@@ -402,6 +423,7 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -1572,6 +1594,28 @@
       [...document.querySelectorAll('[data-remove-id]')].forEach(btn => {
         btn.addEventListener('click', () => removeQuestion(btn.dataset.removeId));
       });
+
+      // F10: SortableJS — drag-and-drop reorder otázek. Pořadí se uloží
+      // s ostatními změnami při Uložit. Funguje myší i dotykem.
+      if (window.Sortable && el.questionEditors) {
+        if (el.questionEditors.__sortable) {
+          el.questionEditors.__sortable.destroy();
+        }
+        el.questionEditors.__sortable = window.Sortable.create(el.questionEditors, {
+          animation: 180,
+          handle: 'h3',                  // přesouvá se za nadpis „Otázka N"
+          ghostClass: 'sortable-ghost',
+          chosenClass: 'sortable-chosen',
+          onEnd: () => {
+            // Přemapuj state.config.questions podle aktuálního pořadí v DOMu.
+            const cards = [...el.questionEditors.querySelectorAll('.editor-card[data-question-id]')];
+            const newOrder = cards.map(c => state.config.questions.find(q => String(q.id) === c.dataset.questionId)).filter(Boolean);
+            state.config.questions = newOrder;
+            // Re-render aby se popisky „Otázka 1/2/3…" aktualizovaly.
+            renderQuestionEditors();
+          }
+        });
+      }
     }
 
     function bindRemoveImage(card, questionId) {
