@@ -424,6 +424,7 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -509,6 +510,7 @@
 
       <div class="btn-row" style="margin-top:18px;">
         <button class="btn-primary" id="shareResultBtn" type="button">Sdílet výsledek</button>
+        <button class="btn-secondary" id="downloadCertificateBtn" type="button">📜 Stáhnout certifikát</button>
         <a class="btn-secondary" id="openLeaderboardLink" href="leaderboard.html" target="_blank" rel="noopener"
            style="text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
           Otevřít leaderboard ↗
@@ -729,6 +731,7 @@
       finalTime: document.getElementById('finalTime'),
       wrongCountText: document.getElementById('wrongCountText'),
       shareResultBtn: document.getElementById('shareResultBtn'),
+      downloadCertificateBtn: document.getElementById('downloadCertificateBtn'),
       openLeaderboardLink: document.getElementById('openLeaderboardLink'),
       reviewBlock: document.getElementById('reviewBlock'),
       practicalBlock: document.getElementById('practicalBlock'),
@@ -2054,6 +2057,124 @@
       }
     }
 
+    // ====== F10a — Certifikát PDF ======
+
+    function downloadCertificate() {
+      const r = state.lastResult;
+      const participant = state.participant;
+      if (!r || !participant) { alert('Nejdřív dokonči soutěž.'); return; }
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('Knihovna pro PDF se nenačetla. Zkontroluj internetové připojení a obnov stránku.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const W = 297, H = 210;
+
+      // Bílé pozadí + vnější červený rám (IC Office paleta)
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, W, H, 'F');
+      doc.setDrawColor(200, 30, 30);
+      doc.setLineWidth(2.4);
+      doc.rect(8, 8, W - 16, H - 16);
+      doc.setLineWidth(0.6);
+      doc.rect(12, 12, W - 24, H - 24);
+
+      // Záhlaví — značka IC Office
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(200, 30, 30);
+      doc.text('IC OFFICE', 20, 24);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(110, 110, 110);
+      doc.text('· Challenge ·', 41, 24);
+
+      // Hlavní titulek
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(48);
+      doc.setTextColor(11, 15, 26);
+      doc.text('CERTIFIKÁT', W / 2, 56, { align: 'center' });
+
+      // Podtitul „uděluje se"
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(14);
+      doc.setTextColor(100, 116, 139);
+      doc.text('uděluje se', W / 2, 70, { align: 'center' });
+
+      // Jméno účastníka — velký font
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(34);
+      doc.setTextColor(200, 30, 30);
+      doc.text(participant.name || 'Účastník', W / 2, 92, { align: 'center' });
+
+      // Škola / firma, pokud existuje
+      if (participant.school) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(13);
+        doc.setTextColor(100, 116, 139);
+        doc.text(participant.school, W / 2, 102, { align: 'center' });
+      }
+
+      // Popis výkonu
+      const title = state.config?.title || 'IC Office Challenge';
+      const mm = String(Math.floor(r.elapsedSeconds / 60)).padStart(2, '0');
+      const ss = String(r.elapsedSeconds % 60).padStart(2, '0');
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(13);
+      doc.setTextColor(11, 15, 26);
+      doc.text('za úspěšné absolvování soutěže', W / 2, 118, { align: 'center' });
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text(title, W / 2, 128, { align: 'center' });
+
+      // Výsledky — tři pole
+      const boxY = 144, boxH = 28;
+      const labels = ['BODY', 'ČAS', 'DATUM'];
+      const values = [
+        `${r.score} / ${r.total}`,
+        `${mm}:${ss}`,
+        new Date().toLocaleDateString('cs-CZ')
+      ];
+      labels.forEach((lab, i) => {
+        const cx = (W / 4) * (i + 1);
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.4);
+        doc.line(cx - 36, boxY, cx + 36, boxY);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(lab, cx, boxY + 7, { align: 'center' });
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(11, 15, 26);
+        doc.text(values[i], cx, boxY + 19, { align: 'center' });
+      });
+
+      // Patička
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      doc.text('www.ic-office.eu', 20, H - 14);
+      doc.text('IC Office · Software pro autoservisy', W - 20, H - 14, { align: 'right' });
+
+      // Podpisová linka uprostřed dole
+      doc.setDrawColor(200, 30, 30);
+      doc.setLineWidth(0.6);
+      doc.line(W / 2 - 40, H - 22, W / 2 + 40, H - 22);
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text('IC Office Challenge', W / 2, H - 17, { align: 'center' });
+
+      // Generování názvu souboru
+      const safeName = (participant.name || 'ucastnik')
+        .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+      doc.save(`ic-office-certifikat-${safeName}-${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
     function buildResultMeta() {
       const m = {
         user_agent: (navigator.userAgent || '').slice(0, 500),
@@ -2124,6 +2245,7 @@
     el.nextBtn.addEventListener('click', nextQuestion);
     el.finishBtn.addEventListener('click', () => finishQuiz(false));
     el.shareResultBtn.addEventListener('click', shareResult);
+    el.downloadCertificateBtn.addEventListener('click', downloadCertificate);
     el.exportBtn.addEventListener('click', exportResultsToCSV);
     el.clearBtn.addEventListener('click', clearResults);
     el.backBtn.addEventListener('click', () => showScreen(el.intro));
