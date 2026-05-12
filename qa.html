@@ -1378,6 +1378,19 @@
       </div>
 
       <div class="card">
+        <h3 style="margin:0 0 4px;">🏆 Top hráči Q&A (gamifikace)</h3>
+        <p class="small" style="margin:0 0 10px; color:var(--muted);">
+          Body za interakci: <strong>5</strong> za dotaz, <strong>1</strong> za hlas pro cizí dotaz,
+          <strong>0,5</strong> za reakci, <strong>2</strong> za poll odpověď, <strong>5</strong> za feedback v outro.
+          Pomáhá při vyhlášení nejaktivnějšího účastníka školení.
+        </p>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-ghost" id="qaLeaderboardRefreshBtn" style="padding:6px 12px; font-size:12px;">Aktualizovat</button>
+        </div>
+        <div id="qaLeaderboardList" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
         <h3 style="margin:0 0 4px;">⭐ Feedback ze školení</h3>
         <p class="small" style="margin:0 0 10px; color:var(--muted);">
           Účastníci v outro fázi vyplní hodnocení (1–5 ⭐) + nepovinný komentář.
@@ -2130,7 +2143,8 @@
       const { error } = await supabaseClient.from('qa_questions').insert({
         session_id: state.session.id,
         body,
-        author_name
+        author_name,
+        voter_token: state.voterToken   // F22 — pro gamifikační body
       });
 
       $('qSubmitBtn').disabled = false;
@@ -2573,6 +2587,10 @@
       };
       await renderFeedbackAdmin();
 
+      // Sekce gamifikace (F22)
+      $('qaLeaderboardRefreshBtn').onclick = renderQaLeaderboardAdmin;
+      await renderQaLeaderboardAdmin();
+
       $('breakLabelInput').value = state.session.break_label || 'Pauza končí za';
       $('breakLabelSaveBtn').onclick = saveBreakLabel;
       $('breakStopBtn').classList.toggle('hidden', !state.session.break_until);
@@ -2610,6 +2628,7 @@
         await renderAudioTracksAdmin();
         await renderPollsAdmin();
         await renderFeedbackAdmin();
+        await renderQaLeaderboardAdmin();
       });
     }
 
@@ -2720,6 +2739,58 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+    }
+
+    // ====== F22 Q&A gamifikace ======
+
+    async function renderQaLeaderboardAdmin() {
+      if (!state.session) return;
+      const { data, error } = await supabaseClient.rpc('get_qa_leaderboard', {
+        p_session_id: state.session.id
+      });
+      const list = $('qaLeaderboardList');
+      if (error) {
+        list.innerHTML = `<div class="alert alert-error">Načtení selhalo: ${escapeHtml(error.message)}</div>`;
+        return;
+      }
+      const rows = data || [];
+      if (!rows.length) {
+        list.innerHTML = '<div class="materials-empty">Zatím žádné interakce — body se objeví, jakmile budou hráči klást dotazy, hlasovat, reagovat…</div>';
+        return;
+      }
+      list.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="text-align:left; color:var(--muted); border-bottom:1px solid var(--border);">
+              <th style="padding:6px 8px; width:40px;">#</th>
+              <th style="padding:6px 8px;">Účastník</th>
+              <th style="padding:6px 8px; text-align:right;" title="dotazy × 5">❓</th>
+              <th style="padding:6px 8px; text-align:right;" title="hlasy × 1">▲</th>
+              <th style="padding:6px 8px; text-align:right;" title="reakce × 0,5">👏</th>
+              <th style="padding:6px 8px; text-align:right;" title="polls × 2">📊</th>
+              <th style="padding:6px 8px; text-align:right;" title="feedback × 5">⭐</th>
+              <th style="padding:6px 8px; text-align:right;">Celkem</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => {
+              const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+              return `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:6px 8px; font-weight:800;">${medal}${i + 1}.</td>
+                  <td style="padding:6px 8px;"><strong>${escapeHtml(r.display_name)}</strong></td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.question_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.vote_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.reaction_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.poll_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;">${r.feedback_pts}</td>
+                  <td style="padding:6px 8px; text-align:right; font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums;">${r.total_pts}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
     }
 
     // ====== F21 Feedback v outro ======
