@@ -1,0 +1,17 @@
+# Secrets (klient používá jen veřejný anon klíč; service_role NIKDY do gitu)
+.env
+.env.*
+!.env.example
+*service_role*
+secrets.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Nástroje
+.claude/
+node_modules/
