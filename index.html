@@ -426,6 +426,80 @@
       0% { transform: translateX(-50%) translateY(-30px); opacity: 0; }
       100% { transform: translateX(-50%) translateY(0); opacity: 1; }
     }
+
+    /* Only the admin sign-in surface follows the system's dark appearance. */
+    .admin-login-brand { display: none; }
+
+@media (prefers-color-scheme: dark) {
+
+    html:not(.light):not([data-theme="light"]) body:has(#screen-admin-login:not(.hidden)) { background: #0b0f14; }
+    html:not(.light):not([data-theme="light"]) body:has(#screen-admin-login:not(.hidden))::before { display: none; }
+    html:not(.light):not([data-theme="light"]) .wrap:has(#screen-admin-login:not(.hidden)) { max-width: none; padding: 0; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login { display: grid; grid-template-columns: 52fr 48fr; min-height: 100svh; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: #0b0f14; color: #f4f5f7; color-scheme: dark; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-brand { display: flex; flex-direction: column; min-width: 0; padding: clamp(28px, 4vw, 64px); background: linear-gradient(145deg, #541d26, #361b29 70%, #242b4b); }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-wordmark { color: #fdd5d8; font-size: 1.125rem; font-weight: 700; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-brand > div { margin: auto 0; padding: 64px 0; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-brand h2 { max-width: 16ch; font-size: clamp(2rem, 3vw, 3.5rem); line-height: 1.12; letter-spacing: -0.025em; text-wrap: balance; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-brand p { max-width: 40ch; color: #ebc3cb; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-panel { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 48px 32px; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-content { width: 100%; max-width: 400px; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-content h2 { margin-bottom: 28px; font-size: 1.5rem; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-description { display: none; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login label { margin: 18px 0 6px; color: #d8dee8; font-size: .875rem; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login input { min-height: 44px; padding: 10px 12px; border: 1px solid #41444e; border-radius: 7px; background: #141820; color: #f4f5f7; caret-color: #fda4af; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login input::placeholder { color: #a5adbb; opacity: 1; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login input:focus { border-color: #fb7185; box-shadow: none; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login :focus-visible { outline: 2px solid #fb7185; outline-offset: 3px; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .btn-row { display: grid; margin-top: 24px; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login button { min-height: 44px; border-radius: 7px; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .btn-primary { background: #c5283d; color: #fff; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .btn-primary:hover { background: #ac2034; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .btn-secondary { background: transparent; border-color: #41444e; color: #e0e5ee; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .btn-secondary:hover { background: #1b232e; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login ::selection { background: #6d293c; color: #fff; }
+}
+
+    :is(html.dark, html[data-theme="dark"]) body:has(#screen-admin-login:not(.hidden)) { background: #0b0f14; }
+    :is(html.dark, html[data-theme="dark"]) body:has(#screen-admin-login:not(.hidden))::before { display: none; }
+    :is(html.dark, html[data-theme="dark"]) .wrap:has(#screen-admin-login:not(.hidden)) { max-width: none; padding: 0; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login { display: grid; grid-template-columns: 52fr 48fr; min-height: 100svh; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: #0b0f14; color: #f4f5f7; color-scheme: dark; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-brand { display: flex; flex-direction: column; min-width: 0; padding: clamp(28px, 4vw, 64px); background: linear-gradient(145deg, #541d26, #361b29 70%, #242b4b); }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-wordmark { color: #fdd5d8; font-size: 1.125rem; font-weight: 700; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-brand > div { margin: auto 0; padding: 64px 0; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-brand h2 { max-width: 16ch; font-size: clamp(2rem, 3vw, 3.5rem); line-height: 1.12; letter-spacing: -0.025em; text-wrap: balance; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-brand p { max-width: 40ch; color: #ebc3cb; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-panel { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 48px 32px; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-content { width: 100%; max-width: 400px; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-content h2 { margin-bottom: 28px; font-size: 1.5rem; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-description { display: none; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login label { margin: 18px 0 6px; color: #d8dee8; font-size: .875rem; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login input { min-height: 44px; padding: 10px 12px; border: 1px solid #41444e; border-radius: 7px; background: #141820; color: #f4f5f7; caret-color: #fda4af; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login input::placeholder { color: #a5adbb; opacity: 1; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login input:focus { border-color: #fb7185; box-shadow: none; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login :focus-visible { outline: 2px solid #fb7185; outline-offset: 3px; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .btn-row { display: grid; margin-top: 24px; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login button { min-height: 44px; border-radius: 7px; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .btn-primary { background: #c5283d; color: #fff; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .btn-primary:hover { background: #ac2034; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .btn-secondary { background: transparent; border-color: #41444e; color: #e0e5ee; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .btn-secondary:hover { background: #1b232e; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login ::selection { background: #6d293c; color: #fff; }
+
+@media (max-width: 767px) and (prefers-color-scheme: dark) {
+
+    html:not(.light):not([data-theme="light"]) #screen-admin-login { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-brand { padding: 24px; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-brand > div { display: none; }
+    html:not(.light):not([data-theme="light"]) #screen-admin-login .admin-login-panel { padding: 36px 24px 48px; }
+}
+
+@media (max-width: 767px) {
+
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-brand { padding: 24px; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-brand > div { display: none; }
+    :is(html.dark, html[data-theme="dark"]) #screen-admin-login .admin-login-panel { padding: 36px 24px 48px; }
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -526,8 +600,17 @@
     </section>
 
     <section id="screen-admin-login" class="card hidden">
+      <aside class="admin-login-brand">
+        <span class="admin-login-wordmark">IC Office Challenge</span>
+        <div>
+          <h2>IC Office Challenge</h2>
+          <p>Zadej e-mail a heslo správce pro úpravu soutěže a výsledků.</p>
+        </div>
+      </aside>
+      <div class="admin-login-panel">
+      <div class="admin-login-content">
       <h2>Admin přihlášení</h2>
-      <p>Zadej e-mail a heslo správce pro úpravu soutěže a výsledků.</p>
+      <p class="admin-login-description">Zadej e-mail a heslo správce pro úpravu soutěže a výsledků.</p>
       <label for="adminEmail">E-mail</label>
       <input id="adminEmail" type="email" placeholder="admin@example.com" autocomplete="email" />
       <label for="adminPassword">Heslo</label>
@@ -536,6 +619,8 @@
       <div class="btn-row">
         <button class="btn-primary" id="adminLoginBtn">Přihlásit</button>
         <button class="btn-secondary" id="adminCancelBtn">Zpět</button>
+      </div>
+      </div>
       </div>
     </section>
 
